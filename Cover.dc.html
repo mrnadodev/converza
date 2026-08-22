@@ -1,0 +1,129 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif; }
+    a { color: #008069; } a:hover { color: #006e5b; }
+  </style>
+</helmet>
+
+<div style="width: 390px; height: 844px; background: #FFFFFF; display: flex; flex-direction: column; overflow: hidden; color: #111B21; position: relative;">
+
+  <!-- Cover banner (placeholder photo) -->
+  <div style="height: 250px; position: relative; background:
+      radial-gradient(120% 90% at 80% -10%, #12B886 0%, transparent 55%),
+      radial-gradient(120% 100% at 0% 120%, #075E54 0%, transparent 60%),
+      linear-gradient(135deg, #008069 0%, #0B6B57 100%);
+      overflow: hidden;">
+    <!-- subtle pattern -->
+    <div style="position:absolute; inset:0; opacity:0.12; background-image:
+        repeating-linear-gradient(45deg, #fff 0 2px, transparent 2px 22px);"></div>
+    <!-- placeholder hint -->
+    <div style="position:absolute; top:16px; right:14px; display:flex; align-items:center; gap:7px; background:rgba(0,0,0,0.28); padding:7px 12px; border-radius:20px;">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="9" cy="9" r="1.6"/><path d="m21 15-5-5L5 21"/></svg>
+      <span style="color:#fff; font-size:11.5px; font-weight:600;">Ranplase ak foto boutik ou</span>
+    </div>
+    <!-- brand tag -->
+    <div style="position:absolute; top:18px; left:16px; display:flex; align-items:center; gap:7px;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="#fff" stroke="none"><path d="M12 2a10 10 0 0 0-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1 0 12 2z" opacity="0.9"/></svg>
+      <span style="color:#fff; font-size:13px; font-weight:800; letter-spacing:0.5px;">CONVERZA</span>
+    </div>
+  </div>
+
+  <!-- Logo overlapping -->
+  <div style="display:flex; justify-content:center; margin-top:-56px; position:relative; z-index:2;">
+    <div style="width:112px; height:112px; border-radius:32px; background:#FFFFFF; box-shadow:0 8px 24px rgba(17,27,33,0.18); display:flex; align-items:center; justify-content:center;">
+      <!-- Ti Kòk (rooster) placeholder logo -->
+      <div style="width:92px; height:92px; border-radius:26px; background:linear-gradient(135deg,#00A884,#075E54); display:flex; align-items:center; justify-content:center;">
+        <svg width="58" height="58" viewBox="0 0 64 64" fill="none">
+          <!-- comb -->
+          <circle cx="34" cy="13" r="4.5" fill="#FFD34E"/>
+          <circle cx="41" cy="11" r="4" fill="#FFD34E"/>
+          <circle cx="47" cy="14" r="3.5" fill="#FFD34E"/>
+          <!-- head + body silhouette -->
+          <path d="M44 20a10 10 0 0 1 3 7c6 1 11 6 11 14 0 9-8 15-18 15-11 0-19-6-19-16 0-6 3-11 8-13-1-4 0-9 4-12 3-2 8-2 11 5z" fill="#FFFFFF"/>
+          <!-- beak -->
+          <path d="M51 22l9 1-8 5z" fill="#FF8C42"/>
+          <!-- wattle -->
+          <path d="M50 28c0 4-2 6-4 6s-2-4 0-6 4-2 4 0z" fill="#FF6B6B"/>
+          <!-- eye -->
+          <circle cx="45" cy="22" r="2.4" fill="#075E54"/>
+          <!-- tail feathers -->
+          <path d="M18 30c-6-3-11-2-14 3 4 0 5 3 4 7 4-3 8-3 12-1z" fill="#FFD34E"/>
+          <path d="M16 36c-6-1-10 1-12 6 4-1 6 2 6 6 3-4 7-5 11-4z" fill="#FFFFFF"/>
+          <!-- legs -->
+          <path d="M34 55l-2 6M42 55l2 6" stroke="#FF8C42" stroke-width="3" stroke-linecap="round"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- Business identity -->
+  <div style="display:flex; flex-direction:column; align-items:center; gap:6px; padding:14px 24px 0;">
+    <div style="display:flex; align-items:center; gap:7px;">
+      <span style="font-size:24px; font-weight:800; letter-spacing:-0.4px;">Ti Kòk Boutik</span>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="#008069" stroke="none"><path d="M12 2 9.6 4.5 6.2 4l-.9 3.4L2 9.2l1.8 3-1.8 3 3.3 1.8.9 3.4 3.4-.5L12 22l2.4-2.6 3.4.5.9-3.4 3.3-1.8-1.8-3 1.8-3-3.3-1.8-.9-3.4-3.4.5z"/><path d="m8.5 12 2.3 2.3 4.7-4.8" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <span style="font-size:13.5px; color:#667781; font-weight:500;">Boutik alimantè · Delmas 31, Pòtoprens</span>
+    <div style="display:flex; align-items:center; gap:6px; margin-top:4px; background:#E7F7F1; padding:5px 12px; border-radius:20px;">
+      <span style="width:8px; height:8px; border-radius:50%; background:#25D366;"></span>
+      <span style="font-size:12px; font-weight:700; color:#0B6B57;">Louvri kounye a · 7am–7pm</span>
+    </div>
+  </div>
+
+  <!-- Stat strip -->
+  <div style="margin:20px 24px 0; background:#F7F8F9; border-radius:16px; padding:16px; display:flex;">
+    <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px;">
+      <span style="font-size:20px; font-weight:800;">48</span>
+      <span style="font-size:11px; color:#8696A0; font-weight:600;">Pwodwi</span>
+    </div>
+    <div style="width:1px; background:#E4E8EA;"></div>
+    <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px;">
+      <span style="font-size:20px; font-weight:800;">312</span>
+      <span style="font-size:11px; color:#8696A0; font-weight:600;">Kliyan</span>
+    </div>
+    <div style="width:1px; background:#E4E8EA;"></div>
+    <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px;">
+      <div style="display:flex; align-items:center; gap:3px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="#FFB800" stroke="none"><path d="m12 2 3 6.5 7 .8-5 4.8 1.3 7L12 17.8 5.4 21l1.3-7-5-4.8 7-.8z"/></svg>
+        <span style="font-size:20px; font-weight:800;">4.9</span>
+      </div>
+      <span style="font-size:11px; color:#8696A0; font-weight:600;">Nòt kliyan</span>
+    </div>
+  </div>
+
+  <!-- Floating action bar -->
+  <div style="margin-top:auto; background:#FFFFFF; border-radius:24px 24px 0 0; box-shadow:0 -8px 28px rgba(17,27,33,0.1); padding:18px 24px 26px; display:flex; flex-direction:column; gap:11px;">
+    <div style="height:56px; border-radius:16px; background:#25D366; box-shadow:0 6px 18px rgba(37,211,102,0.45); display:flex; align-items:center; justify-content:center; gap:10px;">
+      <svg width="23" height="23" viewBox="0 0 24 24" fill="#fff" stroke="none"><path d="M12 2a10 10 0 0 0-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1 0 12 2zm0 18a8 8 0 0 1-4.2-1.2l-.3-.2-2.9.8.8-2.8-.2-.3A8 8 0 1 1 12 20zm4.5-5.9c-.2-.1-1.4-.7-1.6-.8s-.4-.1-.5.1-.6.8-.8 1-.3.2-.5.1a6.5 6.5 0 0 1-1.9-1.2 7.2 7.2 0 0 1-1.3-1.7c-.1-.2 0-.4.1-.5l.4-.4.2-.4a.5.5 0 0 0 0-.5c0-.1-.5-1.3-.7-1.8s-.4-.4-.5-.4h-.5a.9.9 0 0 0-.7.3A2.8 2.8 0 0 0 7 8.4a4.9 4.9 0 0 0 1 2.6 11.2 11.2 0 0 0 4.3 3.8c.6.3 1.1.4 1.5.5a3.6 3.6 0 0 0 1.6.1c.5-.1 1.4-.6 1.6-1.1a2 2 0 0 0 .1-1.1c0-.1-.2-.2-.4-.3z"/></svg>
+      <span style="color:#fff; font-size:16.5px; font-weight:800;">Kòmande sou WhatsApp</span>
+    </div>
+    <div style="height:54px; border-radius:16px; background:#FFFFFF; border:1.5px solid #D9E0E3; display:flex; align-items:center; justify-content:center; gap:9px;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#111B21" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+      <span style="color:#111B21; font-size:16px; font-weight:700;">Wè katalòg la</span>
+    </div>
+    <div style="display:flex; align-items:center; justify-content:center; gap:6px; margin-top:4px;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="#008069" stroke="none"><path d="M12 2a10 10 0 0 0-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1 0 12 2z"/></svg>
+      <span style="font-size:12px; color:#8696A0; font-weight:600;">Mache ak CONVERZA</span>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+<script data-dc-script data-props='{}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

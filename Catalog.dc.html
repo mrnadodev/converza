@@ -1,0 +1,141 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif; }
+    a { color: #008069; } a:hover { color: #006e5b; }
+  </style>
+</helmet>
+
+<div style="width: 390px; height: 844px; background: #F7F8F9; display: flex; flex-direction: column; overflow: hidden; color: #111B21; position: relative;">
+
+  <!-- App bar -->
+  <div style="background: #008069; padding: 20px 16px 16px; display: flex; flex-direction: column; gap: 14px;">
+    <div style="display:flex; align-items:center; justify-content:space-between;">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <div style="width:36px; height:36px; border-radius:11px; background:#FFFFFF; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+          <svg width="25" height="25" viewBox="0 0 64 64" fill="none"><circle cx="34" cy="13" r="4.5" fill="#FFD34E"/><circle cx="41" cy="11" r="4" fill="#FFD34E"/><circle cx="47" cy="14" r="3.5" fill="#FFD34E"/><path d="M44 20a10 10 0 0 1 3 7c6 1 11 6 11 14 0 9-8 15-18 15-11 0-19-6-19-16 0-6 3-11 8-13-1-4 0-9 4-12 3-2 8-2 11 5z" fill="#075E54"/><path d="M51 22l9 1-8 5z" fill="#FF8C42"/><path d="M50 28c0 4-2 6-4 6s-2-4 0-6 4-2 4 0z" fill="#FF6B6B"/><circle cx="45" cy="22" r="2.4" fill="#FFFFFF"/><path d="M18 30c-6-3-11-2-14 3 4 0 5 3 4 7 4-3 8-3 12-1z" fill="#FFD34E"/><path d="M16 36c-6-1-10 1-12 6 4-1 6 2 6 6 3-4 7-5 11-4z" fill="#12B886"/><path d="M34 55l-2 6M42 55l2 6" stroke="#FF8C42" stroke-width="3" stroke-linecap="round"/></svg>
+        </div>
+        <span style="color: #FFFFFF; font-size: 21px; font-weight: 800; letter-spacing:-0.3px;">Katalòg</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:6px; background:rgba(255,255,255,0.16); padding:7px 12px; border-radius:20px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h8"/><circle cx="18" cy="6" r="2"/><path d="M4 6h10"/><circle cx="8" cy="12" r="2"/><path d="M4 18h14"/><circle cx="16" cy="18" r="2"/></svg>
+        <span style="color:#fff; font-size:12px; font-weight:600;">Filtre</span>
+      </div>
+    </div>
+    <!-- category chips -->
+    <div style="display:flex; gap:8px; overflow:hidden;">
+      <span style="font-size:12.5px; font-weight:700; color:#008069; background:#FFFFFF; padding:7px 14px; border-radius:20px; white-space:nowrap;">Tout</span>
+      <span style="font-size:12.5px; font-weight:600; color:#EAFBF4; background:rgba(255,255,255,0.16); padding:7px 14px; border-radius:20px; white-space:nowrap;">Manje</span>
+      <span style="font-size:12.5px; font-weight:600; color:#EAFBF4; background:rgba(255,255,255,0.16); padding:7px 14px; border-radius:20px; white-space:nowrap;">Bwason</span>
+      <span style="font-size:12.5px; font-weight:600; color:#EAFBF4; background:rgba(255,255,255,0.16); padding:7px 14px; border-radius:20px; white-space:nowrap;">Kay</span>
+    </div>
+  </div>
+
+  <div style="flex: 1; overflow-y: auto; padding: 16px 16px 96px;">
+    <div style="display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:13px;">
+
+      <!-- card -->
+      <div style="background:#FFFFFF; border-radius:16px; overflow:hidden; box-shadow:0 2px 10px rgba(17,27,33,0.06);">
+        <div style="height:104px; background:linear-gradient(135deg,#FEF3E2,#FCE0B8); display:flex; align-items:center; justify-content:center; position:relative;">
+          <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="#B7791F" stroke-width="1.5"><ellipse cx="12" cy="13" rx="6" ry="8"/></svg>
+          <span style="position:absolute; top:8px; left:8px; font-size:10px; font-weight:700; color:#008069; background:#fff; padding:3px 8px; border-radius:20px;">En stòk</span>
+        </div>
+        <div style="padding:11px 12px 13px; display:flex; flex-direction:column; gap:3px;">
+          <span style="font-size:13.5px; font-weight:600;">Ze fre (douzèn)</span>
+          <span style="font-size:11px; color:#8696A0;">42 disponib</span>
+          <span style="font-size:16px; font-weight:800; margin-top:3px;">180 <span style="font-size:11px; color:#8696A0; font-weight:600;">HTG</span></span>
+        </div>
+      </div>
+
+      <!-- card -->
+      <div style="background:#FFFFFF; border-radius:16px; overflow:hidden; box-shadow:0 2px 10px rgba(17,27,33,0.06);">
+        <div style="height:104px; background:linear-gradient(135deg,#E9F5EE,#CDEBD9); display:flex; align-items:center; justify-content:center; position:relative;">
+          <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="#2A7D3F" stroke-width="1.5"><path d="M5 11a7 4 0 0 1 14 0v3a7 4 0 0 1-14 0z"/><path d="M5 11c0-3 3-6 7-6s7 3 7 6"/></svg>
+          <span style="position:absolute; top:8px; left:8px; font-size:10px; font-weight:700; color:#008069; background:#fff; padding:3px 8px; border-radius:20px;">En stòk</span>
+        </div>
+        <div style="padding:11px 12px 13px; display:flex; flex-direction:column; gap:3px;">
+          <span style="font-size:13.5px; font-weight:600;">Diri Tchako (sak)</span>
+          <span style="font-size:11px; color:#8696A0;">8 disponib</span>
+          <span style="font-size:16px; font-weight:800; margin-top:3px;">1,200 <span style="font-size:11px; color:#8696A0; font-weight:600;">HTG</span></span>
+        </div>
+      </div>
+
+      <!-- card -->
+      <div style="background:#FFFFFF; border-radius:16px; overflow:hidden; box-shadow:0 2px 10px rgba(17,27,33,0.06);">
+        <div style="height:104px; background:linear-gradient(135deg,#F1E9FA,#E0CBF3); display:flex; align-items:center; justify-content:center; position:relative;">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#7A3EAF" stroke-width="1.5"><path d="M4 10a8 4 0 0 1 16 0v4a8 4 0 0 1-16 0z"/></svg>
+          <span style="position:absolute; top:8px; left:8px; font-size:10px; font-weight:700; color:#B25E09; background:#FEF3E2; padding:3px 8px; border-radius:20px;">Ba stòk</span>
+        </div>
+        <div style="padding:11px 12px 13px; display:flex; flex-direction:column; gap:3px;">
+          <span style="font-size:13.5px; font-weight:600;">Pen konplè</span>
+          <span style="font-size:11px; color:#B25E09; font-weight:600;">3 rete</span>
+          <span style="font-size:16px; font-weight:800; margin-top:3px;">155 <span style="font-size:11px; color:#8696A0; font-weight:600;">HTG</span></span>
+        </div>
+      </div>
+
+      <!-- card -->
+      <div style="background:#FFFFFF; border-radius:16px; overflow:hidden; box-shadow:0 2px 10px rgba(17,27,33,0.06);">
+        <div style="height:104px; background:linear-gradient(135deg,#FDECC8,#F8D48A); display:flex; align-items:center; justify-content:center; position:relative;">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#B7791F" stroke-width="1.5"><rect x="7" y="4" width="10" height="16" rx="2"/><path d="M9 8h6"/></svg>
+          <span style="position:absolute; top:8px; left:8px; font-size:10px; font-weight:700; color:#008069; background:#fff; padding:3px 8px; border-radius:20px;">En stòk</span>
+        </div>
+        <div style="padding:11px 12px 13px; display:flex; flex-direction:column; gap:3px;">
+          <span style="font-size:13.5px; font-weight:600;">Lwil (boutèy)</span>
+          <span style="font-size:11px; color:#8696A0;">20 disponib</span>
+          <span style="font-size:16px; font-weight:800; margin-top:3px;">320 <span style="font-size:11px; color:#8696A0; font-weight:600;">HTG</span></span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- FAB add product -->
+  <div style="position:absolute; right:18px; bottom:92px; height:52px; border-radius:16px; background:#25D366; box-shadow:0 6px 16px rgba(37,211,102,0.45); display:flex; align-items:center; gap:8px; padding:0 18px;">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+    <span style="color:#fff; font-size:14px; font-weight:700;">Pwodwi</span>
+  </div>
+
+  <!-- Bottom nav -->
+  <div style="position: absolute; bottom: 0; left: 0; right: 0; height: 76px; background: #FFFFFF; border-top: 1px solid #E9EDEF; display: flex; align-items: flex-start; padding-top: 10px;">
+    <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:4px;">
+      <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="#8696A0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>
+      <span style="font-size:10.5px; font-weight:500; color:#8696A0;">Tablo</span>
+    </div>
+    <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:4px;">
+      <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="#8696A0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4L3 21l1.1-4A8.4 8.4 0 1 1 21 11.5z"/></svg>
+      <span style="font-size:10.5px; font-weight:500; color:#8696A0;">Chat</span>
+    </div>
+    <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:4px;">
+      <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="#8696A0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+      <span style="font-size:10.5px; font-weight:500; color:#8696A0;">Kòmand</span>
+    </div>
+    <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:4px;">
+      <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="#008069" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+      <span style="font-size:10.5px; font-weight:700; color:#008069;">Katalòg</span>
+    </div>
+    <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:4px;">
+      <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="#8696A0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-8 0v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span style="font-size:10.5px; font-weight:500; color:#8696A0;">Kliyan</span>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+<script data-dc-script data-props='{}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

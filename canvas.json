@@ -1,0 +1,24 @@
+{
+  "pages": [
+    { "id": "page-flow", "name": "Flow & Pipeline" },
+    { "id": "page-screens", "name": "7 Ekran MVP" }
+  ],
+  "artboards": [
+    { "file": "Pipeline.dc.html", "title": "Pipeline · Customer → Follow-up", "page": "page-flow", "x": 0,   "y": 120,  "w": 1240, "h": 520 },
+    { "file": "Kanban.dc.html",   "title": "Vue Pipeline (Kanban)",          "page": "page-flow", "x": 0,   "y": 760,  "w": 390,  "h": 844 },
+    { "file": "Followup.dc.html", "title": "Relans jodi a (Follow-up)",       "page": "page-flow", "x": 500, "y": 760,  "w": 390,  "h": 844 },
+
+    { "file": "Cover.dc.html",   "title": "0 · Kouvèti biznis",  "page": "page-screens", "x": 0,    "y": 120,  "w": 390, "h": 844 },
+    { "file": "Main.dc.html",    "title": "1 · Tablo debò",      "page": "page-screens", "x": 500,  "y": 120,  "w": 390, "h": 844 },
+    { "file": "Inbox.dc.html",   "title": "2 · Konvèsasyon",     "page": "page-screens", "x": 1000, "y": 120,  "w": 390, "h": 844 },
+    { "file": "Compose.dc.html", "title": "3 · Chat + repons",   "page": "page-screens", "x": 1500, "y": 120,  "w": 390, "h": 844 },
+    { "file": "Client.dc.html",  "title": "4 · Fich kliyan",     "page": "page-screens", "x": 0,    "y": 1120, "w": 390, "h": 844 },
+    { "file": "Order.dc.html",   "title": "5 · Kòmand",          "page": "page-screens", "x": 500,  "y": 1120, "w": 390, "h": 844 },
+    { "file": "Catalog.dc.html", "title": "6 · Katalòg",         "page": "page-screens", "x": 1000, "y": 1120, "w": 390, "h": 844 }
+  ],
+  "annotations": [
+    { "id": "flow-intro", "x": 0, "y": -120, "w": 760, "text": "Pipeline CONVERZA — la colonne vertébrale du produit.\nChaque écran, chaque table de données sert une étape du tunnel Customer → WhatsApp → CONVERZA → Agent → CRM → Order → Payment → Delivery → Follow-up." },
+    { "id": "flow-cap", "x": 0, "y": 1625, "w": 890, "text": "L'étape Follow-up (Swivi) : vue Kanban pour faire glisser les commandes d'un statut à l'autre, + écran Relans jodi a (dettes, re-commande des clients fidèles, mèsi après livraison)." }
+  ],
+  "launch": { "view": "canvas", "page": "page-flow" }
+}

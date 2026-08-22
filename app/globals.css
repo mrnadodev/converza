@@ -1,0 +1,20 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body {
+  padding: 0;
+  margin: 0;
+  background: #EFEAE2;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* App mobile-first : on borne la largeur sur desktop pour garder le rendu téléphone. */
+.app-shell {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100dvh;
+  background: #FFFFFF;
+}
