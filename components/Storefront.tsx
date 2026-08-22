@@ -222,7 +222,7 @@ export function Storefront({
       )}
 
       {/* Sticky bar */}
-      <div className="fixed inset-x-0 bottom-0 z-20 mx-auto max-w-[480px] border-t border-line bg-white/95 px-4 pb-6 pt-3 backdrop-blur">
+      <div className="pb-safe fixed inset-x-0 bottom-0 z-20 mx-auto max-w-[480px] border-t border-line bg-white/95 px-4 pt-3 backdrop-blur">
         {count ? (
           <button onClick={() => setCheckoutOpen(true)} className="flex h-14 w-full items-center justify-center gap-2.5 rounded-2xl bg-brand-green shadow-[0_6px_18px_rgba(37,211,102,0.45)] active:scale-[0.99]">
             <WaIcon />

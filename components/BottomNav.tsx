@@ -12,7 +12,7 @@ const items: { key: Tab; label: string; href: string; icon: React.ReactNode }[] 
 
 export function BottomNav({ active }: { active: Tab }) {
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-20 mx-auto flex h-[76px] max-w-[480px] items-start border-t border-line bg-white pt-2.5">
+    <nav className="nav-safe fixed inset-x-0 bottom-0 z-20 mx-auto flex min-h-[76px] max-w-[480px] items-start border-t border-line bg-white pt-2.5">
       {items.map((it) => {
         const on = it.key === active;
         return (

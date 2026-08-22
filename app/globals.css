@@ -9,12 +9,22 @@ html, body {
   margin: 0;
   background: #EFEAE2;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
 
-/* App mobile-first : on borne la largeur sur desktop pour garder le rendu téléphone. */
+/* App mobile-first : colonne centrée sur tablette/laptop, plein écran sur téléphone. */
 .app-shell {
   max-width: 480px;
   margin: 0 auto;
   min-height: 100dvh;
   background: #FFFFFF;
+  position: relative;
+}
+
+/* Zone de sécurité iPhone (barre d'accueil) pour les barres fixes en bas. */
+.pb-safe {
+  padding-bottom: max(1.25rem, env(safe-area-inset-bottom));
+}
+.nav-safe {
+  padding-bottom: env(safe-area-inset-bottom);
 }
