@@ -38,6 +38,12 @@ export const demoTopCustomers: (Customer & {
 
 export const demoFunnel = { leads: 312, orders: 48, paid: 40, delivered: 35 };
 
+export const demoTeam = [
+  { id: "m1", full_name: "Nadège Pierre", role: "owner", user_id: "u1", salesCount: 0, salesCents: 0 },
+  { id: "m2", full_name: "Jean Baptiste", role: "agent", user_id: "u2", salesCount: 14, salesCents: 940000 },
+  { id: "m3", full_name: "Marie Joseph", role: "agent", user_id: "u3", salesCount: 9, salesCents: 610000 },
+];
+
 export const demoStats = {
   weekSalesCents: 4875000,
   weekTrendPct: 18,

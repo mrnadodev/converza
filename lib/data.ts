@@ -10,6 +10,7 @@ import {
   demoPipeline,
   demoProducts,
   demoStats,
+  demoTeam,
   demoTopCustomers,
 } from "./demo";
 import type { Business, Customer, PipelineCard, Product } from "./types";
@@ -215,6 +216,47 @@ export async function getMyBusiness(): Promise<Business> {
   if (!bid) return demoBusiness;
   const { data } = await sb.from("businesses").select("*").eq("id", bid).single();
   return (data ?? demoBusiness) as Business;
+}
+
+// --- Team (agents + ventes par agent) ---
+export async function getTeam() {
+  if (!hasSupabase()) {
+    return { members: demoTeam, isOwner: true, businessId: demoBusiness.id };
+  }
+  const sb = createClient();
+  const bid = await myBusinessId(sb);
+  if (!bid) return { members: [], isOwner: false, businessId: "" };
+
+  const { data: members } = await sb
+    .from("members")
+    .select("id, full_name, role, user_id")
+    .eq("business_id", bid);
+
+  const { data: orders } = await sb
+    .from("orders")
+    .select("assigned_to, delivery_fee_cents, order_items(qty, unit_price_cents)")
+    .neq("status", "anile");
+
+  const salesBy = new Map<string, { count: number; cents: number }>();
+  for (const o of orders ?? []) {
+    if (!o.assigned_to) continue;
+    const e = salesBy.get(o.assigned_to) ?? { count: 0, cents: 0 };
+    e.count += 1;
+    e.cents += orderTotalOf(o);
+    salesBy.set(o.assigned_to, e);
+  }
+
+  const list = (members ?? []).map((m) => ({
+    ...m,
+    salesCount: salesBy.get(m.id)?.count ?? 0,
+    salesCents: salesBy.get(m.id)?.cents ?? 0,
+  }));
+
+  const {
+    data: { user },
+  } = await sb.auth.getUser();
+  const me = (members ?? []).find((m) => m.user_id === user?.id);
+  return { members: list, isOwner: me?.role === "owner", businessId: bid };
 }
 
 // --- Katalòg (produits du marchand) ---
