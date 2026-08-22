@@ -45,10 +45,10 @@ insert into quick_replies (business_id, label, body, sort_order) values
 on conflict do nothing;
 
 -- Commande d'exemple (payée, en attente de livraison) -----------
-insert into orders (id, business_id, ref, customer_id, status, delivery_fee_cents,
+insert into orders (id, business_id, ref, customer_id, status, delivery_fee_cents, amount_paid_cents,
                     delivery_addr, pay_method, pay_ref, created_at, paid_at)
 values ('01420000-0000-0000-0000-000000000142', '11111111-1111-1111-1111-111111111111', '0142',
-        'c1000000-0000-0000-0000-000000000001', 'peye', 5000, 'Delmas 31', 'moncash', '8842',
+        'c1000000-0000-0000-0000-000000000001', 'peye', 5000, 90000, 'Delmas 31', 'moncash', '8842',
         now() - interval '2 hours', now() - interval '1 hour')
 on conflict (id) do nothing;
 
