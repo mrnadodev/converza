@@ -35,7 +35,10 @@ export async function updateSession(request: NextRequest) {
     path === "/login" ||
     path.startsWith("/b/") ||
     path.startsWith("/api") ||
-    path.startsWith("/manifest");
+    path.startsWith("/manifest") ||
+    path === "/sw.js" ||
+    path === "/icon.svg" ||
+    path === "/apple-touch-icon.png";
 
   if (!user && !isPublic) {
     const redirectUrl = request.nextUrl.clone();
