@@ -55,6 +55,18 @@ export function SettingsForm({ business }: { business: Business }) {
       </header>
 
       <div className="flex flex-col gap-5 px-4 pt-5">
+        {/* Raccourcis */}
+        <div className="grid grid-cols-2 gap-3">
+          <Link href="/abonman" className="flex items-center gap-2 rounded-2xl bg-white p-3.5 shadow-[0_2px_10px_rgba(17,27,33,0.05)]">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#008069" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></svg>
+            <span className="text-[13.5px] font-bold">Abònman</span>
+          </Link>
+          <Link href="/ekip" className="flex items-center gap-2 rounded-2xl bg-white p-3.5 shadow-[0_2px_10px_rgba(17,27,33,0.05)]">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#008069" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /></svg>
+            <span className="text-[13.5px] font-bold">Ekip</span>
+          </Link>
+        </div>
+
         {/* Bannière + logo */}
         <section className="flex flex-col gap-3 rounded-2xl bg-white p-4 shadow-[0_2px_10px_rgba(17,27,33,0.05)]">
           <span className="text-[13px] font-bold text-ink-soft">Kouvèti (banner)</span>

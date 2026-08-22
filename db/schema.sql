@@ -36,6 +36,8 @@ create table businesses (
   employees_count integer,                             -- nb d'employés (info onboarding)
   theme         text default 'whatsapp',               -- thème vitrine (voir lib/themes.ts)
   layout        text default 'auto',                   -- disposition cartes : auto | grid | menu
+  plan          text default 'gratis',                 -- abonnement : gratis | pro | premium
+  plan_until    timestamptz,
   -- Réseaux sociaux : la vitrine sert de page d'atterrissage aux pubs
   -- TikTok/Instagram/Facebook, et renvoie le client vers la commande WhatsApp.
   social_instagram text,                              -- URL ou @handle
@@ -194,6 +196,21 @@ create table quick_replies (
 );
 create index on quick_replies (business_id, sort_order);
 
+-- ------------------------------------------------------------
+-- SUBSCRIPTION PAYMENTS (paiements d'abonnement manuels)
+-- ------------------------------------------------------------
+create table subscription_payments (
+  id           uuid primary key default gen_random_uuid(),
+  business_id  uuid not null references businesses(id) on delete cascade,
+  plan         text not null,
+  amount_cents bigint not null,
+  pay_method   text not null,
+  pay_ref      text,
+  status       text not null default 'pending',
+  created_at   timestamptz not null default now()
+);
+create index on subscription_payments (business_id, created_at desc);
+
 -- ============================================================
 -- ROW LEVEL SECURITY — isolation multi-tenant
 -- Un membre ne voit que les données de SON business.
@@ -205,6 +222,7 @@ alter table products      enable row level security;
 alter table orders        enable row level security;
 alter table order_items   enable row level security;
 alter table quick_replies enable row level security;
+alter table subscription_payments enable row level security;
 
 -- Business_id du membre connecté (helper).
 create or replace function my_business_id()
@@ -220,6 +238,8 @@ create policy biz_isolation on products
 create policy biz_isolation on orders
   using (business_id = my_business_id()) with check (business_id = my_business_id());
 create policy biz_isolation on quick_replies
+  using (business_id = my_business_id()) with check (business_id = my_business_id());
+create policy biz_isolation on subscription_payments
   using (business_id = my_business_id()) with check (business_id = my_business_id());
 
 create policy biz_read on businesses

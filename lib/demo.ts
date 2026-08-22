@@ -18,6 +18,8 @@ export const demoBusiness: Business = {
   employees_count: 3,
   theme: "whatsapp",
   layout: "auto",
+  plan: "gratis",
+  plan_until: null,
   social_instagram: "https://instagram.com/tikokboutik",
   social_facebook: "https://facebook.com/tikokboutik",
   social_tiktok: "https://tiktok.com/@tikokboutik",

@@ -22,6 +22,8 @@ export interface Business {
   employees_count: number | null;
   theme: string | null;
   layout: string | null; // 'auto' | 'grid' | 'menu'
+  plan: string | null; // 'gratis' | 'pro' | 'premium'
+  plan_until: string | null;
   social_instagram: string | null;
   social_facebook: string | null;
   social_tiktok: string | null;
