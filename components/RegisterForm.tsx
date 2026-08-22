@@ -39,7 +39,7 @@ export function RegisterForm() {
   }
 
   return (
-    <div className="flex min-h-[100dvh] flex-col bg-chat-bg">
+    <div className="flex min-h-[100dvh] flex-col bg-chat-bg md:mx-auto md:my-10 md:min-h-0 md:max-w-[440px] md:overflow-hidden md:rounded-3xl md:shadow-xl">
       <div className="flex flex-col items-center gap-3 bg-brand px-6 pb-10 pt-14">
         <div className="flex h-16 w-16 items-center justify-center rounded-[20px] bg-white shadow-lg">
           <Rooster />

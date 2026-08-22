@@ -31,7 +31,7 @@ export default async function TabloPage() {
   const days = ["L", "M", "M", "J", "V", "S", "D"];
 
   return (
-    <div className="relative min-h-[100dvh] bg-chat-bg pb-[96px]">
+    <div className="app-page with-topnav relative min-h-[100dvh] bg-chat-bg pb-[96px]">
       {/* App bar */}
       <header className="flex flex-col gap-4 bg-brand px-5 pb-6 pt-5">
         <div className="flex items-center justify-between">
@@ -68,12 +68,14 @@ export default async function TabloPage() {
         </div>
       </header>
 
-      <main className="flex flex-col gap-[18px] px-4 pt-[18px]">
+      <main className="grid grid-cols-1 gap-[18px] px-4 pt-[18px] md:grid-cols-2 md:items-start md:gap-5 md:px-6 md:pt-6">
         {/* Partager la vitrine publique */}
-        <ShareStorefront slug={demoBusiness.slug} />
+        <div className="md:col-span-2">
+          <ShareStorefront slug={demoBusiness.slug} />
+        </div>
 
         {/* KPI hero */}
-        <section className="flex flex-col gap-3.5 rounded-xl2 bg-white p-[18px] shadow-[0_2px_10px_rgba(17,27,33,0.06)]">
+        <section className="flex flex-col gap-3.5 rounded-xl2 bg-white p-[18px] shadow-[0_2px_10px_rgba(17,27,33,0.06)] md:col-span-2">
           <div className="flex items-center justify-between">
             <span className="text-[13px] font-semibold text-ink-muted">Vant semèn nan</span>
             <span className="rounded-full bg-[#E7F7F1] px-2.5 py-1 text-[11px] font-bold text-brand">
@@ -138,7 +140,7 @@ export default async function TabloPage() {
         </section>
 
         {/* Top clients */}
-        <section className="flex flex-col gap-3">
+        <section className="flex flex-col gap-3 md:col-span-2">
           <div className="flex items-center justify-between px-0.5">
             <span className="text-[15px] font-bold">Pi bon kliyan yo</span>
             <span className="text-xs font-semibold text-brand">Wè tout</span>

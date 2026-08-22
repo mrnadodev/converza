@@ -23,7 +23,7 @@ export default async function KliyanPage() {
   const customers = await getCustomers();
 
   return (
-    <div className="relative min-h-[100dvh] bg-white pb-[96px]">
+    <div className="app-page with-topnav relative min-h-[100dvh] bg-white pb-[96px]">
       <header className="flex items-center gap-2.5 bg-brand px-4 pb-4 pt-5">
         <div className="flex h-9 w-9 items-center justify-center rounded-[11px] bg-white">
           <Rooster />

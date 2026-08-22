@@ -7,7 +7,7 @@ export default function LoginPage({
   searchParams: { error?: string };
 }) {
   return (
-    <div className="flex min-h-[100dvh] flex-col bg-chat-bg">
+    <div className="flex min-h-[100dvh] flex-col bg-chat-bg md:mx-auto md:my-10 md:min-h-0 md:max-w-[440px] md:overflow-hidden md:rounded-3xl md:shadow-xl">
       {/* En-tête de marque */}
       <div className="flex flex-col items-center gap-4 bg-brand px-6 pb-12 pt-16">
         <div className="flex h-20 w-20 items-center justify-center rounded-[24px] bg-white shadow-lg">

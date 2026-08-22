@@ -79,7 +79,7 @@ export function CatalogManager({ business, initial }: { business: Business; init
   const set = (patch: Partial<ProductInput>) => setForm((f) => (f ? { ...f, ...patch } : f));
 
   return (
-    <div className="relative min-h-[100dvh] bg-[#F7F8F9] pb-[110px]">
+    <div className="app-page with-topnav relative min-h-[100dvh] bg-[#F7F8F9] pb-[110px]">
       <header className="flex items-center gap-2.5 bg-brand px-4 pb-4 pt-5">
         <span className="text-[21px] font-extrabold tracking-tight text-white">{vertical.catalogWord}</span>
         <span className="ml-auto rounded-full bg-white/15 px-3 py-1 text-xs font-bold text-white">

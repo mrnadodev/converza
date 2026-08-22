@@ -36,7 +36,7 @@ export function Subscription({ business }: { business: Business }) {
   const payInfo = CONVERZA_PAYMENT_INFO[method as keyof typeof CONVERZA_PAYMENT_INFO];
 
   return (
-    <div className="min-h-[100dvh] bg-[#F7F8F9] pb-16">
+    <div className="app-page min-h-[100dvh] bg-[#F7F8F9] pb-16">
       <header className="flex items-center gap-3 bg-brand px-4 pb-4 pt-5">
         <Link href="/" aria-label="Retounen">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>

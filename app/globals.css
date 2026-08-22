@@ -12,13 +12,24 @@ html, body {
   overflow-x: hidden;
 }
 
-/* App mobile-first : colonne centrée sur tablette/laptop, plein écran sur téléphone. */
+/* Conteneur neutre plein écran ; chaque page choisit sa largeur. */
 .app-shell {
-  max-width: 480px;
+  width: 100%;
   margin: 0 auto;
   min-height: 100dvh;
-  background: #FFFFFF;
   position: relative;
+}
+@media (min-width: 768px) {
+  /* Pages de l'app marchand : carte web centrée. */
+  .app-page {
+    max-width: 1040px;
+    margin: 0 auto;
+    box-shadow: 0 0 0 1px #E2E9E5;
+  }
+  /* Décalage sous la barre de nav du haut. */
+  .with-topnav {
+    padding-top: 60px;
+  }
 }
 
 /* Zone de sécurité iPhone (barre d'accueil) pour les barres fixes en bas. */

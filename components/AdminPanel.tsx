@@ -38,7 +38,7 @@ export function AdminPanel({ data }: { data: Data }) {
   const shown = data.merchants.filter((m) => m.name.toLowerCase().includes(q.toLowerCase()) || m.slug.includes(q.toLowerCase()));
 
   return (
-    <div className="min-h-[100dvh] bg-[#F7F8F9] pb-16">
+    <div className="app-page min-h-[100dvh] bg-[#F7F8F9] pb-16">
       <header className="flex items-center justify-between bg-[#0E1B17] px-4 pb-4 pt-6">
         <div>
           <span className="text-[19px] font-extrabold text-white">Admin CONVERZA</span>
@@ -50,7 +50,7 @@ export function AdminPanel({ data }: { data: Data }) {
       </header>
 
       {/* KPIs */}
-      <section className="grid grid-cols-2 gap-3 px-4 pt-4">
+      <section className="grid grid-cols-2 gap-3 px-4 pt-4 md:grid-cols-4 md:px-6">
         <Kpi label="MRR (chak mwa)" value={formatMoney(data.kpis.mrrCents)} accent />
         <Kpi label="GMV total" value={formatMoney(data.kpis.gmvCents)} />
         <Kpi label="Marchan" value={`${data.kpis.merchants}`} sub={`+${data.kpis.newThisMonth} mwa sa`} />

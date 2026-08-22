@@ -106,7 +106,7 @@ export function Storefront({
   const isMenu = layout === "menu";
 
   return (
-    <div className="relative min-h-[100dvh] bg-white pb-28">
+    <div className="relative min-h-[100dvh] bg-white pb-28 md:mx-auto md:max-w-[560px] md:shadow-[0_0_0_1px_#E2E9E5]">
       {view === "vitrine" ? (
         <>
           {/* Cover */}

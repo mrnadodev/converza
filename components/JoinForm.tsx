@@ -29,7 +29,7 @@ export function JoinForm({ businessId, businessName }: { businessId: string; bus
   }
 
   return (
-    <div className="flex min-h-[100dvh] flex-col bg-chat-bg">
+    <div className="flex min-h-[100dvh] flex-col bg-chat-bg md:mx-auto md:my-10 md:min-h-0 md:max-w-[440px] md:overflow-hidden md:rounded-3xl md:shadow-xl">
       <div className="flex flex-col items-center gap-2 bg-brand px-6 pb-10 pt-16 text-center">
         <span className="text-[13px] text-[#B9F5E4]">Ou envite pou rantre nan</span>
         <span className="text-2xl font-extrabold tracking-tight text-white">{businessName}</span>

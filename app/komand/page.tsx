@@ -7,7 +7,7 @@ export default async function KomandPage() {
   const [cards, business] = await Promise.all([getPipeline(), getMyBusiness()]);
 
   return (
-    <div className="relative flex min-h-[100dvh] flex-col bg-[#F0F2F3]">
+    <div className="app-page with-topnav relative flex min-h-[100dvh] flex-col bg-[#F0F2F3]">
       <header className="flex items-center gap-2.5 bg-brand px-4 pb-4 pt-5">
         <div className="flex h-9 w-9 items-center justify-center rounded-[11px] bg-white">
           <RoosterLogo />

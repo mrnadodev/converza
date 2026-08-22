@@ -5,7 +5,7 @@ import { BottomNav } from "@/components/BottomNav";
 // L'app n'héberge pas de messagerie — elle ouvre WhatsApp avec le bon client.
 export default function ChatPage() {
   return (
-    <div className="relative flex min-h-[100dvh] flex-col bg-[#F7F8F9] pb-[96px]">
+    <div className="app-page with-topnav relative flex min-h-[100dvh] flex-col bg-[#F7F8F9] pb-[96px]">
       <header className="flex items-center gap-2.5 bg-brand px-4 pb-4 pt-5">
         <div className="flex h-9 w-9 items-center justify-center rounded-[11px] bg-white">
           <Rooster />
