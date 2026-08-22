@@ -62,8 +62,9 @@ export default function LoginPage({
           </button>
         </form>
 
-        <p className="mt-6 text-center text-xs leading-relaxed text-ink-faint">
-          Pou kreye yon kont: mande administratè a, oswa itilize Supabase Auth.
+        <p className="mt-6 text-center text-[13px] text-ink-muted">
+          Ou poko gen yon kont?{" "}
+          <a href="/enskri" className="font-bold text-brand">Kreye biznis ou</a>
         </p>
       </div>
     </div>
