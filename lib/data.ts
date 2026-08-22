@@ -6,6 +6,7 @@
 import { createClient } from "@/lib/supabase/server";
 import {
   demoBusiness,
+  demoFunnel,
   demoPipeline,
   demoProducts,
   demoStats,
@@ -22,7 +23,12 @@ export function hasSupabase(): boolean {
 
 // --- Dashboard (Tablo debò) ---
 export async function getDashboard() {
-  const demo = { business: demoBusiness, stats: demoStats, topCustomers: demoTopCustomers };
+  const demo = {
+    business: demoBusiness,
+    stats: demoStats,
+    topCustomers: demoTopCustomers,
+    funnel: demoFunnel,
+  };
   if (!hasSupabase()) return demo;
 
   const sb = createClient();
@@ -51,12 +57,24 @@ export async function getDashboard() {
     )
     .neq("status", "anile");
 
+  const { count: leadsCount } = await sb
+    .from("customers")
+    .select("id", { count: "exact", head: true });
+
   const rows = orders ?? [];
   return {
     business: (business ?? demoBusiness) as Business,
     stats: aggregateStats(rows),
     topCustomers: aggregateTopCustomers(rows),
+    funnel: computeFunnel(rows, leadsCount ?? 0),
   };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function computeFunnel(orders: any[], leads: number) {
+  const paid = orders.filter((o) => ["peye", "livre", "swivi"].includes(o.status)).length;
+  const delivered = orders.filter((o) => ["livre", "swivi"].includes(o.status)).length;
+  return { leads, orders: orders.length, paid, delivered };
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

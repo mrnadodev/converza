@@ -8,9 +8,16 @@ import { signOut } from "./login/actions";
 // Les données passent par getDashboard() : démo tant que Supabase n'est pas
 // configuré, sinon requêtes réelles.
 export default async function TabloPage() {
-  const { business: demoBusiness, stats: demoStats, topCustomers: demoTopCustomers } =
+  const { business: demoBusiness, stats: demoStats, topCustomers: demoTopCustomers, funnel } =
     await getDashboard();
   const maxBar = Math.max(...demoStats.weekBars) || 1;
+  const funnelMax = funnel.leads || 1;
+  const funnelRows = [
+    { label: "Kliyan (leads)", value: funnel.leads, color: "#66D2A6" },
+    { label: "Kòmand", value: funnel.orders, color: "#16B67C" },
+    { label: "Peye", value: funnel.paid, color: "#0E9E6B" },
+    { label: "Livre", value: funnel.delivered, color: "#0A7D55" },
+  ];
   const days = ["L", "M", "M", "J", "V", "S", "D"];
 
   return (
@@ -96,6 +103,24 @@ export default async function TabloPage() {
               {(demoStats.owedCents / 100).toLocaleString("fr-HT")}
             </span>
             <span className="text-xs font-medium text-ink-muted">Lajan pou resevwa (HTG)</span>
+          </div>
+        </section>
+
+        {/* Sales Funnel */}
+        <section className="flex flex-col gap-3">
+          <span className="px-0.5 text-[15px] font-bold">Sales Funnel</span>
+          <div className="flex flex-col gap-3 rounded-2xl bg-white p-4 shadow-[0_2px_10px_rgba(17,27,33,0.05)]">
+            {funnelRows.map((r) => (
+              <div key={r.label} className="flex flex-col gap-1.5">
+                <div className="flex items-center justify-between text-[13px]">
+                  <span className="font-medium text-ink-soft">{r.label}</span>
+                  <span className="font-extrabold">{r.value.toLocaleString("fr-HT")}</span>
+                </div>
+                <div className="h-2.5 w-full overflow-hidden rounded-full bg-[#EEF2F3]">
+                  <div className="h-full rounded-full" style={{ width: `${Math.round((r.value / funnelMax) * 100)}%`, background: r.color }} />
+                </div>
+              </div>
+            ))}
           </div>
         </section>
 

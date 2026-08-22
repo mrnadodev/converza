@@ -36,6 +36,8 @@ export const demoTopCustomers: (Customer & {
   { id: "c3", business_id: "biz-demo", full_name: "Marie-Carmelle J.", phone_e164: "+50934567712", address: null, tags: [], note: null, created_at: "", orders: 9, totalCents: 610000, initials: "MC" },
 ];
 
+export const demoFunnel = { leads: 312, orders: 48, paid: 40, delivered: 35 };
+
 export const demoStats = {
   weekSalesCents: 4875000,
   weekTrendPct: 18,
