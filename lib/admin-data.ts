@@ -93,7 +93,12 @@ export async function getAdminData() {
     },
     planCounts,
     signups: weeks,
-    pendingPayments: payments.filter((p) => p.status === "pending"),
+    pendingPayments: payments
+      .filter((p) => p.status === "pending")
+      .map((p) => ({
+        ...p,
+        businesses: Array.isArray(p.businesses) ? (p.businesses[0] ?? null) : (p.businesses ?? null),
+      })),
     expired,
     merchants,
   };
