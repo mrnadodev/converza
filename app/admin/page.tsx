@@ -1,8 +1,8 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { isAdminEmail } from "@/lib/admin";
 import { hasSupabase } from "@/lib/data";
+import { getAdminData } from "@/lib/admin-data";
 import { AdminPanel } from "@/components/AdminPanel";
 
 function Notice({ title, body }: { title: string; body: string }) {
@@ -22,26 +22,10 @@ export default async function AdminPage() {
     data: { user },
   } = await sb.auth.getUser();
   if (!user) redirect("/login");
+  if (!isAdminEmail(user.email)) return <Notice title="Aksè entèdi" body="Paj sa a se pou super-admin CONVERZA sèlman." />;
 
-  if (!isAdminEmail(user.email)) {
-    return <Notice title="Aksè entèdi" body="Paj sa a se pou super-admin CONVERZA sèlman." />;
-  }
+  const data = await getAdminData();
+  if (!data) return <Notice title="Konfigirasyon manke" body="Ajoute SUPABASE_SERVICE_ROLE_KEY nan varyab anviwonman yo (Vercel + .env.local)." />;
 
-  const admin = createAdminClient();
-  if (!admin) {
-    return <Notice title="Konfigirasyon manke" body="Ajoute SUPABASE_SERVICE_ROLE_KEY nan varyab anviwonman yo (Vercel + .env.local)." />;
-  }
-
-  const { data: payments } = await admin
-    .from("subscription_payments")
-    .select("id, plan, amount_cents, pay_method, pay_ref, status, created_at, business_id, businesses(name, slug)")
-    .order("created_at", { ascending: false });
-
-  const { data: businesses } = await admin
-    .from("businesses")
-    .select("id, name, slug, business_type, plan")
-    .order("created_at", { ascending: false });
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return <AdminPanel payments={(payments ?? []) as any} businesses={(businesses ?? []) as any} />;
+  return <AdminPanel data={data} />;
 }

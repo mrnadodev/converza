@@ -27,6 +27,23 @@ export async function activatePlan(paymentId: string, businessId: string, plan: 
   return { ok: !r1.error && !r2.error, error: r1.error?.message ?? r2.error?.message };
 }
 
+export async function setPlan(businessId: string, plan: string) {
+  if (!(await requireAdmin())) return { ok: false, error: "Non otorize" };
+  const admin = createAdminClient();
+  if (!admin) return { ok: false, error: "SUPABASE_SERVICE_ROLE_KEY manke" };
+  const patch: Record<string, unknown> = { plan };
+  if (plan === "gratis") {
+    patch.plan_until = null;
+  } else {
+    const until = new Date();
+    until.setMonth(until.getMonth() + 1);
+    patch.plan_until = until.toISOString();
+  }
+  const { error } = await admin.from("businesses").update(patch).eq("id", businessId);
+  revalidatePath("/admin");
+  return { ok: !error, error: error?.message };
+}
+
 export async function rejectPayment(paymentId: string) {
   if (!(await requireAdmin())) return { ok: false, error: "Non otorize" };
   const admin = createAdminClient();
