@@ -11,7 +11,7 @@ import {
   demoStats,
   demoTopCustomers,
 } from "./demo";
-import type { Business, PipelineCard, Product } from "./types";
+import type { Business, Customer, PipelineCard, Product } from "./types";
 
 export function hasSupabase(): boolean {
   return (
@@ -169,6 +169,46 @@ export async function getPipeline(): Promise<PipelineCard[]> {
       owedCents: Math.max(totalCents - (o.amount_paid_cents ?? 0), 0),
     };
   });
+}
+
+// Business_id du membre connecté (les produits ont une lecture publique,
+// donc il faut filtrer explicitement sur le business du marchand).
+async function myBusinessId(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  sb: any,
+): Promise<string | null> {
+  const {
+    data: { user },
+  } = await sb.auth.getUser();
+  if (!user) return null;
+  const { data } = await sb
+    .from("members")
+    .select("business_id")
+    .eq("user_id", user.id)
+    .maybeSingle();
+  return data?.business_id ?? null;
+}
+
+// --- Katalòg (produits du marchand) ---
+export async function getCatalog(): Promise<Product[]> {
+  if (!hasSupabase()) return demoProducts;
+  const sb = createClient();
+  const bid = await myBusinessId(sb);
+  if (!bid) return [];
+  const { data } = await sb
+    .from("products")
+    .select("*")
+    .eq("business_id", bid)
+    .order("name");
+  return (data ?? []) as Product[];
+}
+
+// --- Kliyan (clients du marchand) ---
+export async function getCustomers(): Promise<Customer[]> {
+  if (!hasSupabase()) return demoTopCustomers;
+  const sb = createClient();
+  const { data } = await sb.from("customers").select("*").order("full_name");
+  return (data ?? []) as Customer[];
 }
 
 // --- Vitrine publique (#0) ---

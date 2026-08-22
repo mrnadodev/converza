@@ -53,7 +53,7 @@ export function Storefront({ business, products }: { business: Business; product
       />
 
       {/* Logo */}
-      <div className="-mt-14 flex justify-center">
+      <div className="relative z-10 -mt-14 flex justify-center">
         <div className="flex h-28 w-28 items-center justify-center rounded-[32px] bg-white shadow-[0_8px_24px_rgba(17,27,33,0.18)]">
           <div className="flex h-[92px] w-[92px] items-center justify-center rounded-[26px] bg-gradient-to-br from-brand-teal to-brand-dark">
             {business.logo_url ? (
