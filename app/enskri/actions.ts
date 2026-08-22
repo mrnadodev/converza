@@ -6,6 +6,7 @@ import { hasSupabase } from "@/lib/data";
 export interface RegisterInput {
   businessName: string;
   businessType: string;
+  employeesCount: string;
   phone: string;
   fullName: string;
   email: string;
@@ -54,6 +55,7 @@ export async function registerMerchant(input: RegisterInput) {
       name: input.businessName.trim(),
       slug,
       business_type: input.businessType,
+      employees_count: input.employeesCount === "" ? null : parseInt(input.employeesCount, 10) || null,
       phone_e164: input.phone.trim() || null,
     })
     .select("id")

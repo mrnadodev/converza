@@ -19,6 +19,9 @@ export interface Business {
   cover_url: string | null;
   hours: string | null;
   business_type: string | null;
+  employees_count: number | null;
+  theme: string | null;
+  layout: string | null; // 'auto' | 'grid' | 'menu'
   social_instagram: string | null;
   social_facebook: string | null;
   social_tiktok: string | null;

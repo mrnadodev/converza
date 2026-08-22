@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ImageUpload } from "@/components/ImageUpload";
 import { VERTICALS } from "@/lib/verticals";
+import { THEMES } from "@/lib/themes";
 import { updateBusiness, type BusinessInput } from "@/app/reglaj/actions";
 import type { Business } from "@/lib/types";
 
@@ -16,6 +17,9 @@ export function SettingsForm({ business }: { business: Business }) {
   const [f, setF] = useState<BusinessInput>({
     name: business.name,
     business_type: business.business_type ?? "boutik",
+    employees_count: business.employees_count == null ? "" : String(business.employees_count),
+    theme: business.theme ?? "whatsapp",
+    layout: business.layout ?? "auto",
     phone_e164: business.phone_e164 ?? "",
     hours: business.hours ?? "",
     address: business.address ?? "",
@@ -70,10 +74,36 @@ export function SettingsForm({ business }: { business: Business }) {
               ))}
             </select>
           </Field>
-          <Field label="Nimewo WhatsApp"><input value={f.phone_e164} onChange={(e) => set({ phone_e164: e.target.value })} className={cls} placeholder="+509 3712 4488" /></Field>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Nimewo WhatsApp"><input value={f.phone_e164} onChange={(e) => set({ phone_e164: e.target.value })} className={cls} placeholder="+509 3712 4488" /></Field>
+            <Field label="Kantite anplwaye"><input value={f.employees_count} onChange={(e) => set({ employees_count: e.target.value })} inputMode="numeric" className={cls} placeholder="3" /></Field>
+          </div>
           <div className="grid grid-cols-2 gap-3">
             <Field label="Lè louvri"><input value={f.hours} onChange={(e) => set({ hours: e.target.value })} className={cls} placeholder="7am–7pm" /></Field>
             <Field label="Adrès"><input value={f.address} onChange={(e) => set({ address: e.target.value })} className={cls} placeholder="Delmas 31" /></Field>
+          </div>
+        </section>
+
+        {/* Apparence */}
+        <section className="flex flex-col gap-3.5 rounded-2xl bg-white p-4 shadow-[0_2px_10px_rgba(17,27,33,0.05)]">
+          <span className="text-[13px] font-bold text-ink-soft">Aparans vitrin lan</span>
+          <Field label="Tèm koulè">
+            <select value={f.theme} onChange={(e) => set({ theme: e.target.value })} className={cls}>
+              {Object.entries(THEMES).map(([k, t]) => <option key={k} value={k}>{t.label}</option>)}
+            </select>
+          </Field>
+          <Field label="Dispozisyon kat yo">
+            <select value={f.layout} onChange={(e) => set({ layout: e.target.value })} className={cls}>
+              <option value="auto">Otomatik (selon tip biznis)</option>
+              <option value="grid">Grille (kat ak foto)</option>
+              <option value="menu">Menu (lis tankou restoran)</option>
+            </select>
+          </Field>
+          {/* Aperçu du thème */}
+          <div className="flex gap-2">
+            {Object.entries(THEMES).map(([k, t]) => (
+              <button key={k} type="button" onClick={() => set({ theme: k })} className={`h-10 flex-1 rounded-lg ${f.theme === k ? "ring-2 ring-offset-2 ring-ink" : ""}`} style={{ background: t.accent }} aria-label={t.label} />
+            ))}
           </div>
         </section>
 

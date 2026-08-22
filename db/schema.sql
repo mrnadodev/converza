@@ -33,6 +33,9 @@ create table businesses (
   cover_url     text,                                 -- bannière de couverture (écran #0)
   hours         text,                                 -- ex: "7am–7pm"
   business_type text default 'boutik',                 -- secteur : supermarket, autoparts, restoran, boulanjri… (voir lib/verticals.ts)
+  employees_count integer,                             -- nb d'employés (info onboarding)
+  theme         text default 'whatsapp',               -- thème vitrine (voir lib/themes.ts)
+  layout        text default 'auto',                   -- disposition cartes : auto | grid | menu
   -- Réseaux sociaux : la vitrine sert de page d'atterrissage aux pubs
   -- TikTok/Instagram/Facebook, et renvoie le client vers la commande WhatsApp.
   social_instagram text,                              -- URL ou @handle

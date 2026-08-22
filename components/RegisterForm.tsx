@@ -14,6 +14,7 @@ export function RegisterForm() {
   const [f, setF] = useState<RegisterInput>({
     businessName: "",
     businessType: "boutik",
+    employeesCount: "",
     phone: "",
     fullName: "",
     email: "",
@@ -53,11 +54,16 @@ export function RegisterForm() {
 
         <div className="flex flex-col gap-4">
           <Field label="Non biznis lan"><input value={f.businessName} onChange={(e) => set({ businessName: e.target.value })} className={cls} placeholder="Ti Kòk Boutik" /></Field>
-          <Field label="Tip biznis">
-            <select value={f.businessType} onChange={(e) => set({ businessType: e.target.value })} className={cls}>
-              {Object.entries(VERTICALS).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
-            </select>
-          </Field>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Tip biznis">
+              <select value={f.businessType} onChange={(e) => set({ businessType: e.target.value })} className={cls}>
+                {Object.entries(VERTICALS).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+              </select>
+            </Field>
+            <Field label="Kantite anplwaye">
+              <input value={f.employeesCount} onChange={(e) => set({ employeesCount: e.target.value })} inputMode="numeric" className={cls} placeholder="3" />
+            </Field>
+          </div>
           <Field label="Nimewo WhatsApp"><input value={f.phone} onChange={(e) => set({ phone: e.target.value })} className={cls} placeholder="+509 3712 4488" /></Field>
           <Field label="Non ou"><input value={f.fullName} onChange={(e) => set({ fullName: e.target.value })} className={cls} placeholder="Nadège Pierre" /></Field>
           <div className="h-px bg-line" />

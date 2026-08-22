@@ -7,6 +7,9 @@ import { hasSupabase } from "@/lib/data";
 export interface BusinessInput {
   name: string;
   business_type: string;
+  employees_count: string;
+  theme: string;
+  layout: string;
   phone_e164: string;
   hours: string;
   address: string;
@@ -38,6 +41,9 @@ export async function updateBusiness(input: BusinessInput) {
     .update({
       name: input.name.trim(),
       business_type: input.business_type,
+      employees_count: input.employees_count === "" ? null : parseInt(input.employees_count, 10) || null,
+      theme: input.theme,
+      layout: input.layout,
       phone_e164: input.phone_e164.trim() || null,
       hours: input.hours.trim() || null,
       address: input.address.trim() || null,

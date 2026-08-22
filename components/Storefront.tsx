@@ -6,6 +6,7 @@ import { formatMoney } from "@/lib/money";
 import { waMeLink } from "@/lib/whatsapp";
 import { buildOrderMessage, type CartLine } from "@/lib/order";
 import { verticalOf } from "@/lib/verticals";
+import { themeOf } from "@/lib/themes";
 import type { Business, Product } from "@/lib/types";
 
 type View = "vitrine" | "full";
@@ -20,6 +21,7 @@ export function Storefront({
   view?: View;
 }) {
   const vertical = verticalOf(business.business_type);
+  const theme = themeOf(business.theme);
   const [cart, setCart] = useState<Record<string, number>>({});
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [zoneIdx, setZoneIdx] = useState(0);
@@ -100,7 +102,8 @@ export function Storefront({
     });
   }, [products, inStockOnly, sort, vertical.defaultCategories]);
 
-  const isMenu = vertical.layout === "menu";
+  const layout = business.layout && business.layout !== "auto" ? business.layout : vertical.layout;
+  const isMenu = layout === "menu";
 
   return (
     <div className="relative min-h-[100dvh] bg-white pb-28">
@@ -109,16 +112,12 @@ export function Storefront({
           {/* Cover */}
           <div
             className="relative h-[210px]"
-            style={{
-              background: business.cover_url
-                ? `center/cover url(${business.cover_url})`
-                : "radial-gradient(120% 90% at 80% -10%, #12B886 0%, transparent 55%), radial-gradient(120% 100% at 0% 120%, #075E54 0%, transparent 60%), linear-gradient(135deg, #008069 0%, #0B6B57 100%)",
-            }}
+            style={{ background: business.cover_url ? `center/cover url(${business.cover_url})` : theme.cover }}
           />
           {/* Logo */}
           <div className="relative z-10 -mt-14 flex justify-center">
             <div className="flex h-28 w-28 items-center justify-center rounded-[32px] bg-white shadow-[0_8px_24px_rgba(17,27,33,0.18)]">
-              <div className="flex h-[92px] w-[92px] items-center justify-center rounded-[26px] bg-gradient-to-br from-brand-teal to-brand-dark">
+              <div className="flex h-[92px] w-[92px] items-center justify-center rounded-[26px]" style={{ background: theme.cover }}>
                 {business.logo_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={business.logo_url} alt={business.name} className="h-full w-full rounded-[26px] object-cover" />
@@ -136,9 +135,9 @@ export function Storefront({
               {business.address ? ` · ${business.address}` : ""}
             </span>
             {business.hours && (
-              <div className="mt-1 flex items-center gap-1.5 rounded-full bg-[#E7F7F1] px-3 py-1.5">
+              <div className="mt-1 flex items-center gap-1.5 rounded-full px-3 py-1.5" style={{ background: theme.accentSoft }}>
                 <span className="h-2 w-2 rounded-full bg-brand-green" />
-                <span className="text-xs font-bold text-[#0B6B57]">Louvri · {business.hours}</span>
+                <span className="text-xs font-bold" style={{ color: theme.accentText }}>Louvri · {business.hours}</span>
               </div>
             )}
             {socialLinks(business).length > 0 && (
@@ -169,17 +168,18 @@ export function Storefront({
           <div className="px-4 pt-5">
             <Link
               href={`/b/${business.slug}/katalog`}
-              className="flex h-12 w-full items-center justify-center gap-2 rounded-2xl border border-brand/25 bg-[#E7F7F1] text-brand active:scale-[0.99]"
+              className="flex h-12 w-full items-center justify-center gap-2 rounded-2xl active:scale-[0.99]"
+              style={{ background: theme.accentSoft, color: theme.accentText }}
             >
               <span className="text-sm font-bold">Wè tout {vertical.catalogWord.toLowerCase()} la ({products.length})</span>
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#008069" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 6 6 6-6 6" /></svg>
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={theme.accentText} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 6 6 6-6 6" /></svg>
             </Link>
           </div>
         </>
       ) : (
         <>
           {/* Header compact (catalogue complet) */}
-          <header className="sticky top-0 z-10 flex flex-col gap-3 bg-brand px-4 pb-3 pt-5">
+          <header className="sticky top-0 z-10 flex flex-col gap-3 px-4 pb-3 pt-5" style={{ background: theme.accent }}>
             <div className="flex items-center gap-3">
               <Link href={`/b/${business.slug}`} aria-label="Retounen">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
