@@ -29,8 +29,19 @@ export function Storefront({ business, products }: { business: Business; product
   const count = lines.reduce((a, l) => a + l.qty, 0);
   const totalCents = lines.reduce((a, l) => a + Math.round(l.unitPriceCents * l.qty), 0);
 
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [zoneIdx, setZoneIdx] = useState(0);
+
+  // Pickup gratuit + zones configurées par le marchand.
+  const zones = [{ name: "Pran li nan boutik", fee_cents: 0 }, ...(business.delivery_zones ?? [])];
+  const zone = zones[zoneIdx] ?? zones[0];
+  const grandTotalCents = totalCents + zone.fee_cents;
+
   const message = count
-    ? buildOrderMessage(business.name, lines, business.default_currency)
+    ? buildOrderMessage(business.name, lines, {
+        currency: business.default_currency,
+        delivery: { name: zone.name, feeCents: zone.fee_cents },
+      })
     : `Bonjou ${business.name}! Mwen enterese nan pwodwi ou yo.`;
   const orderHref = waMeLink(business.phone_e164 ?? "", message);
 
@@ -147,18 +158,86 @@ export function Storefront({ business, products }: { business: Business; product
 
       {/* Sticky Kòmande */}
       <div className="fixed inset-x-0 bottom-0 z-20 mx-auto max-w-[480px] border-t border-line bg-white/95 px-4 pb-6 pt-3 backdrop-blur">
-        <a
-          href={orderHref}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex h-14 items-center justify-center gap-2.5 rounded-2xl bg-brand-green shadow-[0_6px_18px_rgba(37,211,102,0.45)] active:scale-[0.99]"
-        >
-          <WaIcon />
-          <span className="text-[16.5px] font-extrabold text-white">
-            {count ? `Kòmande ${count} atik · ${formatMoney(totalCents)}` : "Kòmande sou WhatsApp"}
-          </span>
-        </a>
+        {count ? (
+          <button
+            onClick={() => setCheckoutOpen(true)}
+            className="flex h-14 w-full items-center justify-center gap-2.5 rounded-2xl bg-brand-green shadow-[0_6px_18px_rgba(37,211,102,0.45)] active:scale-[0.99]"
+          >
+            <WaIcon />
+            <span className="text-[16.5px] font-extrabold text-white">
+              Kòmande {count} atik · {formatMoney(totalCents)}
+            </span>
+          </button>
+        ) : (
+          <a
+            href={orderHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex h-14 items-center justify-center gap-2.5 rounded-2xl bg-brand-green shadow-[0_6px_18px_rgba(37,211,102,0.45)] active:scale-[0.99]"
+          >
+            <WaIcon />
+            <span className="text-[16.5px] font-extrabold text-white">Kòmande sou WhatsApp</span>
+          </a>
+        )}
       </div>
+
+      {/* Feuille de commande (checkout) */}
+      {checkoutOpen && count > 0 && (
+        <div className="fixed inset-0 z-30 mx-auto flex max-w-[480px] flex-col justify-end">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setCheckoutOpen(false)} />
+          <div className="relative rounded-t-[24px] bg-white px-5 pb-8 pt-4">
+            <div className="mx-auto mb-3 h-1.5 w-10 rounded-full bg-line" />
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-extrabold">Ou kòmand</h2>
+              <button onClick={() => setCheckoutOpen(false)} className="text-sm font-semibold text-ink-muted">
+                Fèmen
+              </button>
+            </div>
+
+            <div className="mt-3 flex flex-col gap-2">
+              {lines.map((l, i) => (
+                <div key={i} className="flex items-center justify-between text-[13.5px]">
+                  <span className="text-ink-soft">
+                    {l.qty}× {l.name}
+                  </span>
+                  <span className="font-semibold">{formatMoney(Math.round(l.unitPriceCents * l.qty))}</span>
+                </div>
+              ))}
+            </div>
+
+            <label className="mt-4 flex flex-col gap-1.5">
+              <span className="text-[13px] font-semibold text-ink-soft">Kote pou livre?</span>
+              <select
+                value={zoneIdx}
+                onChange={(e) => setZoneIdx(Number(e.target.value))}
+                className="h-12 rounded-xl border border-line bg-[#F7F8F9] px-3 text-[15px] outline-none focus:border-brand"
+              >
+                {zones.map((z, i) => (
+                  <option key={i} value={i}>
+                    {z.name}
+                    {z.fee_cents > 0 ? ` — ${formatMoney(z.fee_cents)}` : " — gratis"}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <div className="mt-4 flex items-center justify-between border-t border-line pt-3">
+              <span className="text-[15px] font-extrabold">Total</span>
+              <span className="text-xl font-extrabold">{formatMoney(grandTotalCents)}</span>
+            </div>
+
+            <a
+              href={orderHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-4 flex h-14 items-center justify-center gap-2.5 rounded-2xl bg-brand-green shadow-[0_6px_18px_rgba(37,211,102,0.45)] active:scale-[0.99]"
+            >
+              <WaIcon />
+              <span className="text-[16px] font-extrabold text-white">Voye kòmand sou WhatsApp</span>
+            </a>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

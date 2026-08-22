@@ -15,22 +15,37 @@ export interface CartLine {
  *   • 2× Pen konplè — 310 HTG
  *   Total: 850 HTG
  */
+export interface DeliveryChoice {
+  name: string;
+  feeCents: number;
+}
+
 export function buildOrderMessage(
   businessName: string,
   lines: CartLine[],
-  currency: Currency = "HTG",
+  opts?: { delivery?: DeliveryChoice; currency?: Currency },
 ): string {
+  const currency = opts?.currency ?? "HTG";
   const rows = lines.map((l) => {
     const unit = l.unit ? ` (${l.unit})` : "";
     const lineTotal = formatMoney(Math.round(l.unitPriceCents * l.qty), currency);
     return `• ${l.qty}× ${l.name}${unit} — ${lineTotal}`;
   });
-  const totalCents = lines.reduce((a, l) => a + Math.round(l.unitPriceCents * l.qty), 0);
-  return [
-    `Bonjou ${businessName}! Mwen vle kòmande:`,
-    ...rows,
-    `Total: ${formatMoney(totalCents, currency)}`,
-  ].join("\n");
+  const subtotal = lines.reduce((a, l) => a + Math.round(l.unitPriceCents * l.qty), 0);
+  const parts = [`Bonjou ${businessName}! Mwen vle kòmande:`, ...rows];
+
+  let total = subtotal;
+  const d = opts?.delivery;
+  if (d) {
+    if (d.feeCents > 0) {
+      parts.push(`Livrezon (${d.name}): ${formatMoney(d.feeCents, currency)}`);
+      total += d.feeCents;
+    } else {
+      parts.push(`Livrezon: ${d.name}`);
+    }
+  }
+  parts.push(`Total: ${formatMoney(total, currency)}`);
+  return parts.join("\n");
 }
 
 /** Message de relance douce pour une dette (étape Follow-up). */

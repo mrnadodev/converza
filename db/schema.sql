@@ -37,6 +37,8 @@ create table businesses (
   social_instagram text,                              -- URL ou @handle
   social_facebook  text,
   social_tiktok    text,
+  -- Zones de livraison : [{ "name": "Delmas", "fee_cents": 5000 }, ...]
+  delivery_zones   jsonb not null default '[]'::jsonb,
   default_currency currency_code not null default 'HTG',
   created_at    timestamptz not null default now()
 );

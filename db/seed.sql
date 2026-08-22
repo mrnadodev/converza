@@ -6,11 +6,13 @@
 
 -- Business ------------------------------------------------------
 insert into businesses (id, name, slug, category, address, phone_e164, hours,
-                        social_instagram, social_facebook, social_tiktok, default_currency)
+                        social_instagram, social_facebook, social_tiktok, delivery_zones, default_currency)
 values ('11111111-1111-1111-1111-111111111111', 'Ti Kòk Boutik', 'ti-kok-boutik',
         'Boutik alimantè', 'Delmas 31, Pòtoprens', '+50937124488', '7am–7pm',
         'https://instagram.com/tikokboutik', 'https://facebook.com/tikokboutik',
-        'https://tiktok.com/@tikokboutik', 'HTG')
+        'https://tiktok.com/@tikokboutik',
+        '[{"name":"Delmas","fee_cents":5000},{"name":"Petyonvil","fee_cents":10000},{"name":"Tabarre","fee_cents":7500}]'::jsonb,
+        'HTG')
 on conflict (id) do nothing;
 
 -- Membre (owner) ------------------------------------------------

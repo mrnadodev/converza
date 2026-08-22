@@ -21,7 +21,14 @@ export interface Business {
   social_instagram: string | null;
   social_facebook: string | null;
   social_tiktok: string | null;
+  delivery_zones: DeliveryZone[];
   default_currency: Currency;
+}
+
+// Zone de livraison configurée par le marchand (nom + frais).
+export interface DeliveryZone {
+  name: string;
+  fee_cents: number;
 }
 
 export interface Customer {

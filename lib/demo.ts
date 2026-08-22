@@ -17,6 +17,11 @@ export const demoBusiness: Business = {
   social_instagram: "https://instagram.com/tikokboutik",
   social_facebook: "https://facebook.com/tikokboutik",
   social_tiktok: "https://tiktok.com/@tikokboutik",
+  delivery_zones: [
+    { name: "Delmas", fee_cents: 5000 },
+    { name: "Petyonvil", fee_cents: 10000 },
+    { name: "Tabarre", fee_cents: 7500 },
+  ],
   default_currency: "HTG",
 };
 
