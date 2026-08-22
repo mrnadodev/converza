@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { formatMoney } from "@/lib/money";
 import { waMeLink } from "@/lib/whatsapp";
@@ -52,12 +52,20 @@ export function Storefront({
   const zone = zones[zoneIdx] ?? zones[0];
   const grandTotalCents = totalCents + zone.fee_cents;
 
-  const message = count
+  // Attribution pub (UTM) : source lue dans l'URL, ajoutée au message.
+  const [source, setSource] = useState<string | null>(null);
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search);
+    setSource(p.get("utm_source") || p.get("utm") || p.get("source"));
+  }, []);
+
+  const baseMessage = count
     ? buildOrderMessage(business.name, lines, {
         currency: business.default_currency,
         delivery: { name: zone.name, feeCents: zone.fee_cents },
       })
     : `Bonjou ${business.name}! Mwen enterese nan pwodwi ou yo.`;
+  const message = source ? `${baseMessage}\n(Sòs: ${source})` : baseMessage;
   const orderHref = waMeLink(business.phone_e164 ?? "", message);
 
   // Best-sellers (4 en avant sur la vitrine)
