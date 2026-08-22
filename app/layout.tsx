@@ -9,8 +9,8 @@ export const metadata: Metadata = {
   manifest: "/manifest.webmanifest",
   applicationName: "CONVERZA",
   icons: {
-    icon: [{ url: "/icon.svg", type: "image/svg+xml" }, { url: "/icon-192.png", sizes: "192x192" }],
-    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
+    icon: [{ url: "/cvz-icon.svg", type: "image/svg+xml" }, { url: "/cvz-icon-192.png", sizes: "192x192" }],
+    apple: [{ url: "/cvz-apple.png", sizes: "180x180" }],
   },
   appleWebApp: {
     capable: true,

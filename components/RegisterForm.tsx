@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { VERTICALS } from "@/lib/verticals";
+import { CvzMark } from "@/components/CvzMark";
 import { registerMerchant, type RegisterInput } from "@/app/enskri/actions";
 
 export function RegisterForm() {
@@ -41,11 +42,9 @@ export function RegisterForm() {
   return (
     <div className="flex min-h-[100dvh] flex-col bg-chat-bg md:mx-auto md:my-10 md:min-h-0 md:max-w-[440px] md:overflow-hidden md:rounded-3xl md:shadow-xl">
       <div className="flex flex-col items-center gap-3 bg-brand px-6 pb-10 pt-14">
-        <div className="flex h-16 w-16 items-center justify-center rounded-[20px] bg-white shadow-lg">
-          <Rooster />
-        </div>
+        <CvzMark size={60} />
         <span className="text-xl font-extrabold tracking-tight text-white">Kreye biznis ou</span>
-        <span className="text-[13px] text-[#B9F5E4]">Kòmanse vann sou WhatsApp ak CONVERZA</span>
+        <span className="text-[13px] text-[#B9F5E4]">Turn conversations into customers</span>
       </div>
 
       <div className="-mt-6 flex-1 rounded-t-[28px] bg-white px-6 pb-10 pt-7">
@@ -92,15 +91,5 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
       <span className="text-[13px] font-semibold text-ink-soft">{label}</span>
       {children}
     </label>
-  );
-}
-
-function Rooster() {
-  return (
-    <svg width="42" height="42" viewBox="0 0 64 64" fill="none">
-      <circle cx="34" cy="13" r="4.5" fill="#FFD34E" /><circle cx="41" cy="11" r="4" fill="#FFD34E" /><circle cx="47" cy="14" r="3.5" fill="#FFD34E" />
-      <path d="M44 20a10 10 0 0 1 3 7c6 1 11 6 11 14 0 9-8 15-18 15-11 0-19-6-19-16 0-6 3-11 8-13-1-4 0-9 4-12 3-2 8-2 11 5z" fill="#075E54" />
-      <path d="M51 22l9 1-8 5z" fill="#FF8C42" /><path d="M50 28c0 4-2 6-4 6s-2-4 0-6 4-2 4 0z" fill="#FF6B6B" /><circle cx="45" cy="22" r="2.4" fill="#FFFFFF" />
-    </svg>
   );
 }
