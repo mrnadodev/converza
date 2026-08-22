@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { moveOrderStatus } from "@/app/komand/actions";
 import { formatMoney } from "@/lib/money";
 import { waMeLink } from "@/lib/whatsapp";
-import { buildDebtReminder } from "@/lib/order";
+import { buildDebtReminder, buildStatusMessage, statusMessageLabel } from "@/lib/order";
 import { PIPELINE_COLUMNS, ORDER_STATUS_LABEL, type OrderStatus, type PipelineCard } from "@/lib/types";
 
 // Dégradé de verts : chaque étape du pipeline a son propre ton, du clair au profond.
@@ -16,7 +16,13 @@ const DOT: Record<OrderStatus, string> = {
   anile: "#8696A0",
 };
 
-export function PipelineBoard({ initial }: { initial: PipelineCard[] }) {
+export function PipelineBoard({
+  initial,
+  businessName,
+}: {
+  initial: PipelineCard[];
+  businessName: string;
+}) {
   const [cards, setCards] = useState<PipelineCard[]>(initial);
   const [, startTransition] = useTransition();
 
@@ -50,6 +56,15 @@ export function PipelineBoard({ initial }: { initial: PipelineCard[] }) {
                 card.phone_e164,
                 buildDebtReminder(card.customerName, card.owedCents),
               );
+              const msgHref = waMeLink(
+                card.phone_e164,
+                buildStatusMessage(card.status, {
+                  business: businessName,
+                  name: card.customerName,
+                  ref: card.ref,
+                  totalCents: card.totalCents,
+                }),
+              );
               const canAdvance = PIPELINE_COLUMNS.indexOf(card.status) < PIPELINE_COLUMNS.length - 1;
               return (
                 <div
@@ -82,26 +97,29 @@ export function PipelineBoard({ initial }: { initial: PipelineCard[] }) {
                     </div>
                   )}
 
-                  {owed ? (
-                    <a
-                      href={relanceHref}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-0.5 flex h-9 items-center justify-center gap-1.5 rounded-[9px] bg-brand-green"
-                    >
-                      <WaIcon />
-                      <span className="text-[12.5px] font-bold text-white">Relanse sou WhatsApp</span>
-                    </a>
-                  ) : canAdvance ? (
+                  {/* Message WhatsApp 1 clic (relance si dette, sinon message d'étape) */}
+                  <a
+                    href={owed ? relanceHref : msgHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-0.5 flex h-9 items-center justify-center gap-1.5 rounded-[9px] bg-brand-green"
+                  >
+                    <WaIcon />
+                    <span className="text-[12.5px] font-bold text-white">
+                      {owed ? "Relanse pou dèt" : statusMessageLabel(card.status)}
+                    </span>
+                  </a>
+
+                  {canAdvance && (
                     <button
                       onClick={() => advance(card)}
-                      className="mt-0.5 flex h-9 items-center justify-center gap-1.5 rounded-[9px] bg-[#E7F7F1] text-brand active:scale-[0.98]"
+                      className="flex h-9 items-center justify-center gap-1.5 rounded-[9px] bg-[#E7F7F1] text-brand active:scale-[0.98]"
                     >
                       <span className="text-[12.5px] font-bold">
                         Deplase → {ORDER_STATUS_LABEL[PIPELINE_COLUMNS[PIPELINE_COLUMNS.indexOf(card.status) + 1]]}
                       </span>
                     </button>
-                  ) : null}
+                  )}
                 </div>
               );
             })}

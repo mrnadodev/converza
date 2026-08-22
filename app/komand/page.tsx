@@ -1,10 +1,10 @@
 import { BottomNav } from "@/components/BottomNav";
 import { PipelineBoard } from "@/components/PipelineBoard";
-import { getPipeline } from "@/lib/data";
+import { getPipeline, getMyBusiness } from "@/lib/data";
 
 // Écran Kòmand — Vue Pipeline (Kanban).
 export default async function KomandPage() {
-  const cards = await getPipeline();
+  const [cards, business] = await Promise.all([getPipeline(), getMyBusiness()]);
 
   return (
     <div className="relative flex min-h-[100dvh] flex-col bg-[#F0F2F3]">
@@ -18,7 +18,7 @@ export default async function KomandPage() {
         </div>
       </header>
 
-      <PipelineBoard initial={cards} />
+      <PipelineBoard initial={cards} businessName={business.name} />
 
       <BottomNav active="komand" />
     </div>

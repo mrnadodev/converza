@@ -57,3 +57,36 @@ export function buildDebtReminder(customerName: string, owedCents: number, curre
 export function buildReorderNudge(customerName: string): string {
   return `Bonjou ${customerName}! Sa gen kèk tan nou pa wè w. Nou fèk resevwa nouvo pwodwi fre. Èske w bezwen nou prepare kòmand abityèl ou an?`;
 }
+
+// Messages automatiques (1 clic) selon l'étape du pipeline.
+export function buildStatusMessage(
+  status: string,
+  opts: { business: string; name: string; ref: string; totalCents: number; currency?: Currency },
+): string {
+  const { business, name, ref, totalCents } = opts;
+  const total = formatMoney(totalCents, opts.currency ?? "HTG");
+  switch (status) {
+    case "pou_konfime":
+      return `Bonjou ${name} 👋\nNou resevwa kòmand ou #${ref}.\nTotal: ${total}.\nN ap konfime livrezon an byento.\n— ${business}`;
+    case "peye":
+      return `✅ Nou resevwa peman an.\nKòmand #${ref} konfime. Mèsi ${name}!\n— ${business}`;
+    case "livre":
+      return `🚚 Bonjou ${name}, kòmand #${ref} ou an sou wout!\n— ${business}`;
+    case "swivi":
+      return `Bonjou ${name} 👋 Nou t ap tcheke si ou toujou enterese nan sa ou te mande a. Nou la pou ede w!\n— ${business}`;
+    default:
+      return `Bonjou ${name}! — ${business}`;
+  }
+}
+
+// Libellé du bouton d'envoi selon l'étape.
+export function statusMessageLabel(status: string): string {
+  return (
+    {
+      pou_konfime: "Voye konfimasyon",
+      peye: "Voye resi peman",
+      livre: "Voye « sou wout »",
+      swivi: "Voye relans",
+    }[status] ?? "Voye mesaj"
+  );
+}
