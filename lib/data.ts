@@ -189,6 +189,16 @@ async function myBusinessId(
   return data?.business_id ?? null;
 }
 
+// Business du marchand connecté (pour l'espace d'édition).
+export async function getMyBusiness(): Promise<Business> {
+  if (!hasSupabase()) return demoBusiness;
+  const sb = createClient();
+  const bid = await myBusinessId(sb);
+  if (!bid) return demoBusiness;
+  const { data } = await sb.from("businesses").select("*").eq("id", bid).single();
+  return (data ?? demoBusiness) as Business;
+}
+
 // --- Katalòg (produits du marchand) ---
 export async function getCatalog(): Promise<Product[]> {
   if (!hasSupabase()) return demoProducts;
