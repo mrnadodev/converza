@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { BottomNav } from "@/components/BottomNav";
+import { ImageUpload } from "@/components/ImageUpload";
 import { formatMoney } from "@/lib/money";
 import { verticalOf } from "@/lib/verticals";
 import { saveProduct, deleteProduct, type ProductInput } from "@/app/katalog/actions";
@@ -22,6 +23,7 @@ const EMPTY = (currency: "HTG" | "USD"): ProductInput => ({
   unit: "",
   stockQty: "",
   stockState: "en_stok",
+  photoUrl: null,
   isActive: true,
 });
 
@@ -47,6 +49,7 @@ export function CatalogManager({ business, initial }: { business: Business; init
       unit: p.unit ?? "",
       stockQty: p.stock_qty == null ? "" : String(p.stock_qty),
       stockState: p.stock_state,
+      photoUrl: p.photo_url,
       isActive: p.is_active,
     });
   }
@@ -135,6 +138,10 @@ export function CatalogManager({ business, initial }: { business: Business; init
             {error && <div className="mt-3 rounded-xl bg-[#FCE4E4] px-3 py-2 text-[13px] text-[#C0392B]">{error}</div>}
 
             <div className="mt-4 flex flex-col gap-3.5">
+              <Field label="Foto pwodwi">
+                <ImageUpload value={form.photoUrl} folder="products" onChange={(url) => set({ photoUrl: url })} label="Ajoute foto" />
+              </Field>
+
               <Field label="Non pwodwi">
                 <input value={form.name} onChange={(e) => set({ name: e.target.value })} className={inputCls} placeholder="Ze fre" />
               </Field>

@@ -1,0 +1,108 @@
+"use client";
+
+import { useState, useTransition } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { ImageUpload } from "@/components/ImageUpload";
+import { VERTICALS } from "@/lib/verticals";
+import { updateBusiness, type BusinessInput } from "@/app/reglaj/actions";
+import type { Business } from "@/lib/types";
+
+export function SettingsForm({ business }: { business: Business }) {
+  const router = useRouter();
+  const [pending, start] = useTransition();
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [f, setF] = useState<BusinessInput>({
+    name: business.name,
+    business_type: business.business_type ?? "boutik",
+    phone_e164: business.phone_e164 ?? "",
+    hours: business.hours ?? "",
+    address: business.address ?? "",
+    logo_url: business.logo_url,
+    cover_url: business.cover_url,
+    social_instagram: business.social_instagram ?? "",
+    social_facebook: business.social_facebook ?? "",
+    social_tiktok: business.social_tiktok ?? "",
+  });
+  const set = (patch: Partial<BusinessInput>) => setF((s) => ({ ...s, ...patch }));
+
+  function submit() {
+    setError(null);
+    setSaved(false);
+    start(async () => {
+      const res = await updateBusiness(f);
+      if (res.ok) {
+        setSaved(true);
+        router.refresh();
+      } else {
+        setError(res.error ?? "Erè");
+      }
+    });
+  }
+
+  return (
+    <div className="min-h-[100dvh] bg-[#F7F8F9] pb-16">
+      <header className="flex items-center gap-3 bg-brand px-4 pb-4 pt-5">
+        <Link href="/" aria-label="Retounen">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
+        </Link>
+        <span className="text-[19px] font-extrabold text-white">Reglaj biznis</span>
+      </header>
+
+      <div className="flex flex-col gap-5 px-4 pt-5">
+        {/* Bannière + logo */}
+        <section className="flex flex-col gap-3 rounded-2xl bg-white p-4 shadow-[0_2px_10px_rgba(17,27,33,0.05)]">
+          <span className="text-[13px] font-bold text-ink-soft">Kouvèti (banner)</span>
+          <ImageUpload value={f.cover_url} folder="covers" shape="wide" label="Ajoute banner" onChange={(url) => set({ cover_url: url })} />
+          <div className="h-px bg-line" />
+          <span className="text-[13px] font-bold text-ink-soft">Logo</span>
+          <ImageUpload value={f.logo_url} folder="logos" shape="square" label="Ajoute logo" onChange={(url) => set({ logo_url: url })} />
+        </section>
+
+        {/* Infos */}
+        <section className="flex flex-col gap-3.5 rounded-2xl bg-white p-4 shadow-[0_2px_10px_rgba(17,27,33,0.05)]">
+          <Field label="Non biznis"><input value={f.name} onChange={(e) => set({ name: e.target.value })} className={cls} /></Field>
+          <Field label="Tip biznis">
+            <select value={f.business_type} onChange={(e) => set({ business_type: e.target.value })} className={cls}>
+              {Object.entries(VERTICALS).map(([key, v]) => (
+                <option key={key} value={key}>{v.label}</option>
+              ))}
+            </select>
+          </Field>
+          <Field label="Nimewo WhatsApp"><input value={f.phone_e164} onChange={(e) => set({ phone_e164: e.target.value })} className={cls} placeholder="+509 3712 4488" /></Field>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Lè louvri"><input value={f.hours} onChange={(e) => set({ hours: e.target.value })} className={cls} placeholder="7am–7pm" /></Field>
+            <Field label="Adrès"><input value={f.address} onChange={(e) => set({ address: e.target.value })} className={cls} placeholder="Delmas 31" /></Field>
+          </div>
+        </section>
+
+        {/* Réseaux sociaux */}
+        <section className="flex flex-col gap-3.5 rounded-2xl bg-white p-4 shadow-[0_2px_10px_rgba(17,27,33,0.05)]">
+          <span className="text-[13px] font-bold text-ink-soft">Rezo sosyal</span>
+          <Field label="Instagram"><input value={f.social_instagram} onChange={(e) => set({ social_instagram: e.target.value })} className={cls} placeholder="https://instagram.com/…" /></Field>
+          <Field label="Facebook"><input value={f.social_facebook} onChange={(e) => set({ social_facebook: e.target.value })} className={cls} placeholder="https://facebook.com/…" /></Field>
+          <Field label="TikTok"><input value={f.social_tiktok} onChange={(e) => set({ social_tiktok: e.target.value })} className={cls} placeholder="https://tiktok.com/@…" /></Field>
+        </section>
+
+        {error && <div className="rounded-xl bg-[#FCE4E4] px-3 py-2 text-[13px] text-[#C0392B]">{error}</div>}
+        {saved && <div className="rounded-xl bg-[#E7F7F1] px-3 py-2 text-[13px] font-semibold text-brand">Sove ✓</div>}
+
+        <button onClick={submit} disabled={pending} className="flex h-[52px] items-center justify-center rounded-2xl bg-brand-green text-base font-extrabold text-white shadow-[0_6px_16px_rgba(37,211,102,0.4)] active:scale-[0.99] disabled:opacity-60">
+          {pending ? "N ap sove…" : "Sove chanjman"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+const cls = "h-12 w-full rounded-xl border border-line bg-[#F7F8F9] px-3 text-[15px] outline-none focus:border-brand focus:bg-white";
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <label className="flex flex-col gap-1.5">
+      <span className="text-[13px] font-semibold text-ink-soft">{label}</span>
+      {children}
+    </label>
+  );
+}

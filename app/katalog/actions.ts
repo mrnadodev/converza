@@ -15,6 +15,7 @@ export interface ProductInput {
   unit: string;
   stockQty: string;
   stockState: StockState;
+  photoUrl: string | null;
   isActive: boolean;
 }
 
@@ -48,6 +49,7 @@ export async function saveProduct(input: ProductInput) {
     unit: input.unit.trim() || null,
     stock_qty: input.stockQty === "" ? null : Math.max(0, parseInt(input.stockQty, 10) || 0),
     stock_state: input.stockState,
+    photo_url: input.photoUrl,
     is_active: input.isActive,
   };
 
