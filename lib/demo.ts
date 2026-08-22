@@ -14,6 +14,7 @@ export const demoBusiness: Business = {
   logo_url: null,
   cover_url: null,
   hours: "7am–7pm",
+  business_type: "boutik",
   social_instagram: "https://instagram.com/tikokboutik",
   social_facebook: "https://facebook.com/tikokboutik",
   social_tiktok: "https://tiktok.com/@tikokboutik",
@@ -53,8 +54,11 @@ export const demoPipeline: PipelineCard[] = [
 ];
 
 export const demoProducts: Product[] = [
-  { id: "p1", business_id: "biz-demo", name: "Ze fre", category: "Manje", price_cents: 18000, currency: "HTG", unit: "douzèn", stock_qty: 42, stock_state: "en_stok", photo_url: null, is_active: true },
-  { id: "p2", business_id: "biz-demo", name: "Diri Tchako", category: "Manje", price_cents: 120000, currency: "HTG", unit: "sak", stock_qty: 8, stock_state: "en_stok", photo_url: null, is_active: true },
-  { id: "p3", business_id: "biz-demo", name: "Pen konplè", category: "Manje", price_cents: 15500, currency: "HTG", unit: "inite", stock_qty: 3, stock_state: "ba_stok", photo_url: null, is_active: true },
-  { id: "p4", business_id: "biz-demo", name: "Lwil", category: "Manje", price_cents: 32000, currency: "HTG", unit: "boutèy", stock_qty: 20, stock_state: "en_stok", photo_url: null, is_active: true },
+  { id: "p1", business_id: "biz-demo", name: "Ze fre", category: "Manje", price_cents: 18000, currency: "HTG", unit: "douzèn", stock_qty: 42, stock_state: "en_stok", photo_url: null, sold_count: 48, is_active: true },
+  { id: "p2", business_id: "biz-demo", name: "Diri Tchako", category: "Grenn", price_cents: 120000, currency: "HTG", unit: "sak", stock_qty: 8, stock_state: "en_stok", photo_url: null, sold_count: 12, is_active: true },
+  { id: "p3", business_id: "biz-demo", name: "Pen konplè", category: "Boulanjri", price_cents: 15500, currency: "HTG", unit: "inite", stock_qty: 3, stock_state: "ba_stok", photo_url: null, sold_count: 31, is_active: true },
+  { id: "p4", business_id: "biz-demo", name: "Lwil", category: "Manje", price_cents: 32000, currency: "HTG", unit: "boutèy", stock_qty: 20, stock_state: "en_stok", photo_url: null, sold_count: 22, is_active: true },
+  { id: "p5", business_id: "biz-demo", name: "Sik", category: "Manje", price_cents: 9000, currency: "HTG", unit: "liv", stock_qty: 30, stock_state: "en_stok", photo_url: null, sold_count: 18, is_active: true },
+  { id: "p6", business_id: "biz-demo", name: "Kola", category: "Bwason", price_cents: 5000, currency: "HTG", unit: "boutèy", stock_qty: 60, stock_state: "en_stok", photo_url: null, sold_count: 27, is_active: true },
+  { id: "p7", business_id: "biz-demo", name: "Dlo", category: "Bwason", price_cents: 2500, currency: "HTG", unit: "galon", stock_qty: 0, stock_state: "fini", photo_url: null, sold_count: 40, is_active: true },
 ];

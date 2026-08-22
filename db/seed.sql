@@ -5,10 +5,10 @@
 -- ============================================================
 
 -- Business ------------------------------------------------------
-insert into businesses (id, name, slug, category, address, phone_e164, hours,
+insert into businesses (id, name, slug, category, address, phone_e164, hours, business_type,
                         social_instagram, social_facebook, social_tiktok, delivery_zones, default_currency)
 values ('11111111-1111-1111-1111-111111111111', 'Ti Kòk Boutik', 'ti-kok-boutik',
-        'Boutik alimantè', 'Delmas 31, Pòtoprens', '+50937124488', '7am–7pm',
+        'Boutik alimantè', 'Delmas 31, Pòtoprens', '+50937124488', '7am–7pm', 'boutik',
         'https://instagram.com/tikokboutik', 'https://facebook.com/tikokboutik',
         'https://tiktok.com/@tikokboutik',
         '[{"name":"Delmas","fee_cents":5000},{"name":"Petyonvil","fee_cents":10000},{"name":"Tabarre","fee_cents":7500}]'::jsonb,
@@ -31,11 +31,11 @@ insert into customers (id, business_id, full_name, phone_e164, address, tags) va
 on conflict (id) do nothing;
 
 -- Produits (pwodwi) — prix en centimes ---------------------------
-insert into products (id, business_id, name, category, price_cents, unit, stock_qty, stock_state) values
- ('a1000000-0000-0000-0000-000000000001', '11111111-1111-1111-1111-111111111111', 'Ze fre',      'Manje', 18000,  'douzèn', 42, 'en_stok'),
- ('a1000000-0000-0000-0000-000000000002', '11111111-1111-1111-1111-111111111111', 'Diri Tchako', 'Manje', 120000, 'sak',     8, 'en_stok'),
- ('a1000000-0000-0000-0000-000000000003', '11111111-1111-1111-1111-111111111111', 'Pen konplè',  'Manje', 15500,  'inite',   3, 'ba_stok'),
- ('a1000000-0000-0000-0000-000000000004', '11111111-1111-1111-1111-111111111111', 'Lwil',        'Manje', 32000,  'boutèy', 20, 'en_stok')
+insert into products (id, business_id, name, category, price_cents, unit, stock_qty, stock_state, sold_count) values
+ ('a1000000-0000-0000-0000-000000000001', '11111111-1111-1111-1111-111111111111', 'Ze fre',      'Manje',     18000,  'douzèn', 42, 'en_stok', 48),
+ ('a1000000-0000-0000-0000-000000000002', '11111111-1111-1111-1111-111111111111', 'Diri Tchako', 'Grenn',     120000, 'sak',     8, 'en_stok', 12),
+ ('a1000000-0000-0000-0000-000000000003', '11111111-1111-1111-1111-111111111111', 'Pen konplè',  'Boulanjri', 15500,  'inite',   3, 'ba_stok', 31),
+ ('a1000000-0000-0000-0000-000000000004', '11111111-1111-1111-1111-111111111111', 'Lwil',        'Manje',     32000,  'boutèy', 20, 'en_stok', 22)
 on conflict (id) do nothing;
 
 -- Réponses rapides (repons rapid) -------------------------------

@@ -32,6 +32,7 @@ create table businesses (
   logo_url      text,                                 -- Supabase Storage
   cover_url     text,                                 -- bannière de couverture (écran #0)
   hours         text,                                 -- ex: "7am–7pm"
+  business_type text default 'boutik',                 -- secteur : supermarket, autoparts, restoran, boulanjri… (voir lib/verticals.ts)
   -- Réseaux sociaux : la vitrine sert de page d'atterrissage aux pubs
   -- TikTok/Instagram/Facebook, et renvoie le client vers la commande WhatsApp.
   social_instagram text,                              -- URL ou @handle
@@ -90,6 +91,7 @@ create table products (
   stock_qty     integer,                              -- null = non suivi
   stock_state   stock_state not null default 'en_stok',
   photo_url     text,
+  sold_count    integer not null default 0,           -- nb d'unités vendues (best-sellers)
   is_active     boolean not null default true,
   created_at    timestamptz not null default now()
 );
@@ -145,6 +147,12 @@ create or replace function order_total_cents(p_order uuid)
 returns bigint language sql stable as $$
   select coalesce((select sum(round(unit_price_cents * qty)) from order_items where order_id = p_order), 0)
        + coalesce((select delivery_fee_cents from orders where id = p_order), 0);
+$$;
+
+-- Incrémente le compteur de ventes d'un produit (best-sellers).
+create or replace function increment_product_sold(p_product uuid, p_qty numeric)
+returns void language sql as $$
+  update products set sold_count = sold_count + p_qty::int where id = p_product;
 $$;
 
 -- Reste dû (dette) d'une commande = total - déjà payé.

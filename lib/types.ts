@@ -18,6 +18,7 @@ export interface Business {
   logo_url: string | null;
   cover_url: string | null;
   hours: string | null;
+  business_type: string | null;
   social_instagram: string | null;
   social_facebook: string | null;
   social_tiktok: string | null;
@@ -53,6 +54,7 @@ export interface Product {
   stock_qty: number | null;
   stock_state: StockState;
   photo_url: string | null;
+  sold_count: number;
   is_active: boolean;
 }
 
