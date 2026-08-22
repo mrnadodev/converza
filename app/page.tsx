@@ -1,13 +1,23 @@
+import { redirect } from "next/navigation";
 import { BottomNav } from "@/components/BottomNav";
 import { ShareStorefront } from "@/components/ShareStorefront";
-import { getDashboard } from "@/lib/data";
+import { getDashboard, hasSupabase } from "@/lib/data";
 import { formatMoney } from "@/lib/money";
+import { createClient } from "@/lib/supabase/server";
+import { isAdminEmail } from "@/lib/admin";
 import { signOut } from "./login/actions";
 
 // Écran #1 — Tablo debò (dashboard).
-// Les données passent par getDashboard() : démo tant que Supabase n'est pas
-// configuré, sinon requêtes réelles.
 export default async function TabloPage() {
+  // Un super-admin de la plateforme n'a pas de business : on l'envoie sur /admin.
+  if (hasSupabase()) {
+    const sb = createClient();
+    const {
+      data: { user },
+    } = await sb.auth.getUser();
+    if (isAdminEmail(user?.email)) redirect("/admin");
+  }
+
   const { business: demoBusiness, stats: demoStats, topCustomers: demoTopCustomers, funnel } =
     await getDashboard();
   const maxBar = Math.max(...demoStats.weekBars) || 1;

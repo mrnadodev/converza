@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { formatMoney } from "@/lib/money";
 import { activatePlan, rejectPayment } from "@/app/admin/actions";
+import { signOut } from "@/app/login/actions";
 
 interface Payment {
   id: string;
@@ -51,9 +52,14 @@ export function AdminPanel({ payments, businesses }: { payments: Payment[]; busi
 
   return (
     <div className="min-h-[100dvh] bg-[#F7F8F9] pb-16">
-      <header className="bg-[#0E1B17] px-4 pb-4 pt-6">
-        <span className="text-[19px] font-extrabold text-white">Admin CONVERZA</span>
-        <p className="text-[12px] text-white/60">Super-admin · jesyon abònman ak marchan</p>
+      <header className="flex items-center justify-between bg-[#0E1B17] px-4 pb-4 pt-6">
+        <div>
+          <span className="text-[19px] font-extrabold text-white">Admin CONVERZA</span>
+          <p className="text-[12px] text-white/60">Super-admin · jesyon abònman ak marchan</p>
+        </div>
+        <form action={signOut}>
+          <button type="submit" className="rounded-lg bg-white/10 px-3 py-2 text-[12.5px] font-semibold text-white active:scale-95">Dekonekte</button>
+        </form>
       </header>
 
       {/* Paiements en attente */}
