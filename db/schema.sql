@@ -13,9 +13,18 @@ create extension if not exists "pgcrypto";      -- gen_random_uuid()
 create type member_role   as enum ('owner', 'agent');
 -- Cycle de vie de la commande = pipeline de vente :
 -- à confirmer -> payé -> livré -> suivi (relance/fidélisation) ; annulé en sortie.
-create type order_status  as enum ('pou_konfime', 'peye', 'livre', 'swivi', 'anile');
+-- Les 7 colonnes du Kanban + les deux libellés historiques (pou_konfime/peye)
+-- conservés pour les bases existantes.
+create type order_status  as enum (
+  'demand_acha', 'kontak', 'metod_peman', 'konfime_peman', 'sou_wout',
+  'livre', 'swivi', 'anile', 'pou_konfime', 'peye'
+);
 create type followup_kind as enum ('det', 'rekomand', 'satisfaksyon'); -- dette / re-commande / satisfaction
-create type pay_method    as enum ('moncash', 'natcash', 'kach', 'lot');     -- kach = cash, lot = autre
+create type pay_method    as enum (
+  'moncash', 'natcash', 'kach', 'lot',                    -- kach = cash, lot = autre
+  'crypto_usdt', 'zelle', 'banque_locale',
+  'unibank_htg', 'unibank_usd', 'buh_htg', 'buh_usd', 'sogebank_htg', 'sogebank_usd'
+);
 create type currency_code as enum ('HTG', 'USD');
 create type stock_state   as enum ('en_stok', 'ba_stok', 'fini');            -- en stock / stock bas / épuisé
 
@@ -59,6 +68,10 @@ create table members (
   user_id       uuid not null references auth.users(id) on delete cascade,
   full_name     text not null,
   role          member_role not null default 'agent',
+  -- Profil métier, qui décide des colonnes du pipeline et des écrans
+  -- accessibles (voir lib/rbac.ts et les rôles par secteur de lib/verticals.ts).
+  agent_profile text check (agent_profile is null or agent_profile in
+                  ('marie', 'jean', 'pierre', 'florence', 'steeve', 'gerant')),
   created_at    timestamptz not null default now(),
   unique (user_id)
 );
@@ -94,8 +107,10 @@ create table products (
   currency      currency_code not null default 'HTG',
   unit          text,                                 -- ex: "douzèn", "sak", "boutèy"
   stock_qty     integer,                              -- null = non suivi
+  stock_threshold integer default 5,                  -- seuil d'alerte rupture pour l'IA
   stock_state   stock_state not null default 'en_stok',
   photo_url     text,
+  photos        text[] not null default '{}',         -- galerie jusqu'à 5 photos
   sold_count    integer not null default 0,           -- nb d'unités vendues (best-sellers)
   is_active     boolean not null default true,
   created_at    timestamptz not null default now()
@@ -110,7 +125,8 @@ create table orders (
   business_id   uuid not null references businesses(id) on delete cascade,
   ref           text not null,                        -- ex: "0142", unique par business
   customer_id   uuid references customers(id) on delete set null,
-  status        order_status not null default 'pou_konfime',
+  status        order_status not null default 'demand_acha',
+  security_code text,                                 -- code livraison 4 chiffres, tiré au hasard à la création
   currency      currency_code not null default 'HTG',
   delivery_fee_cents bigint not null default 0,
   amount_paid_cents  bigint not null default 0,       -- vente à crédit : reste dû = total - payé
@@ -119,6 +135,7 @@ create table orders (
   pay_ref       text,                                 -- réf MonCash/Natcash
   assigned_to   uuid references members(id) on delete set null, -- "→ Jean" dans l'inbox
   note          text,
+  source        text,                                 -- utm_source de la pub qui a amené la commande
   created_at    timestamptz not null default now(),
   paid_at       timestamptz,
   delivered_at  timestamptz,
@@ -131,6 +148,7 @@ create index on orders (business_id, status);
 create index on orders (business_id, customer_id);
 create index on orders (business_id, created_at desc);
 create index on orders (business_id, next_followup_at) where next_followup_at is not null;
+create index on orders (business_id, source) where source is not null;
 
 -- ------------------------------------------------------------
 -- ORDER ITEMS (atik yo dans une kòmand)
@@ -156,8 +174,11 @@ $$;
 
 -- Incrémente le compteur de ventes d'un produit (best-sellers).
 create or replace function increment_product_sold(p_product uuid, p_qty numeric)
-returns void language sql as $$
-  update products set sold_count = sold_count + p_qty::int where id = p_product;
+returns void language sql security definer set search_path = public as $$
+  update products
+  set sold_count = sold_count + greatest(p_qty::int, 0)
+  where id = p_product
+    and business_id = my_business_id();
 $$;
 
 -- Reste dû (dette) d'une commande = total - déjà payé.
@@ -211,6 +232,32 @@ create table subscription_payments (
 );
 create index on subscription_payments (business_id, created_at desc);
 
+-- ------------------------------------------------------------
+-- SECURITY AUDIT LOGS — trace des actions du super-admin plateforme.
+-- Accessible uniquement via la clé service role (aucune politique RLS).
+-- ------------------------------------------------------------
+create table security_audit_logs (
+  id          uuid primary key default gen_random_uuid(),
+  admin_email text not null,
+  action      text not null,
+  business_id uuid references businesses(id) on delete set null,
+  payment_id  uuid references subscription_payments(id) on delete set null,
+  details     jsonb not null default '{}'::jsonb,
+  ip_address  text,
+  created_at  timestamptz not null default now()
+);
+create index on security_audit_logs (created_at desc);
+
+-- ------------------------------------------------------------
+-- PLATFORM SETTINGS — tarifs, coordonnées de paiement CONVERZA,
+-- feature flags. Une ligne par clé, lue/écrite via la clé service role.
+-- ------------------------------------------------------------
+create table platform_settings (
+  key        text primary key,
+  value      jsonb not null,
+  updated_at timestamptz not null default now()
+);
+
 -- ============================================================
 -- ROW LEVEL SECURITY — isolation multi-tenant
 -- Un membre ne voit que les données de SON business.
@@ -223,6 +270,8 @@ alter table orders        enable row level security;
 alter table order_items   enable row level security;
 alter table quick_replies enable row level security;
 alter table subscription_payments enable row level security;
+alter table security_audit_logs enable row level security;
+alter table platform_settings  enable row level security;
 
 -- Business_id du membre connecté (helper).
 create or replace function my_business_id()
@@ -247,17 +296,39 @@ create policy biz_read on businesses
 create policy members_read on members
   for select using (business_id = my_business_id());
 
--- Lecture PUBLIQUE pour la vitrine partageable (/b/<slug>) :
--- n'importe qui peut voir la fiche business et ses produits actifs.
--- (Les politiques SELECT se combinent en OR : les clients/commandes restent privés.)
-create policy public_read_business on businesses
-  for select using (true);
+-- Lecture PUBLIQUE pour la vitrine partageable (/b/<slug>).
+-- On passe par une vue : une politique `using (true)` sur la table exposerait
+-- aussi les comptes bancaires, MonCash, Natcash et l'adresse USDT du marchand.
+create or replace view public_businesses as
+select
+  id, name, slug, category, address, phone_e164, logo_url, cover_url, hours,
+  business_type, theme, layout, plan, social_instagram, social_facebook,
+  social_tiktok, delivery_zones, default_currency, created_at
+from businesses;
+grant select on public_businesses to anon, authenticated;
+
 create policy public_read_products on products
   for select using (is_active);
 
 -- Le propriétaire peut modifier sa propre fiche business.
 create policy biz_update on businesses
   for update using (id = my_business_id()) with check (id = my_business_id());
+
+-- Inscription self-service : un utilisateur authentifié crée son business
+-- puis s'y rattache comme owner.
+create policy biz_create on businesses
+  for insert to authenticated with check (true);
+create policy member_self_insert on members
+  for insert to authenticated with check (user_id = auth.uid());
+
+-- L'owner peut retirer un agent de son business (jamais un autre owner).
+create or replace function my_role()
+returns text language sql stable security definer set search_path = public as $$
+  select role::text from members where user_id = auth.uid() limit 1;
+$$;
+create policy member_owner_delete on members
+  for delete
+  using (business_id = my_business_id() and my_role() = 'owner' and role <> 'owner');
 
 -- order_items suit la commande parente.
 create policy biz_isolation on order_items

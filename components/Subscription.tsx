@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { formatMoney } from "@/lib/money";
-import { PLANS, planOf, CONVERZA_PAYMENT_INFO, type Plan } from "@/lib/plans";
+import type { Plan, PlatformPaymentInfo } from "@/lib/plans";
 import { submitPayment } from "@/app/abonman/actions";
 import type { Business } from "@/lib/types";
 
@@ -14,7 +14,15 @@ const PAY_METHODS = [
   { key: "lot", label: "Lòt" },
 ];
 
-export function Subscription({ business }: { business: Business }) {
+export function Subscription({
+  business,
+  plans,
+  paymentInfo,
+}: {
+  business: Business;
+  plans: Plan[];
+  paymentInfo: PlatformPaymentInfo;
+}) {
   const current = business.plan ?? "gratis";
   const [chosen, setChosen] = useState<Plan | null>(null);
   const [method, setMethod] = useState("moncash");
@@ -33,7 +41,8 @@ export function Subscription({ business }: { business: Business }) {
     });
   }
 
-  const payInfo = CONVERZA_PAYMENT_INFO[method as keyof typeof CONVERZA_PAYMENT_INFO];
+  const rawPayInfo = paymentInfo[method as keyof PlatformPaymentInfo];
+  const payInfo = typeof rawPayInfo === "string" ? rawPayInfo : "";
 
   return (
     <div className="app-page min-h-[100dvh] bg-[#F7F8F9] pb-16">
@@ -45,7 +54,7 @@ export function Subscription({ business }: { business: Business }) {
       </header>
 
       <div className="flex flex-col gap-3 px-4 pt-4">
-        {PLANS.map((p) => {
+        {plans.map((p) => {
           const isCurrent = p.key === current;
           return (
             <div key={p.key} className={`rounded-2xl bg-white p-4 shadow-[0_2px_10px_rgba(17,27,33,0.05)] ${p.highlight ? "ring-2 ring-brand-green" : ""}`}>
@@ -107,9 +116,61 @@ export function Subscription({ business }: { business: Business }) {
                   </select>
                 </label>
 
-                <div className="mt-3 rounded-xl bg-[#E7F7F1] px-4 py-3 text-[13px] text-[#0B6B57]">
-                  Voye {formatMoney(chosen.priceGdes * 100)} sou : <b>{payInfo}</b><br />Apre sa, mete referans lan anba a.
-                </div>
+                {(() => {
+                  const qrUrl = method === "moncash"
+                    ? paymentInfo.moncash_qr_url
+                    : method === "natcash"
+                      ? paymentInfo.natcash_qr_url
+                      : undefined;
+
+                  const bankDetails = method === "bank" ? paymentInfo.bank_details : undefined;
+
+                  return (
+                    <div className="mt-3 rounded-xl bg-[#E7F7F1] p-3 text-[13px] text-[#0B6B57] flex flex-col items-center text-center gap-2">
+                      <div>
+                        Voye <b>{formatMoney(chosen.priceGdes * 100)}</b> sou :
+                      </div>
+
+                      {method === "bank" && bankDetails && bankDetails.length > 0 ? (
+                        <div className="w-full flex flex-col gap-2 mt-1">
+                          {bankDetails.map((b, idx) => (
+                            <div key={idx} className="bg-white rounded-xl p-3 border border-emerald-200 text-left shadow-xs flex flex-col gap-1">
+                              <div className="flex items-center justify-between">
+                                <span className="font-extrabold text-ink text-sm">{b.bank_name}</span>
+                                <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ${b.currency === "USD" ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800"}`}>
+                                  {b.currency}
+                                </span>
+                              </div>
+                              <div className="text-[13px] font-mono font-bold text-brand-green tracking-wide">
+                                {b.account_number}
+                              </div>
+                              {b.account_holder && (
+                                <div className="text-[11px] text-ink-muted">
+                                  Titilè: <span className="font-semibold text-ink">{b.account_holder}</span>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="font-bold text-sm bg-white/70 px-3 py-1.5 rounded-lg border border-emerald-200">
+                          {payInfo}
+                        </div>
+                      )}
+
+                      <p className="text-[11.5px] text-[#0B6B57]">Apre w fin peye, antre referans tranzaksyon an anba a.</p>
+
+                      {qrUrl && (
+                        <div className="mt-1 flex flex-col items-center rounded-xl bg-white p-2.5 shadow-xs border border-emerald-200">
+                          <img src={qrUrl} alt={`QR Code ${method}`} className="h-36 w-36 object-contain rounded-lg" />
+                          <span className="mt-1.5 text-[11px] font-extrabold text-brand">
+                            📷 Skane ak telefòn ou pou peye sou {method === "moncash" ? "MonCash" : "Natcash"}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
 
                 <label className="mt-3 flex flex-col gap-1.5">
                   <span className="text-[13px] font-semibold text-ink-soft">Referans tranzaksyon</span>

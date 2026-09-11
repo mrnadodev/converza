@@ -6,6 +6,7 @@
 import { createClient } from "@/lib/supabase/server";
 import {
   demoBusiness,
+  demoCustomers,
   demoFunnel,
   demoPipeline,
   demoProducts,
@@ -24,11 +25,19 @@ export function hasSupabase(): boolean {
 
 // --- Dashboard (Tablo debò) ---
 export async function getDashboard() {
+  const session = getCurrentUserSession();
+  const userName = session.full_name;
+  const isOwner = session.role === "owner";
+  const specialty = session.specialty;
+
   const demo = {
     business: demoBusiness,
     stats: demoStats,
     topCustomers: demoTopCustomers,
     funnel: demoFunnel,
+    userName,
+    isOwner,
+    specialty,
   };
   if (!hasSupabase()) return demo;
 
@@ -40,34 +49,50 @@ export async function getDashboard() {
 
   const { data: member } = await sb
     .from("members")
-    .select("business_id")
+    .select("full_name, business_id")
     .eq("user_id", user.id)
     .maybeSingle();
-  if (!member) return demo;
+  if (!member) {
+    return {
+      business: { id: "", name: "Mon Business", slug: "boutik", business_type: "boutik" } as Business,
+      stats: { weekSalesCents: 0, weekTrendPct: 0, ordersToday: 0, owedCents: 0, weekBars: [0, 0, 0, 0, 0, 0, 0] },
+      topCustomers: [],
+      funnel: { leads: 0, orders: 0, paid: 0, delivered: 0 },
+      userName: userName || "Fondateur",
+      isOwner,
+      specialty,
+    };
+  }
 
   const { data: business } = await sb
     .from("businesses")
     .select("*")
     .eq("id", member.business_id)
-    .single();
+    .maybeSingle();
 
   const { data: orders } = await sb
     .from("orders")
     .select(
       "status, created_at, delivery_fee_cents, amount_paid_cents, customer_id, customers(full_name), order_items(qty, unit_price_cents)",
     )
+    .eq("business_id", member.business_id)
     .neq("status", "anile");
 
   const { count: leadsCount } = await sb
     .from("customers")
-    .select("id", { count: "exact", head: true });
+    .select("id", { count: "exact", head: true })
+    .eq("business_id", member.business_id);
 
   const rows = orders ?? [];
+
   return {
-    business: (business ?? demoBusiness) as Business,
+    business: (business ?? { id: member.business_id, name: "Mon Business", slug: "boutik", business_type: "boutik" }) as Business,
     stats: aggregateStats(rows),
     topCustomers: aggregateTopCustomers(rows),
     funnel: computeFunnel(rows, leadsCount ?? 0),
+    userName: member.full_name || userName || "Fondateur",
+    isOwner,
+    specialty,
   };
 }
 
@@ -162,15 +187,25 @@ export async function getPipeline(): Promise<PipelineCard[]> {
   if (!hasSupabase()) return demoPipeline;
 
   const sb = createClient();
+  const bid = await myBusinessId(sb);
+  if (!bid) return [];
+
   const { data, error } = await sb
     .from("orders")
     .select(
-      "id, ref, status, delivery_fee_cents, amount_paid_cents, customers(full_name, phone_e164), order_items(name, qty, unit_price_cents)",
+      "id, ref, status, delivery_fee_cents, amount_paid_cents, security_code, pay_method, customers(full_name, phone_e164), order_items(name, qty, unit_price_cents)",
     )
+    .eq("business_id", bid)
     .neq("status", "anile")
     .order("created_at", { ascending: false });
 
-  if (error || !data) return demoPipeline;
+  // Un échec de requête ne doit pas retomber sur des commandes de démo : le
+  // marchand croirait à de vraies ventes.
+  if (error) {
+    console.error("getPipeline:", error.message);
+    return [];
+  }
+  if (!data || data.length === 0) return [];
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return data.map((o: any) => {
@@ -185,7 +220,10 @@ export async function getPipeline(): Promise<PipelineCard[]> {
       phone_e164: o.customers?.phone_e164 ?? "",
       itemsSummary: items.map((it) => `${it.qty}× ${it.name}`).join(" · "),
       totalCents,
+      deliveryFeeCents: o.delivery_fee_cents ?? 0,
       owedCents: Math.max(totalCents - (o.amount_paid_cents ?? 0), 0),
+      securityCode: o.security_code ?? null,
+      pay_method: o.pay_method ?? null,
     };
   });
 }
@@ -208,33 +246,130 @@ async function myBusinessId(
   return data?.business_id ?? null;
 }
 
+import { getCurrentUserSession } from "./session";
+import {
+  type UserSession,
+  type RolePermissions,
+  getRolePermissions,
+  getRoleTailoredConfig,
+} from "./rbac";
+
+export type { UserSession, RolePermissions };
+export { getCurrentUserSession, getRolePermissions, getRoleTailoredConfig };
+
+export const getGlobalUserOverride = (): UserSession => {
+  return getCurrentUserSession();
+};
+
+// Les « overrides » vivent sur globalThis, donc partagés par TOUS les visiteurs
+// du même processus. C'est acceptable en mode démo (une seule boutique fictive,
+// pas de base), jamais en mode Supabase : sinon les réglages d'un marchand
+// s'afficheraient chez les autres. On les neutralise dès qu'une base existe.
+const getGlobalOverrides = (): Partial<Business> => {
+  if (!(globalThis as any)._converzaBusinessOverrides) {
+    (globalThis as any)._converzaBusinessOverrides = {};
+  }
+  return (globalThis as any)._converzaBusinessOverrides;
+};
+
+export function setBusinessOverride(patch: Partial<Business>) {
+  if (hasSupabase()) return;
+  const overrides = getGlobalOverrides();
+  Object.assign(overrides, patch);
+  Object.assign(demoBusiness, patch);
+}
+
+export function addDemoProduct(product: Product) {
+  const existingIdx = demoProducts.findIndex((p) => p.id === product.id || p.name.toLowerCase() === product.name.toLowerCase());
+  if (existingIdx >= 0) {
+    demoProducts[existingIdx] = { ...demoProducts[existingIdx], ...product };
+  } else {
+    demoProducts.unshift(product);
+  }
+}
+
+export function removeDemoProduct(id: string) {
+  const idx = demoProducts.findIndex((p) => p.id === id);
+  if (idx >= 0) {
+    demoProducts.splice(idx, 1);
+  }
+}
+
+export function resetDataForNewBusiness(businessName: string, ownerName: string, businessType: string) {
+  demoBusiness.name = businessName;
+  demoBusiness.slug = businessName.toLowerCase().replace(/[^a-z0-9]+/g, "-") || "boutik";
+  demoBusiness.business_type = businessType;
+
+  // Réinitialiser les statistiques à zéro
+  demoStats.weekSalesCents = 0;
+  demoStats.weekTrendPct = 0;
+  demoStats.ordersToday = 0;
+  demoStats.owedCents = 0;
+  demoStats.weekBars = [0, 0, 0, 0, 0, 0, 0];
+
+  // Réinitialiser le funnel à zéro
+  demoFunnel.leads = 0;
+  demoFunnel.orders = 0;
+  demoFunnel.paid = 0;
+  demoFunnel.delivered = 0;
+
+  // Vider les listes d'exemples (catalogue 100% vide pour le nouveau marchand)
+  demoProducts.length = 0;
+  demoTopCustomers.length = 0;
+  demoCustomers.length = 0;
+  demoPipeline.length = 0;
+
+  // Équipe : uniquement le propriétaire
+  demoTeam.length = 0;
+  demoTeam.push({
+    id: "m-owner",
+    full_name: ownerName,
+    role: "owner",
+    user_id: "u-owner",
+    specialty: "Fondateur / Admin",
+    salesCount: 0,
+    salesCents: 0,
+  });
+}
+
+export function resetCatalogForNewBusiness(businessName: string, businessType: string) {
+  resetDataForNewBusiness(businessName, "Fondateur", businessType);
+}
+
 // Business du marchand connecté (pour l'espace d'édition).
 export async function getMyBusiness(): Promise<Business> {
-  if (!hasSupabase()) return demoBusiness;
-  const sb = createClient();
-  const bid = await myBusinessId(sb);
-  if (!bid) return demoBusiness;
-  const { data } = await sb.from("businesses").select("*").eq("id", bid).single();
-  return (data ?? demoBusiness) as Business;
+  if (hasSupabase()) {
+    const sb = createClient();
+    const bid = await myBusinessId(sb);
+    if (bid) {
+      const { data } = await sb.from("businesses").select("*").eq("id", bid).single();
+      if (data) return data as Business;
+    }
+    return demoBusiness;
+  }
+
+  return { ...demoBusiness, ...getGlobalOverrides() } as Business;
 }
 
 // --- Team (agents + ventes par agent) ---
 export async function getTeam() {
+  const myBiz = await getMyBusiness();
   if (!hasSupabase()) {
-    return { members: demoTeam, isOwner: true, businessId: demoBusiness.id };
+    return { members: demoTeam, isOwner: true, businessId: myBiz.id, businessType: myBiz.business_type, businessPlan: myBiz.plan ?? "gratis" };
   }
   const sb = createClient();
   const bid = await myBusinessId(sb);
-  if (!bid) return { members: [], isOwner: false, businessId: "" };
+  if (!bid) return { members: [], isOwner: true, businessId: myBiz.id, businessType: myBiz.business_type, businessPlan: myBiz.plan ?? "gratis" };
 
   const { data: members } = await sb
     .from("members")
-    .select("id, full_name, role, user_id")
+    .select("id, full_name, role, user_id, agent_profile")
     .eq("business_id", bid);
 
   const { data: orders } = await sb
     .from("orders")
     .select("assigned_to, delivery_fee_cents, order_items(qty, unit_price_cents)")
+    .eq("business_id", bid)
     .neq("status", "anile");
 
   const salesBy = new Map<string, { count: number; cents: number }>();
@@ -252,11 +387,9 @@ export async function getTeam() {
     salesCents: salesBy.get(m.id)?.cents ?? 0,
   }));
 
-  const {
-    data: { user },
-  } = await sb.auth.getUser();
-  const me = (members ?? []).find((m) => m.user_id === user?.id);
-  return { members: list, isOwner: me?.role === "owner", businessId: bid };
+  const session = getCurrentUserSession();
+  const isOwner = session.role === "owner";
+  return { members: list, isOwner, businessId: bid, businessType: myBiz.business_type };
 }
 
 // --- Katalòg (produits du marchand) ---
@@ -264,20 +397,66 @@ export async function getCatalog(): Promise<Product[]> {
   if (!hasSupabase()) return demoProducts;
   const sb = createClient();
   const bid = await myBusinessId(sb);
-  if (!bid) return [];
+  if (!bid) return demoProducts;
   const { data } = await sb
     .from("products")
     .select("*")
     .eq("business_id", bid)
     .order("name");
+
+  // Un catalogue vide reste vide : injecter les produits de démo ferait croire
+  // à un nouveau marchand qu'il a déjà un stock en ligne.
   return (data ?? []) as Product[];
+}
+
+// --- Sources de vente (attribution des campagnes) ---
+export interface SourceRow {
+  source: string;
+  orders: number;
+  revenueCents: number;
+}
+
+/**
+ * Chiffre d'affaires par source publicitaire, sur une fenêtre glissante.
+ * Les commandes sans source sont regroupées sous « Dirèk » : les exclure
+ * donnerait un total qui ne correspond à rien de connu.
+ */
+export async function getSourceBreakdown(days = 30): Promise<SourceRow[]> {
+  if (!hasSupabase()) return [];
+
+  const sb = createClient();
+  const bid = await myBusinessId(sb);
+  if (!bid) return [];
+
+  const since = new Date(Date.now() - days * 864e5).toISOString();
+  const { data, error } = await sb
+    .from("orders")
+    .select("source, delivery_fee_cents, order_items(qty, unit_price_cents)")
+    .eq("business_id", bid)
+    .neq("status", "anile")
+    .gte("created_at", since);
+
+  if (error || !data) return [];
+
+  const map = new Map<string, SourceRow>();
+  for (const o of data) {
+    const key = o.source?.trim() || "Dirèk";
+    const row = map.get(key) ?? { source: key, orders: 0, revenueCents: 0 };
+    row.orders += 1;
+    row.revenueCents += orderTotalOf(o);
+    map.set(key, row);
+  }
+
+  return [...map.values()].sort((a, b) => b.revenueCents - a.revenueCents);
 }
 
 // --- Kliyan (clients du marchand) ---
 export async function getCustomers(): Promise<Customer[]> {
-  if (!hasSupabase()) return demoTopCustomers;
+  if (!hasSupabase()) return demoCustomers;
   const sb = createClient();
-  const { data } = await sb.from("customers").select("*").order("full_name");
+  const bid = await myBusinessId(sb);
+  if (!bid) return [];
+  const { data } = await sb.from("customers").select("*").eq("business_id", bid).order("full_name");
   return (data ?? []) as Customer[];
 }
 
@@ -285,19 +464,28 @@ export async function getCustomers(): Promise<Customer[]> {
 export async function getStorefront(
   slug: string,
 ): Promise<{ business: Business; products: Product[] } | null> {
+  // La vitrine est publique : en mode Supabase on ne doit surtout pas passer par
+  // la session du visiteur (getMyBusiness), qui coûte deux requêtes inutiles et
+  // renverrait la boutique du marchand connecté.
   if (!hasSupabase()) {
-    return slug === demoBusiness.slug
-      ? { business: demoBusiness, products: demoProducts }
+    const myBiz = await getMyBusiness();
+    return slug === demoBusiness.slug || slug === myBiz.slug
+      ? { business: myBiz, products: await getCatalog() }
       : null;
   }
 
   const sb = createClient();
+  // Vue publique : elle n'expose pas les coordonnées bancaires, MonCash,
+  // Natcash ni l'adresse USDT du marchand.
   const { data: business } = await sb
-    .from("businesses")
+    .from("public_businesses")
     .select("*")
     .eq("slug", slug)
-    .single();
-  if (!business) return null;
+    .maybeSingle();
+
+  if (!business) {
+    return null;
+  }
 
   const { data: products } = await sb
     .from("products")

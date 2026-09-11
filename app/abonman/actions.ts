@@ -2,7 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { hasSupabase } from "@/lib/data";
-import { planOf } from "@/lib/plans";
+import { planByKey } from "@/lib/platform-store";
 
 export async function submitPayment(input: { plan: string; payMethod: string; payRef: string }) {
   if (!hasSupabase()) return { ok: true, demo: true };
@@ -18,7 +18,10 @@ export async function submitPayment(input: { plan: string; payMethod: string; pa
     .maybeSingle();
   if (!member) return { ok: false, error: "Pa gen biznis" };
 
-  const plan = planOf(input.plan);
+  // Le tarif vient de la configuration plateforme, jamais du formulaire.
+  const plan = await planByKey(input.plan);
+  if (plan.key !== input.plan) return { ok: false, error: "Plan an pa egziste" };
+
   const { error } = await sb.from("subscription_payments").insert({
     business_id: member.business_id,
     plan: plan.key,

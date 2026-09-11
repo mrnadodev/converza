@@ -1,11 +1,13 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { PWARegister } from "@/components/PWARegister";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { LanguageProvider } from "@/components/LanguageContext";
 
 export const metadata: Metadata = {
-  title: "CONVERZA — Jere vant WhatsApp ou",
+  title: "CONVERZA — Gestion des Ventes & Clients WhatsApp",
   description:
-    "WhatsApp Sales & Customer Management pou biznis an Ayiti. Jere kliyan, kòmand ak katalòg ou nan yon sèl kote.",
+    "Plateforme de gestion de ventes WhatsApp. Gérez vos clients, commandes et catalogue en un seul endroit.",
   manifest: "/manifest.webmanifest",
   applicationName: "CONVERZA",
   icons: {
@@ -32,10 +34,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ht">
+    <html lang="fr">
       <body className="font-sans text-ink">
-        <div className="app-shell">{children}</div>
-        <PWARegister />
+        <LanguageProvider>
+          <ThemeProvider>
+            <div className="app-shell">{children}</div>
+            <PWARegister />
+          </ThemeProvider>
+        </LanguageProvider>
       </body>
     </html>
   );

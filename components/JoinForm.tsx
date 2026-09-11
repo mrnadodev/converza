@@ -5,12 +5,20 @@ import { useRouter } from "next/navigation";
 import { joinBusiness, type JoinInput } from "@/app/join/actions";
 import { CvzMark } from "@/components/CvzMark";
 
-export function JoinForm({ businessId, businessName }: { businessId: string; businessName: string }) {
+export function JoinForm({
+  businessId,
+  token,
+  businessName,
+}: {
+  businessId: string;
+  token: string;
+  businessName: string;
+}) {
   const router = useRouter();
   const [pending, start] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
-  const [f, setF] = useState<JoinInput>({ businessId, fullName: "", email: "", password: "" });
+  const [f, setF] = useState<JoinInput>({ businessId, token, fullName: "", email: "", password: "" });
   const set = (p: Partial<JoinInput>) => setF((s) => ({ ...s, ...p }));
 
   function submit() {

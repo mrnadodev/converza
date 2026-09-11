@@ -1,10 +1,33 @@
 // Types applicatifs — miroir du schéma db/schema.sql.
 
 export type MemberRole = "owner" | "agent";
-// Pipeline de vente : à confirmer -> payé -> livré -> suivi ; annulé en sortie.
-export type OrderStatus = "pou_konfime" | "peye" | "livre" | "swivi" | "anile";
+// Pipeline de vente : à confirmer -> payé -> en route -> livré -> suivi ; annulé en sortie.
+export type OrderStatus =
+  | "demand_acha"
+  | "kontak"
+  | "metod_peman"
+  | "konfime_peman"
+  | "sou_wout"
+  | "livre"
+  | "swivi"
+  | "anile"
+  | "pou_konfime"
+  | "peye";
 export type FollowupKind = "det" | "rekomand" | "satisfaksyon";
-export type PayMethod = "moncash" | "natcash" | "kach" | "lot";
+export type PayMethod =
+  | "moncash"
+  | "natcash"
+  | "kach"
+  | "crypto_usdt"
+  | "zelle"
+  | "unibank_htg"
+  | "unibank_usd"
+  | "buh_htg"
+  | "buh_usd"
+  | "sogebank_htg"
+  | "sogebank_usd"
+  | "banque_locale"
+  | "lot";
 export type Currency = "HTG" | "USD";
 export type StockState = "en_stok" | "ba_stok" | "fini";
 
@@ -27,6 +50,20 @@ export interface Business {
   social_instagram: string | null;
   social_facebook: string | null;
   social_tiktok: string | null;
+  slogan?: string | null;
+  promo_text?: string | null;
+  usd_exchange_rate?: number | null;
+  bank_accounts?: string | null;
+  zelle_info?: string | null;
+  usdt_trc20_address?: string | null;
+  moncash_number?: string | null;
+  moncash_name?: string | null;
+  moncash_qr_url?: string | null;
+  natcash_number?: string | null;
+  natcash_name?: string | null;
+  natcash_qr_url?: string | null;
+  zelle_qr_url?: string | null;
+  usdt_qr_url?: string | null;
   delivery_zones: DeliveryZone[];
   default_currency: Currency;
 }
@@ -46,6 +83,8 @@ export interface Customer {
   tags: string[];
   note: string | null;
   created_at: string;
+  orders_count?: number;
+  total_spent_cents?: number;
 }
 
 export interface Product {
@@ -57,8 +96,10 @@ export interface Product {
   currency: Currency;
   unit: string | null;
   stock_qty: number | null;
+  stock_threshold?: number | null;
   stock_state: StockState;
   photo_url: string | null;
+  photos?: string[];
   sold_count: number;
   is_active: boolean;
 }
@@ -103,15 +144,28 @@ export interface QuickReply {
 
 // Libellés Kreyòl pour l'affichage des statuts.
 export const ORDER_STATUS_LABEL: Record<OrderStatus, string> = {
-  pou_konfime: "Pou konfime",
-  peye: "Peye",
+  demand_acha: "Demand Acha",
+  kontak: "Kontak",
+  metod_peman: "Mwayen Peman",
+  konfime_peman: "Konfime Pèman",
+  sou_wout: "Sou wout",
   livre: "Livre",
   swivi: "Swivi",
   anile: "Anile",
+  pou_konfime: "Demand Acha",
+  peye: "Konfime Pèman",
 };
 
-// Ordre des colonnes dans la vue Pipeline (Kanban).
-export const PIPELINE_COLUMNS: OrderStatus[] = ["pou_konfime", "peye", "livre", "swivi"];
+// Ordre des 7 colonnes dans la vue Pipeline (Kanban).
+export const PIPELINE_COLUMNS: OrderStatus[] = [
+  "demand_acha",
+  "kontak",
+  "metod_peman",
+  "konfime_peman",
+  "sou_wout",
+  "livre",
+  "swivi",
+];
 
 export const FOLLOWUP_KIND_LABEL: Record<FollowupKind, string> = {
   det: "Lajan pou resevwa",
@@ -129,5 +183,9 @@ export interface PipelineCard {
   itemsSummary: string;
   totalCents: number;
   owedCents: number;
+  deliveryFeeCents?: number;
+  currency?: Currency;
+  pay_method?: PayMethod | null;
+  securityCode?: string | null; // code livraison stocké en base (4 chiffres)
   badge?: string; // ex: "→ Jean", "MonCash 8842"
 }

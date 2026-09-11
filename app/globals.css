@@ -12,6 +12,105 @@ html, body {
   overflow-x: hidden;
 }
 
+/* ===================== DARK MODE ===================== */
+:root { color-scheme: light; }
+[data-theme="dark"] { color-scheme: dark; }
+[data-theme="dark"] body { background: #0A120F; }
+
+/* Surfaces */
+[data-theme="dark"] .bg-white { background-color: #14211C !important; }
+[data-theme="dark"] .bg-white\/95 { background-color: rgba(20,33,28,0.95) !important; }
+[data-theme="dark"] .bg-chat-bg { background-color: #0A120F !important; }
+[data-theme="dark"] .bg-\[\#F7F8F9\],
+[data-theme="dark"] .bg-\[\#F0F2F3\],
+[data-theme="dark"] .bg-\[\#F2F4F5\],
+[data-theme="dark"] .focus\:bg-white:focus { background-color: #0F1A16 !important; }
+[data-theme="dark"] .bg-\[\#EEF2F3\],
+[data-theme="dark"] .bg-\[\#E7EBED\],
+[data-theme="dark"] .bg-\[\#EFF2F3\],
+[data-theme="dark"] .bg-\[\#F3F6F4\] { background-color: #1B2822 !important; }
+[data-theme="dark"] .bg-\[\#E7F7F1\] { background-color: #12281F !important; }
+
+/* Texte */
+[data-theme="dark"] .text-ink { color: #E9F1ED !important; }
+[data-theme="dark"] .text-ink-soft { color: #C6D4CD !important; }
+[data-theme="dark"] .text-ink-muted { color: #9DB0A8 !important; }
+[data-theme="dark"] .text-ink-faint { color: #6E827A !important; }
+[data-theme="dark"] .text-brand { color: #2BBE9A !important; }
+
+/* Bordures / séparateurs */
+[data-theme="dark"] .border-line,
+[data-theme="dark"] .border-\[\#F0F2F3\],
+[data-theme="dark"] .border-\[\#F2F4F5\],
+[data-theme="dark"] .border-\[\#EEF1F2\] { border-color: #223029 !important; }
+[data-theme="dark"] .divide-\[\#F0F2F3\] > :not([hidden]) ~ :not([hidden]) { border-color: #223029 !important; }
+[data-theme="dark"] .app-page { box-shadow: 0 0 0 1px #223029 !important; }
+[data-theme="dark"] input, [data-theme="dark"] select, [data-theme="dark"] textarea { color: #E9F1ED; }
+/* ==================================================== */
+
+/* ===================== RÉVÉLATION AU DÉFILEMENT ===================== */
+/* Les éléments marqués `data-reveal` apparaissent quand ils entrent dans
+   l'écran. Le repli est volontairement large : si le JavaScript ne tourne pas,
+   ou si la personne a demandé moins d'animations, tout reste visible. */
+
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(28px);
+  transition:
+    opacity 0.75s cubic-bezier(0.22, 0.61, 0.36, 1),
+    transform 0.75s cubic-bezier(0.22, 0.61, 0.36, 1);
+  transition-delay: var(--reveal-delay, 0ms);
+  will-change: opacity, transform;
+}
+[data-reveal="zoom"]  { transform: scale(0.965); }
+[data-reveal="left"]  { transform: translateX(-32px); }
+[data-reveal="right"] { transform: translateX(32px); }
+[data-reveal="fade"]  { transform: none; }
+
+[data-reveal].is-revealed {
+  opacity: 1;
+  transform: none;
+}
+
+/* Sans JavaScript, rien ne viendrait retirer l'état masqué. */
+@media (scripting: none) {
+  [data-reveal] { opacity: 1 !important; transform: none !important; }
+}
+
+/* Flottement lent des cartes de l'accroche. */
+@keyframes cvz-float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-10px); }
+}
+.cvz-float      { animation: cvz-float 6s ease-in-out infinite; }
+.cvz-float-slow { animation: cvz-float 8s ease-in-out infinite 1.2s; }
+
+/* Élévation au survol des cartes. */
+.cvz-lift {
+  transition: transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1), box-shadow 0.35s ease;
+}
+.cvz-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 18px 40px rgba(6, 35, 28, 0.1);
+}
+
+/* En-tête qui se densifie au défilement. */
+.cvz-nav {
+  transition: background-color 0.3s ease, backdrop-filter 0.3s ease, box-shadow 0.3s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+  .cvz-float, .cvz-float-slow { animation: none !important; }
+  .cvz-lift:hover { transform: none; }
+  html { scroll-behavior: auto !important; }
+}
+/* ==================================================================== */
+
 /* Conteneur neutre plein écran ; chaque page choisit sa largeur. */
 .app-shell {
   width: 100%;
@@ -38,4 +137,52 @@ html, body {
 }
 .nav-safe {
   padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* ===================== IMPRESSION / GENERATION PDF PROPRE ===================== */
+@media print {
+  /* Masquer tout le reste du site et boutons UI */
+  body * {
+    visibility: hidden;
+  }
+  .no-print, nav, header, button, .nav-safe, .pb-safe {
+    display: none !important;
+  }
+  
+  /* Rendre visible uniquement la facture / reçu */
+  #printable-invoice-container,
+  #printable-invoice-container *,
+  #printable-invoice,
+  #printable-invoice * {
+    visibility: visible !important;
+  }
+  
+  /* Étendre le conteneur en hauteur naturelle sans aucune barre de défilement */
+  #printable-invoice-container {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    max-height: none !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  #printable-invoice {
+    border: none !important;
+    box-shadow: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 24px !important;
+    page-break-inside: avoid;
+  }
+
+  /* Masquer complètement les barres de défilement */
+  ::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
 }

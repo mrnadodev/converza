@@ -1,9 +1,12 @@
 import Link from "next/link";
 import { BottomNav } from "@/components/BottomNav";
+import { getCurrentUserSession } from "@/lib/data";
 
 // Le modèle CONVERZA repose sur wa.me : les conversations vivent dans WhatsApp.
 // L'app n'héberge pas de messagerie — elle ouvre WhatsApp avec le bon client.
-export default function ChatPage() {
+export default async function ChatPage() {
+  const session = getCurrentUserSession();
+
   return (
     <div className="app-page with-topnav relative flex min-h-[100dvh] flex-col bg-[#F7F8F9] pb-[96px]">
       <header className="flex items-center gap-2.5 bg-brand px-4 pb-4 pt-5">
@@ -34,7 +37,7 @@ export default function ChatPage() {
         </Link>
       </div>
 
-      <BottomNav active="chat" />
+      <BottomNav active="chat" userSession={session} />
     </div>
   );
 }

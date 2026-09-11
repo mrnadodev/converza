@@ -2,9 +2,11 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { hasSupabase } from "@/lib/data";
+import { verifyInviteToken } from "@/lib/invite";
 
 export interface JoinInput {
   businessId: string;
+  token: string;
   fullName: string;
   email: string;
   password: string;
@@ -13,6 +15,11 @@ export interface JoinInput {
 export async function joinBusiness(input: JoinInput) {
   if (!hasSupabase()) return { ok: false, error: "Supabase pa konfigire" };
   if (!input.businessId) return { ok: false, error: "Lyen envitasyon an pa valab" };
+  // Le jeton signé est ce qui prouve l'invitation. Avec le seul identifiant du
+  // business, n'importe qui pourrait s'ajouter comme agent chez un marchand.
+  if (!verifyInviteToken(input.businessId, input.token)) {
+    return { ok: false, error: "Lyen envitasyon an pa valab oswa li ekspire" };
+  }
   if (input.password.length < 6) return { ok: false, error: "Modpas la twò kout (6+)" };
 
   const sb = createClient();

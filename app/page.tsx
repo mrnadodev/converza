@@ -1,25 +1,74 @@
 import { redirect } from "next/navigation";
 import { BottomNav } from "@/components/BottomNav";
 import { ShareStorefront } from "@/components/ShareStorefront";
-import { getDashboard, hasSupabase } from "@/lib/data";
+import { StockAIWidget } from "@/components/StockAIWidget";
+import { AdminHeaderActions } from "@/components/AdminActionModals";
+import { CaissierTransactionsWidget, StockistReorderWidget, AgentPromoWidget, DebtorsListWidget, GerantDashboardWidget } from "@/components/RoleWidgets";
+import { getCatalog, getDashboard, getSourceBreakdown, hasSupabase, getCurrentUserSession, getRoleTailoredConfig, getRolePermissions } from "@/lib/data";
+import { getUnreadAuditCount } from "@/lib/session";
 import { formatMoney } from "@/lib/money";
 import { createClient } from "@/lib/supabase/server";
 import { isAdminEmail } from "@/lib/admin";
 import { signOut } from "./login/actions";
 
-// Écran #1 — Tablo debò (dashboard).
-export default async function TabloPage() {
-  // Un super-admin de la plateforme n'a pas de business : on l'envoie sur /admin.
+import { LandingPage } from "@/components/LandingPage";
+import { getPublicPricing } from "@/lib/pricing";
+import { cookies } from "next/headers";
+
+// Écran #1 — Tablo debò (dashboard) / Landing Page pour les visiteurs.
+export default async function TabloPage({ searchParams }: { searchParams?: { view?: string } }) {
+  const session = getCurrentUserSession();
+  const permissions = getRolePermissions(session);
+  const roleConfig = getRoleTailoredConfig(session);
+  const roleCookie = cookies().get("converza_role")?.value;
+
+  // Si le visiteur demande explicitement la landing page
+  if (searchParams?.view === "landing") {
+    return <LandingPage pricing={await getPublicPricing()} />;
+  }
+
+  // Un visiteur non connecté est accueilli sur la Landing Page publique.
+  // La racine étant publique, le middleware ne la garde pas : c'est ici que
+  // l'on décide. La décision se prend sur la session Supabase, jamais sur le
+  // cookie de rôle, qu'un visiteur peut poser lui-même.
   if (hasSupabase()) {
     const sb = createClient();
     const {
       data: { user },
     } = await sb.auth.getUser();
-    if (isAdminEmail(user?.email)) redirect("/admin");
+    if (!user) return <LandingPage pricing={await getPublicPricing()} />;
+    if (isAdminEmail(user.email)) redirect("/admin");
+
+    // Compte authentifié mais sans boutique : c'est une inscription qui s'est
+    // arrêtée à mi-chemin. Sans cette redirection, la personne voit un tableau
+    // de bord vide et n'a aucun moyen de créer sa boutique, puisque se
+    // réinscrire échouerait sur une adresse déjà prise.
+    const { data: member } = await sb
+      .from("members")
+      .select("business_id")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    if (!member?.business_id) redirect("/enskri");
+  } else if (!roleCookie) {
+    return <LandingPage pricing={await getPublicPricing()} />;
   }
 
-  const { business: demoBusiness, stats: demoStats, topCustomers: demoTopCustomers, funnel } =
-    await getDashboard();
+  // L'attribution des ventes est un chiffre financier : on ne va même pas la
+  // chercher pour un agent qui n'a pas le droit de la voir.
+  const [{ business: demoBusiness, stats: demoStats, topCustomers: demoTopCustomers, funnel, userName, isOwner, specialty }, products, sources] =
+    await Promise.all([
+      getDashboard(),
+      getCatalog(),
+      permissions.canViewFinancialTurnover ? getSourceBreakdown() : Promise.resolve([]),
+    ]);
+
+  const userInitials = (userName || "Fondateur")
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w: string) => w[0]?.toUpperCase() ?? "")
+    .join("");
+
   const maxBar = Math.max(...demoStats.weekBars) || 1;
   const funnelMax = funnel.leads || 1;
   const funnelRows = [
@@ -40,24 +89,36 @@ export default async function TabloPage() {
               <RoosterLogo />
             </div>
             <div className="flex flex-col">
-              <span className="text-[13px] font-medium text-[#B9F5E4]">Bonjou, Nadège</span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-[13px] font-medium text-[#B9F5E4]">Bonjou, {userName || "Fondateur"}</span>
+                <span className={`rounded px-1.5 py-0.5 text-[9.5px] font-extrabold ${isOwner ? "bg-amber-400 text-amber-950" : "bg-emerald-200 text-emerald-950"}`}>
+                  {isOwner ? "Owner" : specialty || "Ajan"}
+                </span>
+              </div>
               <span className="text-xl font-extrabold tracking-tight text-white">{demoBusiness.name}</span>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <a href="/ekip" title="Ekip" className="flex h-[42px] w-[42px] items-center justify-center rounded-full bg-white/15 active:scale-95">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+            <a href="/accueil" target="_blank" rel="noopener" title="Voir la Page d'Accueil Publique" className="flex h-[42px] items-center gap-1.5 rounded-full bg-white/15 px-3 text-xs font-extrabold text-white active:scale-95">
+              <span>🌐 Landing Page</span>
             </a>
-            <a href="/reglaj" title="Reglaj" className="flex h-[42px] w-[42px] items-center justify-center rounded-full bg-white/15 active:scale-95">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg>
-            </a>
+            {permissions.canManageTeam && (
+              <a href="/ekip" title="Ekip" className="flex h-[42px] w-[42px] items-center justify-center rounded-full bg-white/15 active:scale-95">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+              </a>
+            )}
+            {permissions.canManageSettings && (
+              <a href="/reglaj" title="Reglaj" className="flex h-[42px] w-[42px] items-center justify-center rounded-full bg-white/15 active:scale-95">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg>
+              </a>
+            )}
             <form action={signOut}>
               <button
                 type="submit"
-                title="Dekonekte"
-                className="flex h-[42px] w-[42px] items-center justify-center rounded-full border-2 border-white/35 bg-brand-teal text-base font-bold text-white active:scale-95"
+                title={`Dekonekte (${userName})`}
+                className="flex h-[42px] w-[42px] items-center justify-center rounded-full border-2 border-white/35 bg-brand-teal text-base font-extrabold text-white active:scale-95 shadow-xs cursor-pointer"
               >
-                NP
+                {userInitials || "AC"}
               </button>
             </form>
           </div>
@@ -69,103 +130,192 @@ export default async function TabloPage() {
       </header>
 
       <main className="grid grid-cols-1 gap-[18px] px-4 pt-[18px] md:grid-cols-2 md:items-start md:gap-5 md:px-6 md:pt-6">
-        {/* Partager la vitrine publique */}
-        <div className="md:col-span-2">
-          <ShareStorefront slug={demoBusiness.slug} />
+        {/* Espas Travay Espécifik pa Rôle Ajan */}
+        <div className="flex flex-col gap-2.5 rounded-2xl border border-brand/20 bg-white p-4 shadow-2xs md:col-span-2">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-0.5">
+              <span className="text-base font-extrabold text-ink">{roleConfig.title}</span>
+              <span className="text-xs text-ink-muted">{roleConfig.subtitle}</span>
+            </div>
+            <a
+              href="/komand"
+              className="inline-flex h-9 items-center justify-center rounded-xl bg-brand px-3.5 text-xs font-black text-white shadow-2xs hover:bg-brand-dark transition-all active:scale-95 self-start sm:self-auto"
+            >
+              🚀 Ouvri Pipeline Kòmand {roleConfig.focusColumn ? `(${roleConfig.focusColumn})` : ""}
+            </a>
+          </div>
+          <div className="flex items-center gap-2 rounded-xl bg-emerald-50 border border-emerald-200/80 p-2.5 text-xs font-bold text-emerald-950">
+            <span>{roleConfig.bannerMessage}</span>
+          </div>
         </div>
 
-        {/* KPI hero */}
-        <section className="flex flex-col gap-3.5 rounded-xl2 bg-white p-[18px] shadow-[0_2px_10px_rgba(17,27,33,0.06)] md:col-span-2">
-          <div className="flex items-center justify-between">
-            <span className="text-[13px] font-semibold text-ink-muted">Vant semèn nan</span>
-            <span className="rounded-full bg-[#E7F7F1] px-2.5 py-1 text-[11px] font-bold text-brand">
-              +{demoStats.weekTrendPct}%
-            </span>
-          </div>
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-[34px] font-extrabold -tracking-[1px]">
-              {(demoStats.weekSalesCents / 100).toLocaleString("fr-HT")}
-            </span>
-            <span className="text-[15px] font-bold text-ink-muted">HTG</span>
-          </div>
-          <div className="flex h-14 items-end gap-[7px] pt-1">
-            {demoStats.weekBars.map((v, i) => (
-              <div key={i} className="flex flex-1 flex-col items-center gap-1.5">
-                <div
-                  className={`w-full rounded-[5px] ${v === maxBar ? "bg-brand-teal" : "bg-[#D9EFE8]"}`}
-                  style={{ height: `${Math.round((v / maxBar) * 46) + 6}px` }}
-                />
-                <span className="text-[10px] text-ink-faint">{days[i]}</span>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Deux petits KPI */}
-        <section className="grid grid-cols-2 gap-3">
-          <div className="flex flex-col gap-2.5 rounded-2xl bg-white p-[15px] shadow-[0_2px_10px_rgba(17,27,33,0.05)]">
-            <div className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-[#E7F7F1]">
-              <BagIcon />
+        {/* Métriques Spécifiques au Rôle de l'Agent */}
+        <div className="grid grid-cols-2 gap-3 md:col-span-2 md:grid-cols-4">
+          {roleConfig.metrics.map((m, idx) => (
+            <div
+              key={idx}
+              className={`flex flex-col gap-1 rounded-2xl p-3.5 border shadow-2xs ${
+                m.highlight ? "border-brand bg-emerald-500/10 text-brand-dark" : "border-line bg-white text-ink"
+              }`}
+            >
+              <span className="text-xs font-medium text-ink-muted">{m.label}</span>
+              <span className="text-xl font-black">{m.value}</span>
             </div>
-            <span className="text-2xl font-extrabold">{demoStats.ordersToday}</span>
-            <span className="text-xs font-medium text-ink-muted">Kòmand jodi a</span>
-          </div>
-          <div className="flex flex-col gap-2.5 rounded-2xl bg-white p-[15px] shadow-[0_2px_10px_rgba(17,27,33,0.05)]">
-            <div className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-owed-bg">
-              <ClockIcon />
+          ))}
+        </div>
+
+        {/* Widgets Spécifiques Dédiés aux Rôles d'Agents & Gérant */}
+        {session.agentId === "marie" && <CaissierTransactionsWidget />}
+        {session.agentId === "pierre" && <StockistReorderWidget />}
+        {session.agentId === "steeve" && <AgentPromoWidget />}
+        {session.agentId === "florence" && <DebtorsListWidget />}
+        {session.agentId === "gerant" && <GerantDashboardWidget />}
+
+        {/* Sections exclusives au Fondateur / Admin (Boussole financière, vitrine, funnel, top clients, audit, promo) */}
+        {permissions.canViewFinancialTurnover && (
+          <>
+            {/* Boutons d'Action Admin : Promotion, Audit Aktivite Ajan (Real-Time), Apèsu Vitrin, Afich Pub IA 9:16 */}
+            <AdminHeaderActions
+              storeSlug={demoBusiness.slug}
+              storeName={demoBusiness.name}
+              businessType={demoBusiness.business_type}
+              logoUrl={demoBusiness.logo_url}
+              coverUrl={demoBusiness.cover_url}
+              realProducts={products}
+              products={products}
+            />
+
+            {/* Partager la vitrine publique */}
+            <div className="flex flex-col gap-4 md:col-span-2">
+              <ShareStorefront slug={demoBusiness.slug} />
+              <StockAIWidget products={products} businessPlan={demoBusiness.plan ?? "gratis"} />
             </div>
-            <span className="text-2xl font-extrabold text-owed-text">
-              {(demoStats.owedCents / 100).toLocaleString("fr-HT")}
-            </span>
-            <span className="text-xs font-medium text-ink-muted">Lajan pou resevwa (HTG)</span>
-          </div>
-        </section>
 
-        {/* Sales Funnel */}
-        <section className="flex flex-col gap-3">
-          <span className="px-0.5 text-[15px] font-bold">Sales Funnel</span>
-          <div className="flex flex-col gap-3 rounded-2xl bg-white p-4 shadow-[0_2px_10px_rgba(17,27,33,0.05)]">
-            {funnelRows.map((r) => (
-              <div key={r.label} className="flex flex-col gap-1.5">
-                <div className="flex items-center justify-between text-[13px]">
-                  <span className="font-medium text-ink-soft">{r.label}</span>
-                  <span className="font-extrabold">{r.value.toLocaleString("fr-HT")}</span>
-                </div>
-                <div className="h-2.5 w-full overflow-hidden rounded-full bg-[#EEF2F3]">
-                  <div className="h-full rounded-full" style={{ width: `${Math.round((r.value / funnelMax) * 100)}%`, background: r.color }} />
-                </div>
+            {/* KPI hero */}
+            <section className="flex flex-col gap-3.5 rounded-xl2 bg-white p-[18px] shadow-[0_2px_10px_rgba(17,27,33,0.06)] md:col-span-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[13px] font-semibold text-ink-muted">Vant semèn nan</span>
+                <span className="rounded-full bg-[#E7F7F1] px-2.5 py-1 text-[11px] font-bold text-brand">
+                  +{demoStats.weekTrendPct}%
+                </span>
               </div>
-            ))}
-          </div>
-        </section>
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-[34px] font-extrabold -tracking-[1px]">
+                  {(demoStats.weekSalesCents / 100).toLocaleString("fr-HT")}
+                </span>
+                <span className="text-[15px] font-bold text-ink-muted">HTG</span>
+              </div>
+              <div className="flex h-14 items-end gap-[7px] pt-1">
+                {demoStats.weekBars.map((v, i) => (
+                  <div key={i} className="flex flex-1 flex-col items-center gap-1.5">
+                    <div
+                      className={`w-full rounded-[5px] ${v === maxBar ? "bg-brand-teal" : "bg-[#D9EFE8]"}`}
+                      style={{ height: `${Math.round((v / maxBar) * 46) + 6}px` }}
+                    />
+                    <span className="text-[10px] text-ink-faint">{days[i]}</span>
+                  </div>
+                ))}
+              </div>
+            </section>
 
-        {/* Top clients */}
-        <section className="flex flex-col gap-3 md:col-span-2">
-          <div className="flex items-center justify-between px-0.5">
-            <span className="text-[15px] font-bold">Pi bon kliyan yo</span>
-            <span className="text-xs font-semibold text-brand">Wè tout</span>
-          </div>
-          <div className="overflow-hidden rounded-2xl bg-white shadow-[0_2px_10px_rgba(17,27,33,0.05)]">
-            {demoTopCustomers.map((c, i) => (
-              <div
-                key={c.id}
-                className={`flex items-center gap-3 px-[15px] py-[13px] ${i < demoTopCustomers.length - 1 ? "border-b border-[#F0F2F3]" : ""}`}
-              >
-                <div className="flex h-[38px] w-[38px] items-center justify-center rounded-full bg-[#DCF8C6] text-sm font-bold text-[#2A7D3F]">
-                  {c.initials}
+            {/* Deux petits KPI */}
+            <section className="grid grid-cols-2 gap-3">
+              <div className="flex flex-col gap-2.5 rounded-2xl bg-white p-[15px] shadow-[0_2px_10px_rgba(17,27,33,0.05)]">
+                <div className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-[#E7F7F1]">
+                  <BagIcon />
                 </div>
-                <div className="flex flex-1 flex-col gap-0.5">
-                  <span className="text-sm font-semibold">{c.full_name}</span>
-                  <span className="text-xs text-ink-faint">{c.orders} kòmand</span>
-                </div>
-                <span className="text-sm font-bold">{formatMoney(c.totalCents).replace(" HTG", "")}</span>
+                <span className="text-2xl font-extrabold">{demoStats.ordersToday}</span>
+                <span className="text-xs font-medium text-ink-muted">Kòmand jodi a</span>
               </div>
-            ))}
-          </div>
-        </section>
+              <div className="flex flex-col gap-2.5 rounded-2xl bg-white p-[15px] shadow-[0_2px_10px_rgba(17,27,33,0.05)]">
+                <div className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-owed-bg">
+                  <ClockIcon />
+                </div>
+                <span className="text-2xl font-extrabold text-owed-text">
+                  {(demoStats.owedCents / 100).toLocaleString("fr-HT")}
+                </span>
+                <span className="text-xs font-medium text-ink-muted">Lajan pou resevwa (HTG)</span>
+              </div>
+            </section>
+
+            {/* Sales Funnel */}
+            <section className="flex flex-col gap-3">
+              <span className="px-0.5 text-[15px] font-bold">Sales Funnel</span>
+              <div className="flex flex-col gap-3 rounded-2xl bg-white p-4 shadow-[0_2px_10px_rgba(17,27,33,0.05)]">
+                {funnelRows.map((r) => (
+                  <div key={r.label} className="flex flex-col gap-1.5">
+                    <div className="flex items-center justify-between text-[13px]">
+                      <span className="font-medium text-ink-soft">{r.label}</span>
+                      <span className="font-extrabold">{r.value.toLocaleString("fr-HT")}</span>
+                    </div>
+                    <div className="h-2.5 w-full overflow-hidden rounded-full bg-[#EEF2F3]">
+                      <div className="h-full rounded-full" style={{ width: `${Math.round((r.value / funnelMax) * 100)}%`, background: r.color }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* Sources des ventes — d'où viennent réellement les commandes */}
+            <section className="flex flex-col gap-3">
+              <div className="flex items-baseline justify-between px-0.5">
+                <span className="text-[15px] font-bold">Kote vant yo soti</span>
+                <span className="text-[11px] font-semibold text-ink-faint">30 dènye jou</span>
+              </div>
+              <div className="overflow-hidden rounded-2xl bg-white shadow-[0_2px_10px_rgba(17,27,33,0.05)]">
+                {sources.length === 0 ? (
+                  <p className="px-[15px] py-4 text-[13px] text-ink-muted">
+                    Poko gen kòmand. Ajoute <span className="font-mono text-[12px]">?utm_source=tiktok</span> nan lyen
+                    vitrin ou pataje nan piblisite yo pou w konnen ki kanpay ki mennen vant.
+                  </p>
+                ) : (
+                  sources.map((s, i) => (
+                    <div
+                      key={s.source}
+                      className={`flex items-center gap-3 px-[15px] py-[13px] ${i < sources.length - 1 ? "border-b border-[#F0F2F3]" : ""}`}
+                    >
+                      <div className="flex flex-1 flex-col gap-0.5">
+                        <span className="text-sm font-semibold">{s.source}</span>
+                        <span className="text-xs text-ink-faint">{s.orders} kòmand</span>
+                      </div>
+                      <span className="text-sm font-bold tabular-nums">
+                        {formatMoney(s.revenueCents).replace(" HTG", "")}
+                      </span>
+                    </div>
+                  ))
+                )}
+              </div>
+            </section>
+
+            {/* Top clients */}
+            <section className="flex flex-col gap-3 md:col-span-2">
+              <div className="flex items-center justify-between px-0.5">
+                <span className="text-[15px] font-bold">Pi bon kliyan yo</span>
+                <span className="text-xs font-semibold text-brand">Wè tout</span>
+              </div>
+              <div className="overflow-hidden rounded-2xl bg-white shadow-[0_2px_10px_rgba(17,27,33,0.05)]">
+                {demoTopCustomers.map((c, i) => (
+                  <div
+                    key={c.id}
+                    className={`flex items-center gap-3 px-[15px] py-[13px] ${i < demoTopCustomers.length - 1 ? "border-b border-[#F0F2F3]" : ""}`}
+                  >
+                    <div className="flex h-[38px] w-[38px] items-center justify-center rounded-full bg-[#DCF8C6] text-sm font-bold text-[#2A7D3F]">
+                      {c.initials}
+                    </div>
+                    <div className="flex flex-1 flex-col gap-0.5">
+                      <span className="text-sm font-semibold">{c.full_name}</span>
+                      <span className="text-xs text-ink-faint">{c.orders} kòmand</span>
+                    </div>
+                    <span className="text-sm font-bold">{formatMoney(c.totalCents).replace(" HTG", "")}</span>
+                  </div>
+                ))}
+              </div>
+            </section>
+          </>
+        )}
       </main>
 
-      <BottomNav active="tablo" />
+      <BottomNav active="tablo" userSession={session} unreadAuditCount={getUnreadAuditCount()} />
     </div>
   );
 }

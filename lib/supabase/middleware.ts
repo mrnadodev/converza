@@ -32,9 +32,15 @@ export async function updateSession(request: NextRequest) {
 
   const path = request.nextUrl.pathname;
   const isPublic =
+    path === "/" ||
+    path === "/acceuil" ||
+    path === "/accueil" ||
     path === "/login" ||
     path === "/enskri" ||
     path === "/join" ||
+    // Cible du lien de réinitialisation : la session n'existe pas encore quand
+    // le marchand arrive ici, elle se crée à partir du jeton dans l'URL.
+    path === "/nouvo-modpas" ||
     path.startsWith("/b/") ||
     path.startsWith("/api") ||
     path.startsWith("/manifest") ||
@@ -42,6 +48,9 @@ export async function updateSession(request: NextRequest) {
     path === "/icon.svg" ||
     path === "/apple-touch-icon.png";
 
+  // NOTE: le cookie `converza_role` ne vaut PAS authentification. Il n'est
+  // qu'un indice d'affichage, écrit par le serveur après connexion — un visiteur
+  // peut le poser lui-même depuis la console. Seule la session Supabase compte.
   if (!user && !isPublic) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/login";

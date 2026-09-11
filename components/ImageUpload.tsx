@@ -3,7 +3,12 @@
 import { useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
+import { resizeImage } from "@/lib/image";
+
 const HAS_SUPABASE = !!process.env.NEXT_PUBLIC_SUPABASE_URL;
+
+const MAX_UPLOAD_MB = 12;
+const MAX_UPLOAD_BYTES = MAX_UPLOAD_MB * 1024 * 1024;
 
 // Upload d'image vers Supabase Storage (bucket "media") + renvoie l'URL publique.
 export function ImageUpload({
@@ -12,20 +17,40 @@ export function ImageUpload({
   folder,
   shape = "square",
   label = "Ajoute yon foto",
+  targetWidth,
+  targetHeight,
 }: {
   value: string | null;
   onChange: (url: string | null) => void;
   folder: string;
   shape?: "square" | "wide";
   label?: string;
+  targetWidth?: number;
+  targetHeight?: number;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
   async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
+    let file = e.target.files?.[0];
     if (!file) return;
+
+    // L'attribut `accept` du champ ne filtre que la boîte de dialogue : un
+    // glisser-déposer ou un navigateur permissif laisse passer autre chose.
+    if (!file.type.startsWith("image/")) {
+      setErr("Chwazi yon imaj (jpg, png, webp).");
+      return;
+    }
+    if (file.size > MAX_UPLOAD_BYTES) {
+      setErr(`Imaj la twò gwo (maks ${MAX_UPLOAD_MB} Mo).`);
+      return;
+    }
+
+    const isCover = folder === "covers" || shape === "wide";
+    const w = targetWidth ?? (isCover ? 1200 : folder === "products" ? 450 : 600);
+    const h = targetHeight ?? (isCover ? 400 : folder === "products" ? 750 : 900);
+    file = await resizeImage(file, w, h);
     if (!HAS_SUPABASE) {
       setErr("Storage pa konfigire (mode demo)");
       return;
