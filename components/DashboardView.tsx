@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { AIPosterGeneratorModal } from "@/components/AIPosterGeneratorModal";
+import { ProductPosterModal } from "@/components/ProductPosterModal";
 import { BottomNav } from "@/components/BottomNav";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { useDict } from "@/components/LanguageContext";
@@ -142,13 +142,7 @@ export function DashboardView(props: DashboardViewProps) {
       </main>
 
       {posterOpen && (
-        <AIPosterGeneratorModal
-          products={products}
-          storeSlug={business.slug}
-          storeName={business.name}
-          logoUrl={business.logo_url}
-          onClose={() => setPosterOpen(false)}
-        />
+        <ProductPosterModal business={business} products={products} onClose={() => setPosterOpen(false)} />
       )}
 
       <BottomNav active="tablo" userSession={session} />

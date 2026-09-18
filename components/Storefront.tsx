@@ -59,7 +59,7 @@ export function Storefront({
   const { language } = useLanguage();
   const phoneNotice = phoneNoticeState(business);
   const vertical = verticalOf(business.business_type);
-  const sector = c.sectors[vertical.id] ?? { label: vertical.label, catalog: vertical.catalogWord };
+  const sector = c.sectors[vertical.id] ?? { label: vertical.label, catalog: vertical.catalogWord, featured: c.bestSellers };
   const theme = themeOf(business.theme, vertical.id);
   const palette = paletteOfTheme(business.theme, vertical.id);
   const { theme: globalTheme, toggleTheme } = useTheme();
@@ -364,7 +364,7 @@ export function Storefront({
             <>
               {/* Ancre visée par les aperçus de la console et des réglages. */}
               <div id="vedettes" className="flex scroll-mt-10 items-center justify-between px-4 pt-7">
-                <h2 className="text-[16px] font-extrabold">{c.bestSellers}</h2>
+                <h2 className="text-[16px] font-extrabold">{sector.featured}</h2>
                 <Link href={`/b/${business.slug}/katalog`} className="text-xs font-bold" style={{ color: theme.accentText }}>
                   {sector.catalog}
                 </Link>

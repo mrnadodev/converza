@@ -16,6 +16,7 @@ import { REPORT_COPY } from "./app/reports";
 import { ADMIN_COPY } from "./app/admin";
 import { PHONE_COPY } from "./app/phone";
 import { DESIGN_COPY } from "./app/designs";
+import { POSTER_COPY } from "./app/poster";
 
 // Dictionnaires des écrans de l'application marchand : chaque nouvel écran
 // traduit s'ajoute ici pour hériter des contrôles de parité.
@@ -34,6 +35,7 @@ const APP_DICTS: Record<string, Record<Language, object>> = {
   admin: ADMIN_COPY,
   phone: PHONE_COPY,
   designs: DESIGN_COPY,
+  poster: POSTER_COPY,
 };
 
 const LANGS: Language[] = ["fr", "ht", "en"];
