@@ -9,8 +9,19 @@ import { verticalOf } from "@/lib/verticals";
 import { themeOf } from "@/lib/themes";
 import type { Business, Product } from "@/lib/types";
 import { createStorefrontOrderAction } from "@/app/p/actions";
-import { storefrontCopy, type StorefrontCopy } from "@/lib/i18n/storefront";
-import { DEFAULT_LAYOUT, layoutSlots, type LayoutKey } from "@/lib/storefront-layouts";
+import { DEFAULT_LAYOUT, type LayoutKey } from "@/lib/storefront-layouts";
+import {
+  BagIcon,
+  ChevronIcon,
+  FoodCard,
+  GridCard,
+  MenuRow,
+  ProductImage,
+  photosOf,
+  useCopy,
+  type CartOps,
+} from "@/components/storefront/cards";
+import { FeaturedSection } from "@/components/storefront/designs";
 import { maskPhone, phoneNoticeState } from "@/lib/phone-change";
 
 import { useTheme } from "@/components/ThemeProvider";
@@ -18,7 +29,6 @@ import { LanguageToggle } from "@/components/LanguageToggle";
 import { useLanguage } from "@/components/LanguageContext";
 
 type View = "vitrine" | "full";
-type CartOps = { add: (id: string) => void; sub: (id: string) => void };
 
 // Vitrine publique du marchand, vue par ses clients.
 //
@@ -28,15 +38,7 @@ type CartOps = { add: (id: string) => void; sub: (id: string) => void };
 // produit sans photo montre un emplacement neutre, pas une photo de banque
 // d'images qui laisserait croire à un autre article.
 
-function useCopy(): StorefrontCopy {
-  const { language } = useLanguage();
-  return storefrontCopy(language);
-}
 
-function photosOf(p: Product): string[] {
-  if (p.photos && p.photos.length > 0) return p.photos.filter(Boolean);
-  return p.photo_url ? [p.photo_url] : [];
-}
 
 export function Storefront({
   business,
@@ -607,337 +609,6 @@ export function Storefront({
   );
 }
 
-/* ─────────── Produits mis en avant, selon la disposition choisie ─────────── */
-
-// Chaque disposition affiche un nombre fixe d'images (lib/storefront-layouts) :
-// la section ne déborde jamais sur des cartes d'un autre format. Le reste des
-// produits est dans le catalogue complet.
-function FeaturedSection({
-  layout,
-  verticalId,
-  featured,
-  cart,
-  ops,
-  dark,
-  onZoom,
-  visitHref,
-}: {
-  layout: LayoutKey;
-  verticalId: string;
-  featured: Product[];
-  cart: Record<string, number>;
-  ops: CartOps;
-  dark: boolean;
-  onZoom: (photos: string[], index: number) => void;
-  visitHref: (p: Product) => string;
-}) {
-  const c = useCopy();
-  const items = featured.slice(0, layoutSlots(layout));
-
-  // Un bien immobilier se visite, il ne s'ajoute pas au panier.
-  const overlay = (p: Product, className: string) => (
-    <OverlayCard
-      key={p.id}
-      p={p}
-      qty={cart[p.id] ?? 0}
-      ops={ops}
-      onZoom={onZoom}
-      className={className}
-      action={
-        verticalId === "immobilier" ? (
-          <a href={visitHref(p)} target="_blank" rel="noopener noreferrer"
-            className="shrink-0 rounded-xl bg-white px-3 py-1.5 text-xs font-extrabold text-slate-900">
-            {c.scheduleVisit}
-          </a>
-        ) : undefined
-      }
-    />
-  );
-
-  if (layout === "design2") {
-    // Vedette : une grande carte, deux plus petites (à droite sur ordinateur).
-    const [hero, ...rest] = items;
-    return (
-      <div className="mt-3 grid grid-cols-2 gap-3 px-4 md:auto-rows-[164px] md:grid-cols-3">
-        {overlay(hero, "col-span-2 h-[230px] md:row-span-2 md:h-auto")}
-        {rest.map((p) => overlay(p, "h-[190px] md:h-auto"))}
-      </div>
-    );
-  }
-
-  if (layout === "design3") {
-    // Mosaïque : une grande carte, puis trois autres en quinconce.
-    const [hero, second, third, fourth] = items;
-    return (
-      <div className="mt-3 grid grid-cols-2 gap-3 px-4 md:auto-rows-[164px] md:grid-cols-4">
-        {overlay(hero, "col-span-2 h-[230px] md:row-span-2 md:h-auto")}
-        {second && overlay(second, "h-[180px] md:col-span-2 md:h-auto")}
-        {third && overlay(third, "h-[180px] md:h-auto")}
-        {fourth && overlay(fourth, "col-span-2 h-[180px] md:col-span-1 md:h-auto")}
-      </div>
-    );
-  }
-
-  // Grille : quatre cartes de même format.
-  return (
-    <div className="mt-3 grid grid-cols-2 gap-3 px-4 sm:gap-4 md:grid-cols-4">
-      {items.map((p) =>
-        verticalId === "restauration" ? (
-          <FoodCard key={p.id} p={p} qty={cart[p.id] ?? 0} ops={ops} dark={dark} onZoom={onZoom} />
-        ) : (
-          <GridCard key={p.id} p={p} qty={cart[p.id] ?? 0} ops={ops} dark={dark} onZoom={onZoom} />
-        ),
-      )}
-    </div>
-  );
-}
-
-/* ─────────── Cartes produit ─────────── */
-
-function QtyControl({ p, qty, ops, onDark }: { p: Product; qty: number; ops: CartOps; onDark?: boolean }) {
-  const c = useCopy();
-  if (p.stock_state === "fini") {
-    return <span className={`text-[12px] font-bold ${onDark ? "text-white/70" : "text-ink-faint"}`}>{c.soldOut}</span>;
-  }
-  if (qty === 0) {
-    return (
-      <button onClick={() => ops.add(p.id)}
-        className="flex h-9 items-center justify-center gap-1.5 rounded-[11px] bg-[#E7F7F1] px-3 text-brand active:scale-95">
-        <PlusIcon /><span className="text-[12.5px] font-bold">{c.add}</span>
-      </button>
-    );
-  }
-  return (
-    <div className="flex h-9 items-center gap-2 rounded-[11px] bg-[#E7F7F1] px-1.5">
-      <button onClick={() => ops.sub(p.id)} aria-label="−" className="flex h-7 w-7 items-center justify-center rounded-lg bg-white font-bold text-brand">−</button>
-      <span className="min-w-4 text-center text-sm font-extrabold text-brand">{qty}</span>
-      <button onClick={() => ops.add(p.id)} aria-label="+" className="flex h-7 w-7 items-center justify-center rounded-lg bg-white font-bold text-brand">+</button>
-    </div>
-  );
-}
-
-function PriceLabel({ p }: { p: Product }) {
-  return (
-    <span className="text-base font-extrabold">
-      {formatMoney(p.price_cents, p.currency).replace(` ${p.currency}`, "")}{" "}
-      <span className="text-[11px] font-semibold opacity-60">{p.currency}</span>
-    </span>
-  );
-}
-
-/** Image produit, ou emplacement neutre quand le marchand n'a pas mis de photo. */
-function ProductImage({
-  photos,
-  name,
-  dark,
-  compact,
-  onZoom,
-  index = 0,
-}: {
-  photos: string[];
-  name: string;
-  dark?: boolean;
-  compact?: boolean;
-  onZoom?: (photos: string[], index: number) => void;
-  index?: number;
-}) {
-  if (photos.length === 0) {
-    return (
-      <div className={`flex h-full w-full items-center justify-center ${dark ? "bg-slate-800" : "bg-[#F1F4F2]"}`} aria-label={name}>
-        <BagIcon color={dark ? "#64748B" : "#A3B5AF"} size={compact ? 18 : 34} />
-      </div>
-    );
-  }
-  return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src={photos[index]}
-      alt={name}
-      draggable={false}
-      onClick={onZoom ? () => onZoom(photos, index) : undefined}
-      className={`h-full w-full object-cover ${onZoom ? "cursor-zoom-in" : ""}`}
-    />
-  );
-}
-
-/** Carte à image pleine avec texte en surimpression. */
-function OverlayCard({
-  p,
-  qty = 0,
-  ops,
-  onZoom,
-  className,
-  action,
-}: {
-  p: Product;
-  qty?: number;
-  ops?: CartOps;
-  onZoom: (photos: string[], index: number) => void;
-  className: string;
-  action?: React.ReactNode;
-}) {
-  const photos = photosOf(p);
-  return (
-    <div className={`group relative flex flex-col justify-end overflow-hidden rounded-2xl bg-slate-900 text-white shadow-md ${className}`}>
-      <div className="absolute inset-0">
-        <ProductImage photos={photos} name={p.name} dark onZoom={onZoom} />
-      </div>
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
-      <div className="relative z-10 flex flex-col gap-1 p-3">
-        {p.category && <span className="text-[10.5px] font-bold uppercase tracking-wide text-white/70">{p.category}</span>}
-        <h4 className="line-clamp-1 text-sm font-extrabold">{p.name}</h4>
-        <div className="mt-0.5 flex items-center justify-between gap-2">
-          <span className="text-[13px] font-extrabold text-emerald-200">{formatMoney(p.price_cents, p.currency)}</span>
-          {action ?? (ops ? <QtyControl p={p} qty={qty} ops={ops} onDark /> : null)}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function GridCard({
-  p,
-  qty,
-  ops,
-  dark,
-  onZoom,
-}: {
-  p: Product;
-  qty: number;
-  ops: CartOps;
-  dark?: boolean;
-  onZoom: (photos: string[], index: number) => void;
-}) {
-  const c = useCopy();
-  const photos = photosOf(p);
-  const [imgIdx, setImgIdx] = useState(0);
-  const [touchStartX, setTouchStartX] = useState<number | null>(null);
-
-  function handleEnd(clientX: number) {
-    if (touchStartX === null) return;
-    const deltaX = touchStartX - clientX;
-    setTouchStartX(null);
-    if (photos.length < 2) return;
-    if (deltaX > 30) setImgIdx((prev) => (prev + 1) % photos.length);
-    else if (deltaX < -30) setImgIdx((prev) => (prev - 1 + photos.length) % photos.length);
-  }
-
-  return (
-    <div className={`flex flex-col overflow-hidden rounded-2xl shadow-[0_2px_10px_rgba(17,27,33,0.06)] ring-1 ${dark ? "bg-[#1F2937] text-white ring-gray-700" : "bg-white text-ink ring-line"}`}>
-      <div
-        className="relative aspect-[4/5] w-full select-none"
-        onTouchStart={(e) => setTouchStartX(e.touches[0].clientX)}
-        onTouchEnd={(e) => handleEnd(e.changedTouches[0].clientX)}
-      >
-        <ProductImage photos={photos} name={p.name} dark={dark} onZoom={onZoom} index={imgIdx} />
-
-        {p.sold_count > 0 && (
-          <span className="absolute left-2 top-2 rounded-full bg-white/90 px-2 py-0.5 text-[10.5px] font-bold text-brand shadow-sm">
-            {c.sold(p.sold_count)}
-          </span>
-        )}
-        {p.stock_state === "fini" && (
-          <span className="absolute right-2 top-2 rounded-full bg-[#FCE4E4] px-2 py-0.5 text-[10.5px] font-bold text-[#C0392B]">{c.soldOut}</span>
-        )}
-
-        {photos.length > 1 && (
-          <>
-            <button onClick={() => setImgIdx((prev) => (prev - 1 + photos.length) % photos.length)} aria-label={c.previous}
-              className="absolute left-1.5 top-1/2 z-10 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full bg-white/85 shadow active:scale-90">
-              <ChevronIcon color="#111B21" dir="left" size={14} />
-            </button>
-            <button onClick={() => setImgIdx((prev) => (prev + 1) % photos.length)} aria-label={c.next}
-              className="absolute right-1.5 top-1/2 z-10 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full bg-white/85 shadow active:scale-90">
-              <ChevronIcon color="#111B21" dir="right" size={14} />
-            </button>
-            <div className="pointer-events-none absolute inset-x-0 bottom-2 z-10 flex justify-center gap-1.5">
-              {photos.map((_, idx) => (
-                <span key={idx} className={`h-1.5 rounded-full transition-all ${idx === imgIdx ? "w-4 bg-brand" : "w-1.5 bg-white/80"}`} />
-              ))}
-            </div>
-          </>
-        )}
-      </div>
-
-      <div className="flex flex-1 flex-col justify-between gap-1 p-3">
-        <div>
-          <span className="line-clamp-1 text-[13.5px] font-semibold">{p.name}</span>
-          <div className="mt-0.5"><PriceLabel p={p} /></div>
-        </div>
-        <div className="mt-2">
-          {p.stock_state === "fini" ? <span className="text-[12px] text-ink-faint">{c.unavailable}</span> : <QtyControl p={p} qty={qty} ops={ops} />}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function MenuRow({ p, qty, ops, dark, boxed }: { p: Product; qty: number; ops: CartOps; dark?: boolean; boxed?: boolean }) {
-  const c = useCopy();
-  const photos = photosOf(p);
-  const shell = boxed
-    ? `rounded-2xl border p-3 ${dark ? "border-slate-700 bg-[#1F2937]" : "border-slate-200 bg-white"}`
-    : `border-b px-4 py-3 ${dark ? "border-gray-800 bg-[#111827]" : "border-[#F2F4F5] bg-white"}`;
-  return (
-    <div className={`flex items-center gap-3 ${shell}`}>
-      <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-2xl">
-        <ProductImage photos={photos} name={p.name} dark={dark} compact />
-      </div>
-      <div className="flex min-w-0 flex-1 flex-col gap-1">
-        <span className="line-clamp-1 text-[15px] font-bold leading-snug">{p.name}</span>
-        <div className="flex items-center gap-2">
-          <PriceLabel p={p} />
-          {p.sold_count > 0 && <span className="text-[11px] text-ink-faint">· {c.sold(p.sold_count)}</span>}
-        </div>
-      </div>
-      <QtyControl p={p} qty={qty} ops={ops} />
-    </div>
-  );
-}
-
-function FoodCard({
-  p,
-  qty,
-  ops,
-  dark,
-  onZoom,
-}: {
-  p: Product;
-  qty: number;
-  ops: CartOps;
-  dark?: boolean;
-  onZoom: (photos: string[], index: number) => void;
-}) {
-  const c = useCopy();
-  const photos = photosOf(p);
-  return (
-    <div className={`group relative flex flex-col overflow-hidden rounded-2xl border shadow-md transition-shadow hover:shadow-xl sm:rounded-3xl ${dark ? "border-slate-700 bg-[#1E293B] text-white" : "border-slate-200 bg-white text-ink"}`}>
-      {/* Format 4:5 pour voir le plat en entier */}
-      <div className="relative aspect-[4/5] w-full overflow-hidden">
-        <ProductImage photos={photos} name={p.name} dark={dark} onZoom={onZoom} />
-        <div className="absolute left-2 top-2 z-10 flex flex-wrap gap-1">
-          {p.category && (
-            <span className="max-w-[110px] truncate rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-extrabold uppercase text-slate-950">{p.category}</span>
-          )}
-          {p.sold_count > 0 && (
-            <span className="hidden rounded-full bg-emerald-500 px-2 py-0.5 text-[10px] font-extrabold text-white sm:inline-block">{c.bestSeller}</span>
-          )}
-        </div>
-      </div>
-      <div className="flex flex-1 flex-col justify-between gap-2 p-2.5 sm:p-3.5">
-        <div>
-          <h3 className="line-clamp-1 text-[13px] font-extrabold leading-tight sm:text-sm">{p.name}</h3>
-          {p.unit && <span className="mt-0.5 block line-clamp-1 text-[11px] text-slate-400">{p.unit}</span>}
-          <div className="mt-1 text-amber-600"><PriceLabel p={p} /></div>
-        </div>
-        <div className={`border-t pt-2 ${dark ? "border-slate-800" : "border-slate-200"}`}>
-          <QtyControl p={p} qty={qty} ops={ops} />
-        </div>
-      </div>
-    </div>
-  );
-}
-
 /* ─────────── Utilitaires ─────────── */
 
 function initialsOf(name: string): string {
@@ -963,15 +634,6 @@ function socialLinks(b: Business, dark?: boolean) {
 
 function WaIcon() {
   return <svg width="22" height="22" viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1 0 12 2zm0 18a8 8 0 0 1-4.2-1.2l-.3-.2-2.9.8.8-2.8-.2-.3A8 8 0 1 1 12 20z" /></svg>;
-}
-function PlusIcon() {
-  return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#008069" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>;
-}
-function BagIcon({ color, size = 40 }: { color: string; size?: number }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" /><path d="M3 6h18" /><path d="M16 10a4 4 0 0 1-8 0" /></svg>;
-}
-function ChevronIcon({ color, dir, size = 18 }: { color: string; dir: "left" | "right"; size?: number }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={dir === "left" ? "m15 18-6-6 6-6" : "m9 6 6 6-6 6"} /></svg>;
 }
 function CloseIcon({ color }: { color: string }) {
   return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.4" strokeLinecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>;

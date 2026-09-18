@@ -1,5 +1,6 @@
 import type { Business, Product } from "./types";
 import { INDUSTRY_SECTORS } from "./verticals";
+import { paletteFor } from "./storefront-designs";
 
 // Vitrine d'exemple par secteur, pour que la console montre chaque
 // disposition sans dépendre d'un compte marchand. Les visuels sont des
@@ -8,9 +9,8 @@ import { INDUSTRY_SECTORS } from "./verticals";
 
 type Sample = { name: string; price: number; emoji: string; unit?: string };
 
-const SAMPLES: Record<string, { colors: [string, string]; items: Sample[] }> = {
+const SAMPLES: Record<string, { items: Sample[] }> = {
   commerce_vente: {
-    colors: ["#FDE68A", "#F59E0B"],
     items: [
       { name: "Sneakers urbaines", price: 3500, emoji: "👟" },
       { name: "Sac à main", price: 2800, emoji: "👜" },
@@ -20,7 +20,6 @@ const SAMPLES: Record<string, { colors: [string, string]; items: Sample[] }> = {
     ],
   },
   restauration: {
-    colors: ["#FECACA", "#EF4444"],
     items: [
       { name: "Griot & bannann", price: 750, emoji: "🍖", unit: "Portion" },
       { name: "Diri kole ak pwa", price: 450, emoji: "🍛", unit: "Plat" },
@@ -30,17 +29,15 @@ const SAMPLES: Record<string, { colors: [string, string]; items: Sample[] }> = {
     ],
   },
   immobilier: {
-    colors: ["#BFDBFE", "#1E3A8A"],
     items: [
-      { name: "Appartement 2 ch. – Pétion-Ville", price: 90000, emoji: "🏢", unit: "/ mois" },
+      { name: "Appartement 2 ch. – Pétion-Ville", price: 90000, emoji: "🏢", unit: "mois" },
       { name: "Maison 3 ch. – Tabarre", price: 12500000, emoji: "🏠" },
       { name: "Terrain 500 m² – Croix-des-Bouquets", price: 3500000, emoji: "🌳" },
-      { name: "Local commercial – Delmas", price: 60000, emoji: "🏬", unit: "/ mois" },
-      { name: "Studio meublé", price: 45000, emoji: "🛏️", unit: "/ mois" },
+      { name: "Local commercial – Delmas", price: 60000, emoji: "🏬", unit: "mois" },
+      { name: "Studio meublé", price: 45000, emoji: "🛏️", unit: "mois" },
     ],
   },
   automobile: {
-    colors: ["#E5E7EB", "#374151"],
     items: [
       { name: "Toyota RAV4 2018", price: 2800000, emoji: "🚙" },
       { name: "Kit de freins", price: 6500, emoji: "🛞" },
@@ -50,7 +47,6 @@ const SAMPLES: Record<string, { colors: [string, string]; items: Sample[] }> = {
     ],
   },
   sante_bienetre: {
-    colors: ["#CCFBF1", "#0D9488"],
     items: [
       { name: "Consultation générale", price: 1500, emoji: "🩺" },
       { name: "Bilan sanguin", price: 3500, emoji: "🧪" },
@@ -60,7 +56,6 @@ const SAMPLES: Record<string, { colors: [string, string]; items: Sample[] }> = {
     ],
   },
   beaute_services: {
-    colors: ["#FBCFE8", "#DB2777"],
     items: [
       { name: "Tresses", price: 2500, emoji: "💇🏾‍♀️" },
       { name: "Manucure gel", price: 1500, emoji: "💅🏾" },
@@ -70,27 +65,24 @@ const SAMPLES: Record<string, { colors: [string, string]; items: Sample[] }> = {
     ],
   },
   education: {
-    colors: ["#C7D2FE", "#4338CA"],
     items: [
       { name: "Anglais débutant (8 sem.)", price: 12000, emoji: "🗣️" },
       { name: "Informatique de base", price: 9000, emoji: "💻" },
       { name: "Bootcamp marketing", price: 15000, emoji: "📈" },
-      { name: "Coaching 1-on-1", price: 3000, emoji: "🎯", unit: "/ séance" },
+      { name: "Coaching 1-on-1", price: 3000, emoji: "🎯", unit: "séance" },
       { name: "Cours du soir – Maths", price: 5000, emoji: "📐" },
     ],
   },
   services_pros: {
-    colors: ["#DBEAFE", "#1E40AF"],
     items: [
-      { name: "Comptabilité mensuelle", price: 10000, emoji: "📊", unit: "/ mois" },
+      { name: "Comptabilité mensuelle", price: 10000, emoji: "📊", unit: "mois" },
       { name: "Rédaction de contrat", price: 7500, emoji: "📝" },
       { name: "Audit & conseil", price: 20000, emoji: "🔍" },
-      { name: "Assurance auto", price: 15000, emoji: "🛡️", unit: "/ an" },
+      { name: "Assurance auto", price: 15000, emoji: "🛡️", unit: "an" },
       { name: "Création d'entreprise", price: 25000, emoji: "🏛️" },
     ],
   },
   construction: {
-    colors: ["#FED7AA", "#EA580C"],
     items: [
       { name: "Kit solaire 1 kW", price: 150000, emoji: "☀️" },
       { name: "Sac de ciment", price: 950, emoji: "🧱" },
@@ -100,17 +92,15 @@ const SAMPLES: Record<string, { colors: [string, string]; items: Sample[] }> = {
     ],
   },
   digital_tech: {
-    colors: ["#A5F3FC", "#0891B2"],
     items: [
       { name: "Site vitrine", price: 45000, emoji: "🌐" },
       { name: "Logo & identité", price: 15000, emoji: "✏️" },
-      { name: "Gestion réseaux sociaux", price: 12000, emoji: "📱", unit: "/ mois" },
+      { name: "Gestion réseaux sociaux", price: 12000, emoji: "📱", unit: "mois" },
       { name: "Application mobile", price: 180000, emoji: "📲" },
       { name: "Maintenance PC", price: 2500, emoji: "🖥️" },
     ],
   },
   grossistes_distribution: {
-    colors: ["#FEF3C7", "#B45309"],
     items: [
       { name: "Riz – sac 50 lb", price: 4800, emoji: "🌾" },
       { name: "Huile – carton 12 L", price: 7200, emoji: "🫒" },
@@ -170,7 +160,7 @@ export function demoStorefront(sectorId: string, theme: string): { business: Bus
     unit: item.unit ?? null,
     stock_qty: 20,
     stock_state: "en_stok",
-    photo_url: art(item.emoji, sample.colors, i),
+    photo_url: art(item.emoji, [paletteFor(key).soft, paletteFor(key).strong], i),
     sold_count: 50 - i * 8,
     is_active: true,
   }));

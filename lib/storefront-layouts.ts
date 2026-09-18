@@ -1,26 +1,24 @@
 import type { DesignLayoutConfig } from "./platform-config";
 
-// Dispositions de la vitrine publique : la section « mis en avant » affiche
-// exactement le nombre d'images de la disposition choisie, rien de plus. Le
-// reste des produits se trouve dans le catalogue complet.
+// Niveaux de design de la vitrine : design1 (Gratis), design2 (Pro),
+// design3 (Premium). Ce que chaque niveau affiche dépend du type de commerce
+// (lib/storefront-designs) ; ce fichier ne règle que l'accès selon le plan.
 //
-// Les clés restent celles déjà enregistrées en base (design1…3) pour ne pas
-// casser les vitrines existantes.
+// Les clés restent celles déjà enregistrées en base pour ne pas casser les
+// vitrines existantes.
 
 export type LayoutKey = "design1" | "design2" | "design3";
 type PlanTier = "gratis" | "pro" | "premium";
 
 export interface StorefrontLayout {
   key: LayoutKey;
-  /** Nombre de produits mis en avant. */
-  slots: 3 | 4;
   minPlan: PlanTier;
 }
 
 export const STOREFRONT_LAYOUTS: StorefrontLayout[] = [
-  { key: "design1", slots: 4, minPlan: "gratis" }, // Grille : 4 cartes égales
-  { key: "design2", slots: 3, minPlan: "pro" }, // Vedette : 1 grande + 2
-  { key: "design3", slots: 4, minPlan: "premium" }, // Mosaïque : 1 grande + 3
+  { key: "design1", minPlan: "gratis" },
+  { key: "design2", minPlan: "pro" },
+  { key: "design3", minPlan: "premium" },
 ];
 
 /** Disposition de repli, toujours disponible quel que soit le plan. */
@@ -30,10 +28,6 @@ const RANK: Record<string, number> = { gratis: 0, qr_express: 0, pro: 1, premium
 
 export function isLayoutKey(value: unknown): value is LayoutKey {
   return STOREFRONT_LAYOUTS.some((l) => l.key === value);
-}
-
-export function layoutSlots(key: LayoutKey): number {
-  return STOREFRONT_LAYOUTS.find((l) => l.key === key)?.slots ?? 4;
 }
 
 /**

@@ -53,6 +53,13 @@ export interface StorefrontCopy {
   confirmSend: string;
   scheduleVisit: string;
   previewBanner: string;
+  ctaBook: string;
+  ctaEnroll: string;
+  ctaAppointment: string;
+  ctaQuote: string;
+  popular: string;
+  colProduct: string;
+  colPrice: string;
   phoneBanner: (phone: string, old: string) => string;
   phoneMention: (date: string) => string;
   sectors: Record<string, { label: string; catalog: string }>;
@@ -115,6 +122,13 @@ const fr: StorefrontCopy = {
   confirmSend: "Envoyer la commande sur WhatsApp",
   scheduleVisit: "Demander une visite",
   previewBanner: "Aperçu de la mise en page — rien n'est enregistré",
+  ctaBook: "Réserver",
+  ctaEnroll: "S'inscrire",
+  ctaAppointment: "Prendre RDV",
+  ctaQuote: "Demander un devis",
+  popular: "Le plus demandé",
+  colProduct: "Article",
+  colPrice: "Prix",
   phoneBanner: (phone, old) => `Notre numéro WhatsApp a changé : ${phone}. L'ancien (${old}) n'est plus utilisé.`,
   phoneMention: (date) => `Nouveau numéro WhatsApp depuis le ${date}`,
   sectors: {
@@ -188,6 +202,13 @@ const ht: StorefrontCopy = {
   confirmSend: "Voye kòmand lan sou WhatsApp",
   scheduleVisit: "Mande yon vizit",
   previewBanner: "Apèsi mizanpaj la — anyen pa anrejistre",
+  ctaBook: "Rezève",
+  ctaEnroll: "Enskri",
+  ctaAppointment: "Pran randevou",
+  ctaQuote: "Mande yon devi",
+  popular: "Sa moun plis mande",
+  colProduct: "Atik",
+  colPrice: "Pri",
   phoneBanner: (phone, old) => `Nimewo WhatsApp nou an chanje : ${phone}. Nou pa sèvi ak ansyen an (${old}) ankò.`,
   phoneMention: (date) => `Nouvo nimewo WhatsApp depi ${date}`,
   sectors: {
@@ -261,6 +282,13 @@ const en: StorefrontCopy = {
   confirmSend: "Send the order on WhatsApp",
   scheduleVisit: "Request a visit",
   previewBanner: "Layout preview — nothing is saved",
+  ctaBook: "Book",
+  ctaEnroll: "Enroll",
+  ctaAppointment: "Book appointment",
+  ctaQuote: "Request a quote",
+  popular: "Most requested",
+  colProduct: "Item",
+  colPrice: "Price",
   phoneBanner: (phone, old) => `Our WhatsApp number has changed: ${phone}. The old one (${old}) is no longer used.`,
   phoneMention: (date) => `New WhatsApp number since ${date}`,
   sectors: {

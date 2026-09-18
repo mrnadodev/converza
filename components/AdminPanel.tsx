@@ -28,7 +28,10 @@ import { STOREFRONT_COPY } from "@/lib/i18n/storefront";
 import { csvCell } from "@/lib/reports";
 import { formatMoney } from "@/lib/money";
 import { THEMES } from "@/lib/themes";
-import { INDUSTRY_SECTORS } from "@/lib/verticals";
+import { INDUSTRY_SECTORS, verticalOf } from "@/lib/verticals";
+import { designFor, paletteFor } from "@/lib/storefront-designs";
+import { DESIGN_COPY, designName } from "@/lib/i18n/app/designs";
+import { LayoutThumb as LayoutThumbMini } from "@/components/LayoutThumb";
 import type { AdminData, AdminMerchant } from "@/lib/admin-data";
 import type { BankAccountDetails, Plan } from "@/lib/plans";
 import type { DesignLayoutConfig, QrMenuServiceConfig } from "@/lib/platform-config";
@@ -1129,6 +1132,8 @@ function PlatformTab({ data, run, pending }: { data: AdminData; run: Runner; pen
   // Par défaut, une vitrine d'exemple : on voit chaque modèle par type de
   // commerce sans dépendre d'un compte marchand.
   const [source, setSource] = useState<PreviewSource>({ kind: "demo", sector: "commerce_vente", theme: "whatsapp" });
+  const designCopy = useDict(DESIGN_COPY);
+  const previewSector = sectorOfSource(source, data.merchants);
 
   const [designs, setDesigns] = useState<DesignLayoutConfig[]>(
     settings?.designs ?? [
@@ -1231,8 +1236,11 @@ function PlatformTab({ data, run, pending }: { data: AdminData; run: Runner; pen
       <Card>
         <CardTitle title={a.platform.designsTitle} hint={a.platform.designsHint} />
         <PreviewControls source={source} onChange={setSource} merchants={data.merchants} />
+        <p className="mt-2 text-[11.5px] text-ink-muted">{designName(designCopy, previewSector, 0).name} · {designName(designCopy, previewSector, 1).name} · {designName(designCopy, previewSector, 2).name}</p>
         <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
-          {STOREFRONT_LAYOUTS.map((l) => {
+          {STOREFRONT_LAYOUTS.map((l, index) => {
+            const spec = designFor(previewSector, l.key);
+            const names = designName(designCopy, previewSector, index as 0 | 1 | 2);
             const rule = layoutRule(l.key, designs);
             const isBase = l.key === DEFAULT_LAYOUT;
             // Les noms stockés en base datent d'une ancienne version : on
@@ -1245,10 +1253,13 @@ function PlatformTab({ data, run, pending }: { data: AdminData; run: Runner; pen
               });
             return (
               <div key={l.key} className={`flex flex-col gap-2.5 rounded-xl border p-3 ${rule.enabled ? "border-emerald-300 bg-[#F3F8F6]" : "border-line bg-[#F7F8F9] opacity-70"}`}>
-                <MiniStorefront src={`${previewSrc(source, l.key)}#vedettes`} title={look.designs[l.key]} onOpen={() => setPreviewLayout(l.key)} />
+                <MiniStorefront src={`${previewSrc(source, l.key)}#vedettes`} title={names.name} onOpen={() => setPreviewLayout(l.key)} />
                 <div className="flex items-baseline justify-between gap-2">
-                  <span className="text-sm font-extrabold">{look.designs[l.key]}</span>
-                  <span className="text-[11px] font-bold text-ink-muted">{look.images(l.slots)}</span>
+                  <span className="flex min-w-0 items-center gap-2">
+                    <span className="w-14 shrink-0"><LayoutThumbMini shape={spec.shape} color={paletteFor(previewSector).strong} /></span>
+                    <span className="text-sm font-extrabold">{names.name}</span>
+                  </span>
+                  <span className="shrink-0 text-[11px] font-bold text-ink-muted">{look.images(spec.slots)}</span>
                 </div>
                 <label className="flex items-center justify-between gap-2 text-[11.5px] font-bold text-ink-muted">
                   {a.platform.minPlanLabel}
@@ -1562,65 +1573,84 @@ function previewSrc(source: PreviewSource, layout: LayoutKey): string {
     : `/b/${source.slug}?apercu=${layout}`;
 }
 
+/** Type de commerce affiché par l'aperçu. */
+function sectorOfSource(source: PreviewSource, merchants: AdminMerchant[]): string {
+  if (source.kind === "demo") return source.sector;
+  return verticalOf(merchants.find((m) => m.slug === source.slug)?.business_type).id;
+}
+
 /**
- * Choix du type de commerce (exemple fictif) ou d'une vitrine réelle, et des
- * couleurs de l'exemple.
+ * Choix du type de commerce (vitrine d'exemple) ou d'une vitrine réelle, et
+ * des couleurs de l'exemple.
  */
 function PreviewControls({ source, onChange, merchants }: { source: PreviewSource; onChange: (s: PreviewSource) => void; merchants: AdminMerchant[] }) {
   const a = useDict(ADMIN_COPY);
   const sectors = useDict(STOREFRONT_COPY).sectors;
   const shops = useMemo(() => [...merchants].filter((m) => m.products > 0).sort((x, y) => y.products - x.products), [merchants]);
-  const value = source.kind === "demo" ? `demo:${source.sector}` : `shop:${source.slug}`;
   const theme = source.kind === "demo" ? source.theme : "whatsapp";
+  const current = sectorOfSource(source, merchants);
 
   return (
-    <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl bg-[#F7F8F9] p-2.5">
-      <label className="flex min-w-0 items-center gap-2 text-xs font-bold text-ink-muted">
-        {a.platform.sectorLabel}
-        <select
-          value={value}
-          onChange={(e) => {
-            const [kind, id] = e.target.value.split(":");
-            onChange(kind === "demo" ? { kind: "demo", sector: id, theme } : { kind: "shop", slug: id });
-          }}
-          className="h-9 max-w-[240px] rounded-lg border border-line bg-white px-2 text-xs font-bold text-ink outline-none"
-        >
-          <optgroup label={a.platform.demoGroup}>
-            {Object.keys(INDUSTRY_SECTORS).map((k) => (
-              <option key={k} value={`demo:${k}`}>{sectors[k]?.label ?? k}</option>
-            ))}
-          </optgroup>
-          {shops.length > 0 && (
-            <optgroup label={a.platform.shopsGroup}>
-              {shops.map((m) => (
-                <option key={m.id} value={`shop:${m.slug}`}>{m.name} ({m.products})</option>
+    <div className="mt-3 flex flex-col gap-2.5 rounded-xl bg-[#F7F8F9] p-2.5">
+      <span className="text-xs font-bold text-ink-muted">{a.platform.sectorLabel}</span>
+      <div className="-mx-2.5 flex gap-1.5 overflow-x-auto px-2.5 pb-1 [scrollbar-width:thin]">
+        {Object.keys(INDUSTRY_SECTORS).map((k) => {
+          const active = source.kind === "demo" && current === k;
+          return (
+            <button
+              key={k}
+              type="button"
+              onClick={() => onChange({ kind: "demo", sector: k, theme })}
+              aria-pressed={active}
+              className={`flex shrink-0 cursor-pointer items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-extrabold ${active ? "bg-ink text-white" : "border border-line bg-white text-ink-soft"}`}
+            >
+              <span className="h-2.5 w-2.5 rounded-full" style={{ background: paletteFor(k).strong }} />
+              {sectors[k]?.label ?? k}
+            </button>
+          );
+        })}
+      </div>
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+        {source.kind === "demo" ? (
+          <div className="flex items-center gap-2 text-xs font-bold text-ink-muted">
+            {a.platform.colorsLabel}
+            <div className="flex gap-1.5">
+              {Object.entries(THEMES).map(([k, th]) => (
+                <button
+                  key={k}
+                  type="button"
+                  title={th.label}
+                  aria-label={th.label}
+                  aria-pressed={theme === k}
+                  onClick={() => onChange({ ...source, theme: k })}
+                  className={`h-7 w-7 cursor-pointer rounded-full ${theme === k ? "ring-2 ring-ink ring-offset-2" : ""}`}
+                  style={{ background: th.accent }}
+                />
               ))}
-            </optgroup>
-          )}
-        </select>
-      </label>
-      {source.kind === "demo" ? (
-        <div className="flex items-center gap-2 text-xs font-bold text-ink-muted">
-          {a.platform.colorsLabel}
-          <div className="flex gap-1.5">
-            {Object.entries(THEMES).map(([k, th]) => (
-              <button
-                key={k}
-                type="button"
-                title={th.label}
-                aria-label={th.label}
-                aria-pressed={theme === k}
-                onClick={() => onChange({ ...source, theme: k })}
-                className={`h-7 w-7 cursor-pointer rounded-full ${theme === k ? "ring-2 ring-ink ring-offset-2" : ""}`}
-                style={{ background: th.accent }}
-              />
-            ))}
+            </div>
           </div>
-        </div>
-      ) : (
-        <span className="text-[11px] text-ink-faint">{a.platform.shopColorsNote}</span>
-      )}
-      {source.kind === "demo" && <span className="w-full text-[11px] text-ink-faint">{a.platform.demoNote}</span>}
+        ) : (
+          <span className="text-[11px] text-ink-faint">{a.platform.shopColorsNote}</span>
+        )}
+        {shops.length > 0 && (
+          <label className="flex min-w-0 items-center gap-2 text-xs font-bold text-ink-muted">
+            {a.platform.shopsGroup}
+            <select
+              value={source.kind === "shop" ? source.slug : ""}
+              onChange={(e) => (e.target.value ? onChange({ kind: "shop", slug: e.target.value }) : onChange({ kind: "demo", sector: current, theme }))}
+              className="h-8 max-w-[220px] rounded-lg border border-line bg-white px-2 text-xs font-bold text-ink outline-none"
+            >
+              <option value="">—</option>
+              {shops.map((m) => (
+                <option key={m.id} value={m.slug}>
+                  {m.name} ({m.products})
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+      </div>
+      {source.kind === "demo" && <span className="text-[11px] text-ink-faint">{a.platform.demoNote}</span>}
     </div>
   );
 }
@@ -1665,6 +1695,7 @@ function LayoutPreviewModal({
   const a = useDict(ADMIN_COPY);
   const look = useDict(SETTINGS_COPY).look;
   const [source, setSource] = useState<PreviewSource>(initialSource);
+  const designCopy = useDict(DESIGN_COPY);
   const [layout, setLayout] = useState<LayoutKey>(initial);
   const [device, setDevice] = useState<"phone" | "desktop">("phone");
   const src = previewSrc(source, layout);
@@ -1691,7 +1722,7 @@ function LayoutPreviewModal({
                     onClick={() => setLayout(l.key)}
                     className={`cursor-pointer rounded-lg px-3 py-1.5 text-xs font-bold ${layout === l.key ? "bg-white text-brand shadow-sm" : "text-ink-muted"}`}
                   >
-                    {look.designs[l.key]} · {l.slots}
+                    {designName(designCopy, sectorOfSource(source, merchants), STOREFRONT_LAYOUTS.indexOf(l) as 0 | 1 | 2).name}
                   </button>
                 ))}
               </div>
@@ -1729,6 +1760,7 @@ function CockpitModal({ merchant, onClose, onRefresh }: { merchant: AdminMerchan
   const a = useDict(ADMIN_COPY);
   const c = useDict(COMMON_COPY);
   const look = useDict(SETTINGS_COPY).look;
+  const designCopy = useDict(DESIGN_COPY);
   const sectors = useDict(STOREFRONT_COPY).sectors;
   const [pending, start] = useTransition();
   const [tab, setTab] = useState<keyof AdminCopy["cockpit"]["tabs"]>("structure");
@@ -1885,7 +1917,7 @@ function CockpitModal({ merchant, onClose, onRefresh }: { merchant: AdminMerchan
                 <select value={form.layout} onChange={(e) => set({ layout: e.target.value as LayoutKey })} className={inputCls}>
                   {STOREFRONT_LAYOUTS.map((l) => (
                     <option key={l.key} value={l.key}>
-                      {look.designs[l.key]} · {look.images(l.slots)}
+                      {designName(designCopy, verticalOf(form.business_type).id, STOREFRONT_LAYOUTS.indexOf(l) as 0 | 1 | 2).name} · {look.images(designFor(verticalOf(form.business_type).id, l.key).slots)}
                     </option>
                   ))}
                 </select>

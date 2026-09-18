@@ -1,11 +1,21 @@
 import { describe, expect, it } from "vitest";
-import { layoutAllowed, layoutSlots, resolveLayout } from "./storefront-layouts";
+import { layoutAllowed, resolveLayout } from "./storefront-layouts";
+import { SECTOR_DESIGNS, designFor } from "./storefront-designs";
+import { DESIGN_COPY } from "./i18n/app/designs";
+import { INDUSTRY_SECTORS } from "./verticals";
 
 describe("dispositions de vitrine", () => {
-  it("fixe 3 ou 4 images par disposition", () => {
-    expect(layoutSlots("design1")).toBe(4);
-    expect(layoutSlots("design2")).toBe(3);
-    expect(layoutSlots("design3")).toBe(4);
+  it("donne 3 designs à chaque type de commerce, de 3 ou 4 images", () => {
+    for (const sector of Object.keys(INDUSTRY_SECTORS)) {
+      expect(SECTOR_DESIGNS[sector], sector).toHaveLength(3);
+      for (const spec of SECTOR_DESIGNS[sector]) expect([3, 4]).toContain(spec.slots);
+      for (const lang of ["fr", "ht", "en"] as const) expect(DESIGN_COPY[lang][sector], `${lang} ${sector}`).toHaveLength(3);
+    }
+  });
+
+  it("met la Vedette en design Pro du commerce", () => {
+    expect(designFor("commerce_vente", "design2").shape).toBe("hero3");
+    expect(designFor("secteur inconnu", "design1")).toEqual(designFor("commerce_vente", "design1"));
   });
 
   it("ramène une ancienne valeur ou une valeur inconnue à la grille", () => {

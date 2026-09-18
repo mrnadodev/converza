@@ -10,7 +10,7 @@ import { useDict } from "@/components/LanguageContext";
 import { COMMON_COPY } from "@/lib/i18n/app/common";
 import { SETTINGS_COPY } from "@/lib/i18n/app/settings";
 import { STOREFRONT_COPY } from "@/lib/i18n/storefront";
-import { VERTICALS } from "@/lib/verticals";
+import { VERTICALS, verticalOf } from "@/lib/verticals";
 import { THEMES } from "@/lib/themes";
 import { updateBusiness, type BusinessInput } from "@/app/reglaj/actions";
 import { parseBankAccounts, formatBankAccountsString, HAITI_BANKS, type BankAccountItem } from "@/lib/bank";
@@ -18,6 +18,8 @@ import type { Business } from "@/lib/types";
 import type { DesignLayoutConfig } from "@/lib/platform-config";
 import { STOREFRONT_LAYOUTS, layoutAllowed, layoutRule, resolveLayout } from "@/lib/storefront-layouts";
 import { LayoutThumb } from "@/components/LayoutThumb";
+import { designFor, paletteFor } from "@/lib/storefront-designs";
+import { DESIGN_COPY, designName } from "@/lib/i18n/app/designs";
 
 type Tab = "store" | "payments" | "delivery" | "look";
 
@@ -102,6 +104,8 @@ export function SettingsForm({ business, designs }: { business: Business; design
 
   const plan = (business.plan ?? "gratis").toLowerCase();
   const phoneLocked = Boolean(business.phone_e164?.trim());
+  const designCopy = useDict(DESIGN_COPY);
+  const sectorId = verticalOf(f.business_type).id;
 
   return (
     <div className="app-page min-h-[100dvh] bg-[#F7F8F9] pb-28">
@@ -496,7 +500,10 @@ export function SettingsForm({ business, designs }: { business: Business; design
                 <span className="text-[13px] font-semibold text-ink-soft">{s.look.layout}</span>
                 <span className="text-[12px] leading-snug text-ink-muted">{s.look.layoutHint}</span>
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                  {STOREFRONT_LAYOUTS.map((l) => {
+                  {STOREFRONT_LAYOUTS.map((l, index) => {
+                    // Seuls les 3 designs du secteur de la boutique sont proposés.
+                    const spec = designFor(sectorId, l.key);
+                    const names = designName(designCopy, sectorId, index as 0 | 1 | 2);
                     const rule = layoutRule(l.key, designs);
                     const allowed = layoutAllowed(l.key, plan, designs);
                     const selected = f.layout === l.key;
@@ -517,12 +524,13 @@ export function SettingsForm({ business, designs }: { business: Business; design
                           aria-pressed={selected}
                           className="flex cursor-pointer flex-col gap-2 text-left disabled:cursor-not-allowed"
                         >
-                          <LayoutThumb layout={l.key} active={selected} />
+                          <LayoutThumb shape={spec.shape} color={paletteFor(sectorId).strong} active={selected} />
                           <span className="flex items-center justify-between gap-2">
-                            <span className="text-[13.5px] font-extrabold text-ink">{s.look.designs[l.key]}</span>
+                            <span className="text-[13.5px] font-extrabold text-ink">{names.name}</span>
                             {selected && <span className="rounded-full bg-brand px-2 py-0.5 text-[10.5px] font-bold text-white">{s.look.selected}</span>}
                           </span>
-                          <span className="text-[11.5px] text-ink-muted">{allowed ? s.look.images(l.slots) : lock}</span>
+                          <span className="text-[11.5px] leading-snug text-ink-muted">{names.desc}</span>
+                          <span className="text-[11.5px] font-semibold text-ink-soft">{allowed ? s.look.images(spec.slots) : lock}</span>
                         </button>
                         <a
                           href={`/b/${business.slug}?apercu=${l.key}`}
