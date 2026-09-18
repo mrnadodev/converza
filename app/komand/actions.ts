@@ -44,8 +44,12 @@ export async function moveOrderStatus(orderId: string, status: OrderStatus) {
 
   if (error) return { ok: false, error: error.message };
 
-  // À la livraison, on incrémente le compteur de ventes (best-sellers).
-  if (status === "livre") {
+  // Stock et compteur de ventes sont tenus par la base (migration 5) : elle
+  // décompte une commande à sa confirmation et la restitue à l'annulation.
+  // Tant que la migration n'est pas passée (colonne absente), on garde
+  // l'ancien comptage à la livraison.
+  const { error: stockCheck } = await sb.from("orders").select("stock_applied").eq("id", orderId).maybeSingle();
+  if (stockCheck && status === "livre") {
     const { data: items } = await sb.from("order_items").select("product_id, qty").eq("order_id", orderId);
     for (const it of items ?? []) {
       if (it.product_id) {

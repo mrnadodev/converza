@@ -168,31 +168,6 @@ export async function deleteProduct(id: string) {
   return { ok: !error, error: error?.message };
 }
 
-export async function updateProductStock(id: string, qty: number) {
-  const denied = await denyUnless("canEditStock");
-  if (denied) return denied;
-  if (!hasSupabase()) return { ok: true, demo: true };
-  const sb = createClient();
-  const bid = await memberBusinessId(sb);
-  if (!bid) return { ok: false, error: "Ou pa konekte ak yon biznis" };
-  // Le seuil du produit fait foi pour l'état : l'appelant n'a pas à le calculer.
-  const { data: product } = await sb
-    .from("products")
-    .select("stock_threshold")
-    .eq("id", id)
-    .eq("business_id", bid)
-    .maybeSingle();
-  const cleanQty = Math.max(0, Math.floor(qty) || 0);
-  const { error } = await sb
-    .from("products")
-    .update({ stock_qty: cleanQty, stock_state: stockStateFor(cleanQty, product?.stock_threshold ?? 5) })
-    .eq("id", id)
-    .eq("business_id", bid);
-  revalidatePath("/katalog");
-  revalidatePath("/stok");
-  return { ok: !error, error: error?.message };
-}
-
 export async function publishPromoAction(input: {
   title: string;
   priceGdes: string;

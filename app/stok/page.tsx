@@ -1,9 +1,10 @@
 import { redirect } from "next/navigation";
 import { BottomNav } from "@/components/BottomNav";
-import { StockManager } from "@/components/StockManager";
-import { getCatalog, getMyBusiness, getPipeline, getCurrentUserSession, getRolePermissions } from "@/lib/data";
+import { StockManager, type MovementRow } from "@/components/StockManager";
+import { getCatalog, getMyBusiness, getPipeline, getCurrentUserSession, getRolePermissions, hasSupabase } from "@/lib/data";
+import { createClient } from "@/lib/supabase/server";
 
-// Écran Stòk — quantités en stock et rapports de ventes.
+// Écran Stòk — quantités, mouvements et rapports de ventes.
 export default async function StockPage() {
   const session = getCurrentUserSession();
   const permissions = getRolePermissions(session);
@@ -12,13 +13,54 @@ export default async function StockPage() {
     redirect("/");
   }
 
-  const [products, business, cards] = await Promise.all([getCatalog(), getMyBusiness(), getPipeline()]);
+  const [products, business, cards, history] = await Promise.all([getCatalog(), getMyBusiness(), getPipeline(), loadMovements()]);
 
   return (
     <div className="app-page with-topnav relative flex min-h-[100dvh] flex-col bg-[#F0F2F3]">
-      <StockManager business={business} initialProducts={products} cards={cards} canEdit={permissions.canEditStock} />
+      <StockManager
+        business={business}
+        initialProducts={products}
+        cards={cards}
+        canEdit={permissions.canEditStock}
+        movements={history.rows}
+        movementsAvailable={history.available}
+      />
 
       <BottomNav active="stok" userSession={session} />
     </div>
   );
+}
+
+/**
+ * Derniers mouvements de la boutique (RLS : seulement les siens).
+ * `available` est faux tant que la migration 5 n'a pas créé la table.
+ */
+async function loadMovements(): Promise<{ rows: MovementRow[]; available: boolean }> {
+  if (!hasSupabase()) return { rows: [], available: false };
+  const sb = createClient();
+  const [{ data, error }, { data: members }] = await Promise.all([
+    sb
+      .from("stock_movements")
+      .select("id, product_id, delta, kind, qty_after, note, created_at, created_by, products(name), orders(ref)")
+      .order("created_at", { ascending: false })
+      .limit(80),
+    sb.from("members").select("user_id, full_name"),
+  ]);
+  if (error) return { rows: [], available: false };
+
+  const names = new Map((members ?? []).map((m) => [m.user_id, m.full_name]));
+  const one = <T,>(v: T | T[] | null): T | null => (Array.isArray(v) ? v[0] ?? null : v);
+  const rows: MovementRow[] = (data ?? []).map((m) => ({
+    id: m.id,
+    productId: m.product_id,
+    productName: one(m.products as { name: string } | { name: string }[] | null)?.name ?? "—",
+    delta: Number(m.delta),
+    kind: m.kind,
+    qtyAfter: m.qty_after === null ? null : Number(m.qty_after),
+    note: m.note,
+    createdAt: m.created_at,
+    author: m.created_by ? names.get(m.created_by) ?? null : null,
+    orderRef: one(m.orders as { ref: string } | { ref: string }[] | null)?.ref ?? null,
+  }));
+  return { rows, available: true };
 }

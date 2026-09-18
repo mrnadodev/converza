@@ -2,25 +2,44 @@
 
 import Link from "next/link";
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { useDict, useLanguage } from "@/components/LanguageContext";
 import { STOCK_COPY } from "@/lib/i18n/app/stock";
 import { formatMoney } from "@/lib/money";
-import { updateProductStock } from "@/app/katalog/actions";
+import { recordStockMovement, type ManualMovementKind, type StockMovementError } from "@/app/stok/actions";
 import { generateSalesReportCSV, triggerSalesReportPDF } from "@/lib/reports";
 import { stockStateFor } from "@/lib/stock_ai";
 import type { Business, PipelineCard, Product } from "@/lib/types";
+
+export interface MovementRow {
+  id: string;
+  productId: string;
+  productName: string;
+  delta: number;
+  kind: "vente" | "annulation" | "entree" | "perte" | "correction";
+  qtyAfter: number | null;
+  note: string | null;
+  createdAt: string;
+  author: string | null;
+  orderRef: string | null;
+}
 
 export function StockManager({
   business,
   initialProducts,
   cards,
   canEdit = true,
+  movements = [],
+  movementsAvailable = false,
 }: {
   business: Business;
   initialProducts: Product[];
   cards: PipelineCard[];
   canEdit?: boolean;
+  movements?: MovementRow[];
+  /** Faux tant que la migration 5 n'a pas créé le journal. */
+  movementsAvailable?: boolean;
 }) {
   const s = useDict(STOCK_COPY);
   const { language } = useLanguage();
@@ -28,7 +47,9 @@ export function StockManager({
   const [filter, setFilter] = useState<"all" | "low" | "out">("all");
   const [search, setSearch] = useState("");
   const [timeframe, setTimeframe] = useState<"week" | "month" | "all">("month");
-  const [, startTransition] = useTransition();
+  const [tab, setTab] = useState<"products" | "history">("products");
+  const [editing, setEditing] = useState<Product | null>(null);
+  const router = useRouter();
 
   const valuationCents = products.reduce((acc, p) => acc + p.price_cents * (p.stock_qty ?? 0), 0);
   const lowCount = products.filter((p) => p.stock_state === "ba_stok" || p.stock_state === "fini").length;
@@ -41,14 +62,14 @@ export function StockManager({
     return matchSearch;
   });
 
-  function changeQty(p: Product, newQty: number) {
-    const qty = Math.max(0, newQty);
-    // L'affichage anticipe ce que le serveur va conclure du seuil.
-    const state = stockStateFor(qty, p.stock_threshold ?? 5);
-    setProducts((list) => list.map((item) => (item.id === p.id ? { ...item, stock_qty: qty, stock_state: state } : item)));
-    startTransition(() => {
-      updateProductStock(p.id, qty);
-    });
+  // Chaque changement passe par un mouvement nommé (entrée, perte,
+  // inventaire) : l'ancien pas-à-pas envoyait des totaux qui pouvaient
+  // arriver dans le désordre et ne disait pas pourquoi le stock changeait.
+  function applied(p: Product, qtyAfter: number | null) {
+    const state = stockStateFor(qtyAfter, p.stock_threshold ?? 5);
+    setProducts((list) => list.map((item) => (item.id === p.id ? { ...item, stock_qty: qtyAfter, stock_state: state } : item)));
+    setEditing(null);
+    router.refresh();
   }
 
   function downloadCSV() {
@@ -123,7 +144,27 @@ export function StockManager({
           </section>
         )}
 
-        {products.length === 0 ? (
+        {products.length > 0 && (
+          <div className="flex flex-col gap-2">
+            <div className="flex gap-1 rounded-xl bg-white p-1 ring-1 ring-line">
+              {(["products", "history"] as const).map((k) => (
+                <button
+                  key={k}
+                  onClick={() => setTab(k)}
+                  aria-pressed={tab === k}
+                  className={`h-9 flex-1 cursor-pointer rounded-lg text-xs font-extrabold ${tab === k ? "bg-brand text-white" : "text-ink-muted"}`}
+                >
+                  {s.tabs[k]}
+                </button>
+              ))}
+            </div>
+            <p className="px-1 text-[11.5px] leading-snug text-ink-muted">{s.auto}</p>
+          </div>
+        )}
+
+        {tab === "history" && products.length > 0 ? (
+          <MovementHistory rows={movements} available={movementsAvailable} />
+        ) : products.length === 0 ? (
           <section className="flex flex-col items-center gap-2 rounded-2xl border border-line bg-white p-8 text-center">
             <h2 className="text-base font-extrabold text-ink">{s.empty.title}</h2>
             <p className="max-w-sm text-[13px] leading-relaxed text-ink-muted">{s.empty.desc}</p>
@@ -183,33 +224,29 @@ export function StockManager({
                       </div>
                     </div>
 
-                    <div className="ml-2 flex shrink-0 items-center gap-1.5">
-                      <button
-                        onClick={() => changeQty(p, qty - 1)}
-                        disabled={!canEdit}
-                        aria-label={s.decrease}
-                        className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-xl border border-line bg-gray-100 text-sm font-black text-ink active:scale-90 disabled:opacity-40"
-                      >
-                        −
-                      </button>
-                      <input
-                        type="number"
-                        value={qty}
-                        disabled={!canEdit}
+                    <div className="ml-2 flex shrink-0 items-center gap-2">
+                      <span
                         aria-label={s.quantity}
-                        onChange={(e) => changeQty(p, parseInt(e.target.value, 10) || 0)}
-                        className={`h-8 w-14 rounded-xl border text-center text-xs font-extrabold outline-none disabled:opacity-60 ${
-                          out ? "border-red-400 bg-red-50 text-red-900" : low ? "border-amber-400 bg-amber-50 text-amber-900" : "border-line bg-gray-50 text-ink"
+                        className={`flex h-8 min-w-12 items-center justify-center rounded-xl border px-2 text-xs font-extrabold ${
+                          p.stock_qty === null
+                            ? "border-line bg-gray-50 text-ink-faint"
+                            : out
+                              ? "border-red-400 bg-red-50 text-red-900"
+                              : low
+                                ? "border-amber-400 bg-amber-50 text-amber-900"
+                                : "border-line bg-gray-50 text-ink"
                         }`}
-                      />
-                      <button
-                        onClick={() => changeQty(p, qty + 1)}
-                        disabled={!canEdit}
-                        aria-label={s.increase}
-                        className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-xl border border-brand-green bg-brand-green/20 text-sm font-black text-brand active:scale-90 disabled:opacity-40"
                       >
-                        +
-                      </button>
+                        {p.stock_qty === null ? s.untracked : qty}
+                      </span>
+                      {canEdit && (
+                        <button
+                          onClick={() => setEditing(p)}
+                          className="flex h-8 cursor-pointer items-center justify-center rounded-xl border border-brand bg-[#E7F7F1] px-3 text-xs font-extrabold text-brand active:scale-95"
+                        >
+                          {s.movement.open}
+                        </button>
+                      )}
                     </div>
                   </div>
                 );
@@ -222,6 +259,158 @@ export function StockManager({
           </>
         )}
       </div>
+
+      {editing && <MovementSheet product={editing} onClose={() => setEditing(null)} onDone={(q) => applied(editing, q)} />}
     </>
+  );
+}
+
+/* ─────────── Saisie d'un mouvement ─────────── */
+
+function MovementSheet({ product, onClose, onDone }: { product: Product; onClose: () => void; onDone: (qtyAfter: number | null) => void }) {
+  const s = useDict(STOCK_COPY);
+  const [kind, setKind] = useState<ManualMovementKind>("entree");
+  const [qty, setQty] = useState("");
+  const [note, setNote] = useState("");
+  const [error, setError] = useState<StockMovementError | null>(null);
+  const [pending, start] = useTransition();
+
+  const current = product.stock_qty;
+  const n = Math.floor(Number(qty));
+  const valid = qty !== "" && Number.isFinite(n) && (kind === "correction" ? n >= 0 : n > 0);
+  // Même calcul que la base (apply_stock_movement), pour annoncer le résultat.
+  const preview = !valid ? null : kind === "correction" ? n : Math.max((current ?? 0) + (kind === "entree" ? n : -n), 0);
+
+  function save() {
+    if (!valid) return setError("invalid");
+    setError(null);
+    start(async () => {
+      const res = await recordStockMovement({ productId: product.id, kind, qty: n, note });
+      if (res.ok) onDone(res.qtyAfter ?? preview);
+      else setError(res.error);
+    });
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 sm:items-center" onClick={onClose}>
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={s.movement.title}
+        onClick={(e) => e.stopPropagation()}
+        className="flex w-full max-w-md flex-col gap-4 rounded-t-3xl bg-white p-5 pb-8 sm:rounded-3xl sm:pb-5"
+      >
+        <div>
+          <h2 className="text-base font-extrabold text-ink">{s.movement.title}</h2>
+          <p className="truncate text-[13px] font-semibold text-ink-soft">{product.name}</p>
+          <p className="text-[12px] text-ink-muted">{s.movement.current(current === null ? s.untracked : String(current))}</p>
+        </div>
+
+        <div className="grid grid-cols-3 gap-1.5">
+          {(["entree", "perte", "correction"] as const).map((k) => (
+            <button
+              key={k}
+              type="button"
+              onClick={() => setKind(k)}
+              aria-pressed={kind === k}
+              className={`min-h-10 cursor-pointer rounded-xl px-1.5 text-[12px] font-extrabold leading-tight ${
+                kind === k ? (k === "perte" ? "bg-[#C0392B] text-white" : "bg-brand text-white") : "border border-line bg-white text-ink-soft"
+              }`}
+            >
+              {s.movement.kinds[k]}
+            </button>
+          ))}
+        </div>
+
+        <label className="flex flex-col gap-1.5">
+          <span className="text-[12.5px] font-bold text-ink-muted">{s.movement.qtyLabel[kind]}</span>
+          <input
+            type="number"
+            inputMode="numeric"
+            min={kind === "correction" ? 0 : 1}
+            value={qty}
+            onChange={(e) => setQty(e.target.value)}
+            autoFocus
+            className="h-12 rounded-xl border border-line bg-[#F7F8F9] px-4 text-lg font-extrabold text-ink outline-none focus:border-brand focus:bg-white"
+          />
+          {preview !== null && <span className="text-[12.5px] font-bold text-brand">{s.movement.after(preview)}</span>}
+        </label>
+
+        <label className="flex flex-col gap-1.5">
+          <span className="text-[12.5px] font-bold text-ink-muted">{s.movement.note}</span>
+          <input
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            maxLength={200}
+            placeholder={s.movement.notePlaceholder}
+            className="h-11 rounded-xl border border-line bg-[#F7F8F9] px-3 text-[13.5px] text-ink outline-none focus:border-brand focus:bg-white"
+          />
+        </label>
+
+        {error && <p className="rounded-xl bg-[#FCE4E4] px-3 py-2 text-[12.5px] font-semibold text-[#C0392B]">{s.movement.errors[error]}</p>}
+
+        <div className="grid grid-cols-2 gap-2">
+          <button type="button" onClick={onClose} className="h-12 cursor-pointer rounded-2xl border border-line bg-white text-sm font-bold text-ink">
+            {s.movement.cancel}
+          </button>
+          <button
+            type="button"
+            onClick={save}
+            disabled={pending || !valid}
+            className="h-12 cursor-pointer rounded-2xl bg-brand-green text-sm font-extrabold text-white disabled:opacity-50"
+          >
+            {pending ? s.movement.saving : s.movement.save}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─────────── Historique ─────────── */
+
+function MovementHistory({ rows, available }: { rows: MovementRow[]; available: boolean }) {
+  const s = useDict(STOCK_COPY);
+  const { language } = useLanguage();
+  const fmt = (iso: string) =>
+    new Date(iso).toLocaleString(language === "en" ? "en-US" : "fr-HT", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
+
+  if (!available) return <p className="rounded-2xl border border-dashed border-line bg-white p-5 text-center text-[13px] text-ink-muted">{s.history.unavailable}</p>;
+  if (rows.length === 0) return <p className="rounded-2xl border border-dashed border-line bg-white p-5 text-center text-[13px] text-ink-muted">{s.history.empty}</p>;
+
+  return (
+    <section className="flex flex-col rounded-2xl border border-line bg-white">
+      <h2 className="border-b border-line px-3.5 py-3 text-xs font-extrabold uppercase text-ink">{s.history.title}</h2>
+      <ul className="divide-y divide-line">
+        {rows.map((m) => {
+          const plus = m.delta > 0;
+          return (
+            <li key={m.id} className="flex items-center gap-3 px-3.5 py-2.5">
+              <span
+                className={`flex h-9 min-w-14 items-center justify-center rounded-xl px-2 text-[13px] font-extrabold ${
+                  plus ? "bg-[#E7F7F1] text-brand" : m.delta < 0 ? "bg-[#FCE4E4] text-[#C0392B]" : "bg-gray-100 text-ink-muted"
+                }`}
+              >
+                {plus ? "+" : ""}
+                {m.delta}
+              </span>
+              <div className="flex min-w-0 flex-1 flex-col">
+                <span className="truncate text-[13px] font-bold text-ink">{m.productName}</span>
+                <span className="truncate text-[11.5px] text-ink-muted">
+                  {s.history.kinds[m.kind]}
+                  {m.orderRef ? ` · ${s.history.order(m.orderRef)}` : ""}
+                  {m.note ? ` · ${m.note}` : ""}
+                  {m.author ? ` · ${s.history.by(m.author)}` : ""}
+                </span>
+              </div>
+              <div className="flex shrink-0 flex-col items-end">
+                <span className="text-[11px] text-ink-faint">{fmt(m.createdAt)}</span>
+                {m.qtyAfter !== null && <span className="text-[11px] font-bold text-ink-soft">{s.history.after(String(m.qtyAfter))}</span>}
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
   );
 }
