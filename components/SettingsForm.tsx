@@ -101,6 +101,7 @@ export function SettingsForm({ business, designs }: { business: Business; design
   }
 
   const plan = (business.plan ?? "gratis").toLowerCase();
+  const phoneLocked = Boolean(business.phone_e164?.trim());
 
   return (
     <div className="app-page min-h-[100dvh] bg-[#F7F8F9] pb-28">
@@ -173,7 +174,18 @@ export function SettingsForm({ business, designs }: { business: Business; design
               </Field>
               <div className="grid gap-3 sm:grid-cols-2">
                 <Field label={s.store.phone}>
-                  <input value={f.phone_e164} onChange={(e) => set({ phone_e164: e.target.value })} className={cls} placeholder="+509 0000 0000" />
+                  {/* Ce numéro reçoit les commandes et l'argent des clients : une
+                      fois enregistré, il ne change qu'après vérification. */}
+                  {phoneLocked ? (
+                    <div className="flex flex-col gap-1.5">
+                      <input value={f.phone_e164} readOnly aria-readonly className={`${cls} cursor-not-allowed opacity-80`} />
+                      <Link href="/chanje-nimewo" className="text-[12.5px] font-bold text-brand">
+                        🔒 {s.store.changePhone} →
+                      </Link>
+                    </div>
+                  ) : (
+                    <input value={f.phone_e164} onChange={(e) => set({ phone_e164: e.target.value })} className={cls} placeholder="+509 0000 0000" />
+                  )}
                 </Field>
                 <Field label={s.store.employees}>
                   <input value={f.employees_count} onChange={(e) => set({ employees_count: e.target.value })} inputMode="numeric" className={cls} placeholder="3" />

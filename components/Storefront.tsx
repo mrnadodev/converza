@@ -11,6 +11,7 @@ import type { Business, Product } from "@/lib/types";
 import { createStorefrontOrderAction } from "@/app/p/actions";
 import { storefrontCopy, type StorefrontCopy } from "@/lib/i18n/storefront";
 import { DEFAULT_LAYOUT, layoutSlots, type LayoutKey } from "@/lib/storefront-layouts";
+import { maskPhone, phoneNoticeState } from "@/lib/phone-change";
 
 import { useTheme } from "@/components/ThemeProvider";
 import { LanguageToggle } from "@/components/LanguageToggle";
@@ -53,6 +54,8 @@ export function Storefront({
   preview?: boolean;
 }) {
   const c = useCopy();
+  const { language } = useLanguage();
+  const phoneNotice = phoneNoticeState(business);
   const vertical = verticalOf(business.business_type);
   const sector = c.sectors[vertical.id] ?? { label: vertical.label, catalog: vertical.catalogWord };
   const theme = themeOf(business.theme);
@@ -208,6 +211,13 @@ export function Storefront({
             </div>
           )}
 
+          {/* Nouveau numéro : un message neutre, jamais le mot « piratage ». */}
+          {phoneNotice === "banner" && (
+            <div className="bg-[#E7F1FB] px-4 py-2.5 text-center text-[12.5px] font-semibold leading-snug text-[#154E85]">
+              📱 {c.phoneBanner(business.phone_e164 ?? "", maskPhone(business.previous_phone_e164))}
+            </div>
+          )}
+
           {/* Bannière */}
           <div
             className="relative h-[220px] transition-all sm:h-[280px] md:h-[340px] lg:h-[380px]"
@@ -252,6 +262,11 @@ export function Storefront({
                 <span className="h-2 w-2 rounded-full bg-brand-green" />
                 <span className="text-xs font-bold" style={{ color: theme.accentText }}>{c.open} · {business.hours}</span>
               </div>
+            )}
+            {phoneNotice === "mention" && business.phone_changed_at && (
+              <span className={`text-[11.5px] ${darkMode ? "text-slate-400" : "text-ink-muted"}`}>
+                {c.phoneMention(new Date(business.phone_changed_at).toLocaleDateString(language === "en" ? "en-US" : "fr-HT", { day: "2-digit", month: "2-digit" }))}
+              </span>
             )}
             {socialLinks(business, darkMode).length > 0 && (
               <div className="mt-3 flex gap-2.5">

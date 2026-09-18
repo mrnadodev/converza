@@ -3,13 +3,14 @@ import type { Language } from "../translations";
 // Console super-admin CONVERZA (plateforme), en français, kreyòl et anglais.
 export interface AdminCopy {
   header: { title: string; subtitle: string; signOut: string };
-  tabs: { overview: string; merchants: string; billing: string; qrMenu: string; platform: string; security: string };
+  tabs: { overview: string; merchants: string; billing: string; phones: string; qrMenu: string; platform: string; security: string };
   alerts: {
     title: string;
     duplicates: (n: number) => string;
     pending: (n: number) => string;
     expired: (n: number) => string;
     expiringSoon: (n: number) => string;
+    phones: (n: number) => string;
   };
   kpis: {
     mrr: string;
@@ -130,6 +131,12 @@ export interface AdminCopy {
     desktop: string;
     openTab: string;
     noMerchant: string;
+    sectorLabel: string;
+    demoGroup: string;
+    shopsGroup: string;
+    colorsLabel: string;
+    demoNote: string;
+    shopColorsNote: string;
     imagesTitle: string;
     ratiosLabel: string;
     maxSize: string;
@@ -162,6 +169,33 @@ export interface AdminCopy {
     off: string;
     saved: string;
   };
+  phones: {
+    title: string;
+    hint: string;
+    empty: string;
+    checklistTitle: string;
+    checklist: string[];
+    historyTitle: string;
+    owner: string;
+    current: string;
+    requested: string;
+    reason: string;
+    reasons: { piratage: string; perte: string; autre: string };
+    note: string;
+    notice: (n: number) => string;
+    idDoc: string;
+    proofs: string;
+    noDoc: string;
+    stale: string;
+    adminNote: string;
+    adminNotePlaceholder: string;
+    approve: string;
+    reject: string;
+    confirmApprove: (shop: string, phone: string) => string;
+    rejectNeedsNote: string;
+    status: { pending: string; approved: string; rejected: string; cancelled: string };
+    decided: (who: string, date: string) => string;
+  };
   security: {
     title: string;
     subtitle: string;
@@ -174,6 +208,7 @@ export interface AdminCopy {
       auditTable: { label: string; desc: string };
       statsView: { label: string; desc: string };
       extendedStats: { label: string; desc: string };
+      phoneChanges: { label: string; desc: string };
     };
     ok: string;
     missing: string;
@@ -234,13 +269,14 @@ export interface AdminCopy {
 
 const fr: AdminCopy = {
   header: { title: "Console CONVERZA", subtitle: "Supervision de la plateforme et des abonnements", signOut: "Se déconnecter" },
-  tabs: { overview: "Vue d'ensemble", merchants: "Marchands", billing: "Abonnements", qrMenu: "Menu QR", platform: "Plateforme", security: "Sécurité" },
+  tabs: { overview: "Vue d'ensemble", merchants: "Marchands", billing: "Abonnements", phones: "Numéros", qrMenu: "Menu QR", platform: "Plateforme", security: "Sécurité" },
   alerts: {
     title: "À traiter",
     duplicates: (n) => `${n} paiement${n > 1 ? "s" : ""} avec une référence déjà utilisée`,
     pending: (n) => `${n} paiement${n > 1 ? "s" : ""} en attente de vérification`,
     expired: (n) => `${n} abonnement${n > 1 ? "s" : ""} expiré${n > 1 ? "s" : ""}`,
     expiringSoon: (n) => `${n} abonnement${n > 1 ? "s" : ""} expire${n > 1 ? "nt" : ""} sous 7 jours`,
+    phones: (n) => `${n} demande${n > 1 ? "s" : ""} de changement de numéro à vérifier`,
   },
   kpis: {
     mrr: "Revenu mensuel récurrent",
@@ -376,6 +412,12 @@ const fr: AdminCopy = {
     desktop: "Ordinateur",
     openTab: "Ouvrir dans un onglet",
     noMerchant: "Aucune vitrine à afficher pour l'instant.",
+    sectorLabel: "Type de commerce",
+    demoGroup: "Exemples par secteur",
+    shopsGroup: "Vitrines réelles",
+    colorsLabel: "Couleurs",
+    demoNote: "Exemple fictif : les visuels sont des pictogrammes, pas des produits réels.",
+    shopColorsNote: "Couleurs choisies par le marchand.",
     imagesTitle: "Images des vitrines",
     ratiosLabel: "Formats autorisés",
     maxSize: "Taille maximale par image (Mo)",
@@ -408,6 +450,37 @@ const fr: AdminCopy = {
     off: "Désactivé",
     saved: "Réglages enregistrés.",
   },
+  phones: {
+    title: "Changements de numéro WhatsApp",
+    hint: "Le nouveau numéro reçoit les commandes et l'argent des clients : vérifiez avant de valider.",
+    empty: "Aucune demande en attente.",
+    checklistTitle: "Avant de valider",
+    checklist: [
+      "Le nom sur la pièce correspond au propriétaire du compte.",
+      "Les preuves sont cohérentes avec le motif (captures datées, message de WhatsApp…).",
+      "En cas de doute, contactez le marchand par e-mail avant de décider.",
+    ],
+    historyTitle: "Dernières décisions",
+    owner: "Propriétaire",
+    current: "Numéro actuel",
+    requested: "Nouveau numéro",
+    reason: "Motif",
+    reasons: { piratage: "Compte piraté", perte: "Téléphone ou puce perdu(e)", autre: "Autre" },
+    note: "Précisions du marchand",
+    notice: (n) => `Bandeau ${n} jours`,
+    idDoc: "Pièce d'identité",
+    proofs: "Preuves",
+    noDoc: "Aucun fichier",
+    stale: "Le numéro de la boutique a changé depuis la demande.",
+    adminNote: "Note (visible par le marchand)",
+    adminNotePlaceholder: "Obligatoire en cas de refus : ce qui manque…",
+    approve: "Valider le nouveau numéro",
+    reject: "Refuser",
+    confirmApprove: (shop, phone) => `Remplacer le numéro de ${shop} par ${phone} ? Les documents seront supprimés.`,
+    rejectNeedsNote: "Indiquez au marchand pourquoi la demande est refusée.",
+    status: { pending: "En attente", approved: "Validée", rejected: "Refusée", cancelled: "Annulée" },
+    decided: (who, date) => `${who} · ${date}`,
+  },
   security: {
     title: "Sécurité et configuration",
     subtitle: "Ce que la console peut réellement vérifier sur cette installation.",
@@ -420,10 +493,11 @@ const fr: AdminCopy = {
       auditTable: { label: "Journal d'audit", desc: "Table security_audit_logs accessible" },
       statsView: { label: "Statistiques marchands", desc: "Vue admin_business_stats accessible" },
       extendedStats: { label: "Activité des marchands", desc: "Dernière commande et montant encaissé (migration 3)" },
+      phoneChanges: { label: "Changements de numéro", desc: "Table, bucket privé et verrou du numéro (migration 4)" },
     },
     ok: "En place",
     missing: "Manquant",
-    migrationHint: "Exécutez db/migrate-2026-3-admin.sql dans Supabase pour activer les colonnes manquantes.",
+    migrationHint: "Exécutez db/migrate-2026-3-admin.sql puis db/migrate-2026-4-numero.sql dans Supabase pour activer les colonnes manquantes.",
     fraudTitle: "Références de paiement réutilisées",
     fraudHint: "Un même numéro de transaction soumis pour plusieurs abonnements.",
     noFraud: "Aucune référence suspecte.",
@@ -442,6 +516,8 @@ const fr: AdminCopy = {
       UPDATE_PLATFORM_SETTINGS: "Réglages plateforme modifiés",
       UPDATE_MERCHANT: "Fiche marchand modifiée",
       REPAIR_MERCHANT_MEDIA: "Médias marchand normalisés",
+      APPROVE_PHONE_CHANGE: "Changement de numéro validé",
+      REJECT_PHONE_CHANGE: "Changement de numéro refusé",
       SECURITY_ALERT: "Alerte de sécurité",
     },
   },
@@ -501,13 +577,14 @@ const fr: AdminCopy = {
 
 const ht: AdminCopy = {
   header: { title: "Konsòl CONVERZA", subtitle: "Sipèvizyon plataform lan ak abònman yo", signOut: "Dekonekte" },
-  tabs: { overview: "Apèsi", merchants: "Machann", billing: "Abònman", qrMenu: "Meni QR", platform: "Plataform", security: "Sekirite" },
+  tabs: { overview: "Apèsi", merchants: "Machann", billing: "Abònman", phones: "Nimewo", qrMenu: "Meni QR", platform: "Plataform", security: "Sekirite" },
   alerts: {
     title: "Pou trete",
     duplicates: (n) => `${n} pèman ak yon referans ki deja sèvi`,
     pending: (n) => `${n} pèman k ap tann verifikasyon`,
     expired: (n) => `${n} abònman ki ekspire`,
     expiringSoon: (n) => `${n} abònman ap ekspire nan 7 jou`,
+    phones: (n) => `${n} demann chanjman nimewo pou verifye`,
   },
   kpis: {
     mrr: "Revni chak mwa",
@@ -643,6 +720,12 @@ const ht: AdminCopy = {
     desktop: "Òdinatè",
     openTab: "Louvri nan yon lòt onglè",
     noMerchant: "Poko gen vitrin pou montre.",
+    sectorLabel: "Kalite biznis",
+    demoGroup: "Egzanp pa sektè",
+    shopsGroup: "Vrè vitrin",
+    colorsLabel: "Koulè",
+    demoNote: "Egzanp fiktif : imaj yo se pitogram, se pa vrè pwodui.",
+    shopColorsNote: "Koulè machann nan chwazi.",
     imagesTitle: "Imaj vitrin yo",
     ratiosLabel: "Fòma ki otorize",
     maxSize: "Gwosè maksimòm pou chak imaj (Mo)",
@@ -675,6 +758,37 @@ const ht: AdminCopy = {
     off: "Dezaktive",
     saved: "Reglaj yo anrejistre.",
   },
+  phones: {
+    title: "Chanjman nimewo WhatsApp",
+    hint: "Nouvo nimewo a ap resevwa kòmand ak lajan kliyan yo : verifye anvan ou valide.",
+    empty: "Pa gen demann k ap tann.",
+    checklistTitle: "Anvan ou valide",
+    checklist: [
+      "Non ki sou pyès la koresponn ak mèt kont lan.",
+      "Prèv yo mache ak rezon an (foto ekran ak dat, mesaj WhatsApp…).",
+      "Si w gen dout, kontakte machann nan pa imèl anvan ou deside.",
+    ],
+    historyTitle: "Dènye desizyon",
+    owner: "Mèt boutik",
+    current: "Nimewo kounye a",
+    requested: "Nouvo nimewo",
+    reason: "Rezon",
+    reasons: { piratage: "Kont pirate", perte: "Telefòn oswa chip pèdi", autre: "Lòt" },
+    note: "Detay machann nan",
+    notice: (n) => `Bandwòl ${n} jou`,
+    idDoc: "Pyès idantite",
+    proofs: "Prèv",
+    noDoc: "Pa gen fichye",
+    stale: "Nimewo boutik la chanje depi demann nan.",
+    adminNote: "Nòt (machann nan ap wè l)",
+    adminNotePlaceholder: "Obligatwa si w refize : sa k manke…",
+    approve: "Valide nouvo nimewo a",
+    reject: "Refize",
+    confirmApprove: (shop, phone) => `Ranplase nimewo ${shop} pa ${phone} ? Dokiman yo ap efase.`,
+    rejectNeedsNote: "Di machann nan poukisa demann nan refize.",
+    status: { pending: "Ap tann", approved: "Valide", rejected: "Refize", cancelled: "Anile" },
+    decided: (who, date) => `${who} · ${date}`,
+  },
   security: {
     title: "Sekirite ak konfigirasyon",
     subtitle: "Sa konsòl la ka reyèlman verifye sou enstalasyon sa a.",
@@ -687,10 +801,11 @@ const ht: AdminCopy = {
       auditTable: { label: "Jounal odit", desc: "Tab security_audit_logs aksesib" },
       statsView: { label: "Estatistik machann", desc: "Vi admin_business_stats aksesib" },
       extendedStats: { label: "Aktivite machann", desc: "Dènye kòmand ak lajan ki antre (migrasyon 3)" },
+      phoneChanges: { label: "Chanjman nimewo", desc: "Tab, bucket prive ak kadna nimewo a (migrasyon 4)" },
     },
     ok: "An plas",
     missing: "Manke",
-    migrationHint: "Egzekite db/migrate-2026-3-admin.sql nan Supabase pou aktive kolòn ki manke yo.",
+    migrationHint: "Egzekite db/migrate-2026-3-admin.sql epi db/migrate-2026-4-numero.sql nan Supabase pou aktive kolòn ki manke yo.",
     fraudTitle: "Referans pèman ki repete",
     fraudHint: "Yon menm nimewo tranzaksyon soumèt pou plizyè abònman.",
     noFraud: "Pa gen referans sispèk.",
@@ -709,6 +824,8 @@ const ht: AdminCopy = {
       UPDATE_PLATFORM_SETTINGS: "Reglaj plataform chanje",
       UPDATE_MERCHANT: "Fich machann chanje",
       REPAIR_MERCHANT_MEDIA: "Medya machann normalize",
+      APPROVE_PHONE_CHANGE: "Chanjman nimewo valide",
+      REJECT_PHONE_CHANGE: "Chanjman nimewo refize",
       SECURITY_ALERT: "Alèt sekirite",
     },
   },
@@ -768,13 +885,14 @@ const ht: AdminCopy = {
 
 const en: AdminCopy = {
   header: { title: "CONVERZA console", subtitle: "Platform and subscription oversight", signOut: "Sign out" },
-  tabs: { overview: "Overview", merchants: "Merchants", billing: "Billing", qrMenu: "QR menu", platform: "Platform", security: "Security" },
+  tabs: { overview: "Overview", merchants: "Merchants", billing: "Billing", phones: "Numbers", qrMenu: "QR menu", platform: "Platform", security: "Security" },
   alerts: {
     title: "Needs attention",
     duplicates: (n) => `${n} payment${n > 1 ? "s" : ""} with an already-used reference`,
     pending: (n) => `${n} payment${n > 1 ? "s" : ""} awaiting verification`,
     expired: (n) => `${n} expired subscription${n > 1 ? "s" : ""}`,
     expiringSoon: (n) => `${n} subscription${n > 1 ? "s" : ""} expiring within 7 days`,
+    phones: (n) => `${n} number change request${n > 1 ? "s" : ""} to review`,
   },
   kpis: {
     mrr: "Monthly recurring revenue",
@@ -910,6 +1028,12 @@ const en: AdminCopy = {
     desktop: "Desktop",
     openTab: "Open in a new tab",
     noMerchant: "No storefront to show yet.",
+    sectorLabel: "Business type",
+    demoGroup: "Examples by sector",
+    shopsGroup: "Real storefronts",
+    colorsLabel: "Colors",
+    demoNote: "Sample only: the visuals are icons, not real products.",
+    shopColorsNote: "Colors chosen by the merchant.",
     imagesTitle: "Storefront images",
     ratiosLabel: "Allowed ratios",
     maxSize: "Maximum size per image (MB)",
@@ -942,6 +1066,37 @@ const en: AdminCopy = {
     off: "Off",
     saved: "Settings saved.",
   },
+  phones: {
+    title: "WhatsApp number changes",
+    hint: "The new number receives customers' orders and money: check before approving.",
+    empty: "No pending requests.",
+    checklistTitle: "Before approving",
+    checklist: [
+      "The name on the ID matches the account owner.",
+      "The proof fits the reason (dated screenshots, WhatsApp message…).",
+      "If in doubt, email the merchant before deciding.",
+    ],
+    historyTitle: "Latest decisions",
+    owner: "Owner",
+    current: "Current number",
+    requested: "New number",
+    reason: "Reason",
+    reasons: { piratage: "Hacked account", perte: "Lost phone or SIM", autre: "Other" },
+    note: "Merchant's details",
+    notice: (n) => `${n}-day banner`,
+    idDoc: "ID document",
+    proofs: "Proof",
+    noDoc: "No file",
+    stale: "The shop's number has changed since this request.",
+    adminNote: "Note (shown to the merchant)",
+    adminNotePlaceholder: "Required when declining: what's missing…",
+    approve: "Approve new number",
+    reject: "Decline",
+    confirmApprove: (shop, phone) => `Replace ${shop}'s number with ${phone}? The documents will be deleted.`,
+    rejectNeedsNote: "Tell the merchant why the request is declined.",
+    status: { pending: "Pending", approved: "Approved", rejected: "Declined", cancelled: "Cancelled" },
+    decided: (who, date) => `${who} · ${date}`,
+  },
   security: {
     title: "Security and configuration",
     subtitle: "What the console can actually verify on this installation.",
@@ -954,10 +1109,11 @@ const en: AdminCopy = {
       auditTable: { label: "Audit log", desc: "security_audit_logs table reachable" },
       statsView: { label: "Merchant statistics", desc: "admin_business_stats view reachable" },
       extendedStats: { label: "Merchant activity", desc: "Last order and collected amount (migration 3)" },
+      phoneChanges: { label: "Number changes", desc: "Table, private bucket and number lock (migration 4)" },
     },
     ok: "In place",
     missing: "Missing",
-    migrationHint: "Run db/migrate-2026-3-admin.sql in Supabase to enable the missing columns.",
+    migrationHint: "Run db/migrate-2026-3-admin.sql then db/migrate-2026-4-numero.sql in Supabase to enable the missing columns.",
     fraudTitle: "Reused payment references",
     fraudHint: "The same transaction number submitted for several subscriptions.",
     noFraud: "No suspicious reference.",
@@ -976,6 +1132,8 @@ const en: AdminCopy = {
       UPDATE_PLATFORM_SETTINGS: "Platform settings changed",
       UPDATE_MERCHANT: "Merchant record changed",
       REPAIR_MERCHANT_MEDIA: "Merchant media normalised",
+      APPROVE_PHONE_CHANGE: "Number change approved",
+      REJECT_PHONE_CHANGE: "Number change declined",
       SECURITY_ALERT: "Security alert",
     },
   },

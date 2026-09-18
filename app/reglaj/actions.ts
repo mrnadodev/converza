@@ -113,10 +113,13 @@ export async function updateBusiness(input: BusinessInput) {
   // Le plan limite les dispositions : l'interface grise celles qui ne sont pas
   // incluses, le serveur ne se fie pas à elle.
   const [{ data: current }, { designs }] = await Promise.all([
-    sb.from("businesses").select("plan").eq("id", member.business_id).maybeSingle(),
+    sb.from("businesses").select("plan, phone_e164").eq("id", member.business_id).maybeSingle(),
     loadPlatformSettings(),
   ]);
   payload.layout = resolveLayout(input.layout, current?.plan, designs);
+  // Le numéro enregistré reçoit les commandes : il ne change que par une
+  // demande vérifiée (/chanje-nimewo). La base applique la même règle.
+  if (current?.phone_e164) payload.phone_e164 = current.phone_e164;
 
   const { error } = await sb
     .from("businesses")

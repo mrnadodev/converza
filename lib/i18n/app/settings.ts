@@ -19,6 +19,7 @@ export interface SettingsCopy {
     promoPlaceholder: string;
     type: string;
     phone: string;
+    changePhone: string;
     employees: string;
     hours: string;
     hoursPlaceholder: string;
@@ -109,6 +110,7 @@ const fr: SettingsCopy = {
     promoPlaceholder: "Nouveautés de la semaine, réductions…",
     type: "Secteur d'activité",
     phone: "Numéro WhatsApp",
+    changePhone: "Changer de numéro (vérification CONVERZA)",
     employees: "Nombre d'employés",
     hours: "Heures d'ouverture",
     hoursPlaceholder: "7h–19h",
@@ -237,6 +239,7 @@ const ht: SettingsCopy = {
     promoPlaceholder: "Nouvo pwodwi semèn nan, rabè…",
     type: "Sektè aktivite",
     phone: "Nimewo WhatsApp",
+    changePhone: "Chanje nimewo (CONVERZA verifye)",
     employees: "Kantite anplwaye",
     hours: "Lè louvri",
     hoursPlaceholder: "7è–7è",
@@ -365,6 +368,7 @@ const en: SettingsCopy = {
     promoPlaceholder: "This week's arrivals, discounts…",
     type: "Industry",
     phone: "WhatsApp number",
+    changePhone: "Change number (verified by CONVERZA)",
     employees: "Number of employees",
     hours: "Opening hours",
     hoursPlaceholder: "7am–7pm",

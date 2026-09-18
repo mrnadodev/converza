@@ -14,6 +14,7 @@ import { SETTINGS_COPY } from "./app/settings";
 import { INVOICE_COPY } from "./app/invoice";
 import { REPORT_COPY } from "./app/reports";
 import { ADMIN_COPY } from "./app/admin";
+import { PHONE_COPY } from "./app/phone";
 
 // Dictionnaires des écrans de l'application marchand : chaque nouvel écran
 // traduit s'ajoute ici pour hériter des contrôles de parité.
@@ -30,6 +31,7 @@ const APP_DICTS: Record<string, Record<Language, object>> = {
   invoice: INVOICE_COPY,
   reports: REPORT_COPY,
   admin: ADMIN_COPY,
+  phone: PHONE_COPY,
 };
 
 const LANGS: Language[] = ["fr", "ht", "en"];

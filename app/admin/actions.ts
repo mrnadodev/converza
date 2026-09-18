@@ -326,3 +326,73 @@ export async function repairMerchantDataAction(businessId: string) {
   revalidatePath("/");
   return { ok: true, repaired };
 }
+
+// ------------------------------------------------------------------
+// Changement de numéro WhatsApp
+// ------------------------------------------------------------------
+
+const DAY_MS = 86_400_000;
+
+/** Supprime les pièces justificatives : on ne garde pas une pièce d'identité. */
+async function purgePhoneDocs(admin: NonNullable<ReturnType<typeof createAdminClient>>, req: { proof_paths: string[] | null; id_doc_path: string | null }) {
+  const files = [...(req.proof_paths ?? []), req.id_doc_path].filter(Boolean) as string[];
+  if (files.length) await admin.storage.from("verification").remove(files);
+}
+
+export async function decidePhoneChange(requestId: string, decision: "approve" | "reject", adminNote: string) {
+  const adminEmail = await requireAdmin();
+  if (!adminEmail) return { ok: false, error: "Non otorize" };
+  const admin = createAdminClient();
+  if (!admin) return { ok: false, error: "SUPABASE_SERVICE_ROLE_KEY manke" };
+
+  const { data: req } = await admin
+    .from("phone_change_requests")
+    .select("id, business_id, old_phone_e164, new_phone_e164, reason, notice_days, proof_paths, id_doc_path, status")
+    .eq("id", requestId)
+    .maybeSingle();
+  if (!req || req.status !== "pending") return { ok: false, error: "Demande introuvable ou déjà traitée" };
+
+  const now = new Date();
+  const note = adminNote.trim().slice(0, 500) || null;
+
+  if (decision === "approve") {
+    const { data: biz } = await admin.from("businesses").select("phone_e164").eq("id", req.business_id).maybeSingle();
+    const { error } = await admin
+      .from("businesses")
+      .update({
+        phone_e164: req.new_phone_e164,
+        previous_phone_e164: biz?.phone_e164 ?? req.old_phone_e164,
+        phone_changed_at: now.toISOString(),
+        phone_notice_until: new Date(now.getTime() + req.notice_days * DAY_MS).toISOString(),
+      })
+      .eq("id", req.business_id);
+    if (error) return { ok: false, error: error.message };
+  }
+
+  await purgePhoneDocs(admin, req);
+  await admin
+    .from("phone_change_requests")
+    .update({
+      status: decision === "approve" ? "approved" : "rejected",
+      admin_email: adminEmail,
+      admin_note: note,
+      decided_at: now.toISOString(),
+      proof_paths: [],
+      id_doc_path: null,
+      docs_purged_at: now.toISOString(),
+    })
+    .eq("id", requestId);
+
+  await logAdminAction({
+    adminEmail,
+    action: decision === "approve" ? "APPROVE_PHONE_CHANGE" : "REJECT_PHONE_CHANGE",
+    targetBusinessId: req.business_id,
+    // Les numéros figurent au journal : c'est la trace qui permettra de
+    // retrouver qui a validé quoi en cas de contestation.
+    details: { from: req.old_phone_e164, to: req.new_phone_e164, reason: req.reason, note },
+  });
+
+  revalidatePath("/admin");
+  revalidatePath("/chanje-nimewo");
+  return { ok: true };
+}

@@ -14,6 +14,8 @@ export interface AuditLogEntry {
     | "UPDATE_PLATFORM_SETTINGS"
     | "UPDATE_MERCHANT"
     | "REPAIR_MERCHANT_MEDIA"
+    | "APPROVE_PHONE_CHANGE"
+    | "REJECT_PHONE_CHANGE"
     | "TOGGLE_FREEZE"
     | "SECURITY_ALERT";
   targetBusinessId?: string;

@@ -9,6 +9,7 @@ import { useDict, useLanguage } from "@/components/LanguageContext";
 import { signOut } from "@/app/login/actions";
 import {
   activatePlan,
+  decidePhoneChange,
   rejectPayment,
   renewPlan,
   repairMerchantDataAction,
@@ -33,9 +34,8 @@ import type { BankAccountDetails, Plan } from "@/lib/plans";
 import type { DesignLayoutConfig, QrMenuServiceConfig } from "@/lib/platform-config";
 import type { Language } from "@/lib/i18n/translations";
 import { DEFAULT_LAYOUT, STOREFRONT_LAYOUTS, isLayoutKey, layoutRule, type LayoutKey } from "@/lib/storefront-layouts";
-import { LayoutThumb } from "@/components/LayoutThumb";
 
-type Tab = "overview" | "merchants" | "billing" | "qrMenu" | "platform" | "security";
+type Tab = "overview" | "merchants" | "billing" | "phones" | "qrMenu" | "platform" | "security";
 type Runner = (id: string, fn: () => Promise<unknown>) => void;
 
 const PLAN_KEYS = ["gratis", "qr_express", "pro", "premium"] as const;
@@ -82,7 +82,9 @@ export function AdminPanel({ data }: { data: AdminData }) {
     });
   };
 
+  const pendingPhones = data.phoneRequests.filter((r) => r.status === "pending").length;
   const alerts = [
+    pendingPhones > 0 && { tone: "warn" as const, text: a.alerts.phones(pendingPhones) },
     data.duplicateRefAlerts.length > 0 && { tone: "danger" as const, text: a.alerts.duplicates(data.duplicateRefAlerts.length) },
     data.pendingPayments.length > 0 && { tone: "warn" as const, text: a.alerts.pending(data.pendingPayments.length) },
     data.expired.length > 0 && { tone: "warn" as const, text: a.alerts.expired(data.expired.length) },
@@ -108,9 +110,15 @@ export function AdminPanel({ data }: { data: AdminData }) {
       </header>
 
       <nav className="flex gap-1 overflow-x-auto border-b border-line bg-white px-4 pt-3 text-[13.5px] font-bold [scrollbar-width:none]">
-        {(["overview", "merchants", "billing", "qrMenu", "platform", "security"] as const).map((key) => {
+        {(["overview", "merchants", "billing", "phones", "qrMenu", "platform", "security"] as const).map((key) => {
           const badge =
-            key === "billing" ? data.pendingPayments.length : key === "security" ? data.duplicateRefAlerts.length : 0;
+            key === "billing"
+              ? data.pendingPayments.length
+              : key === "phones"
+                ? pendingPhones
+                : key === "security"
+                  ? data.duplicateRefAlerts.length
+                  : 0;
           return (
             <button
               key={key}
@@ -153,6 +161,7 @@ export function AdminPanel({ data }: { data: AdminData }) {
         />
       )}
       {tab === "billing" && <BillingTab data={data} run={run} pending={pending} busy={busy} />}
+      {tab === "phones" && <PhonesTab data={data} run={run} pending={pending} busy={busy} />}
       {tab === "qrMenu" && <QrMenuTab data={data} run={run} pending={pending} busy={busy} onPrint={(m) => setQrMerchant(m)} />}
       {tab === "platform" && <PlatformTab data={data} run={run} pending={pending} />}
       {tab === "security" && <SecurityTab data={data} />}
@@ -529,6 +538,150 @@ function MerchantsTab({
 }
 
 /* ------------------------------------ Abonnements --------------------------------- */
+
+/* ------------------------------ Changements de numéro ------------------------------ */
+
+function PhonesTab({ data, run, pending, busy }: { data: AdminData; run: Runner; pending: boolean; busy: string | null }) {
+  const a = useDict(ADMIN_COPY);
+  const { language } = useLanguage();
+  const queue = data.phoneRequests.filter((r) => r.status === "pending");
+  const history = data.phoneRequests.filter((r) => r.status !== "pending").slice(0, 20);
+
+  return (
+    <div className="flex flex-col gap-4 px-4 pt-5 md:px-6">
+      <Card>
+        <CardTitle title={a.phones.title} hint={a.phones.hint} count={queue.length} />
+        <div className="mt-3 rounded-xl bg-[#F3F8F6] p-3">
+          <span className="text-[12px] font-extrabold text-brand">{a.phones.checklistTitle}</span>
+          <ul className="mt-1 flex flex-col gap-0.5 text-[12px] text-ink-soft">
+            {a.phones.checklist.map((line, i) => (
+              <li key={i}>• {line}</li>
+            ))}
+          </ul>
+        </div>
+        {queue.length === 0 ? (
+          <p className="mt-3 text-sm text-ink-faint">{a.phones.empty}</p>
+        ) : (
+          <div className="mt-3 flex flex-col gap-3">
+            {queue.map((r) => (
+              <PhoneRequestCard key={r.id} request={r} run={run} pending={pending} busy={busy} />
+            ))}
+          </div>
+        )}
+      </Card>
+
+      {history.length > 0 && (
+        <Card>
+          <CardTitle title={a.phones.historyTitle} />
+          <ul className="mt-2 flex flex-col divide-y divide-line">
+            {history.map((r) => (
+              <li key={r.id} className="flex flex-wrap items-center justify-between gap-2 py-2.5 text-[12.5px]">
+                <div className="flex min-w-0 flex-col">
+                  <span className="truncate font-bold">{r.businessName}</span>
+                  <span className="text-ink-faint">
+                    {r.oldPhone ?? "—"} → {r.newPhone}
+                    {r.adminNote ? ` · ${r.adminNote}` : ""}
+                  </span>
+                </div>
+                <div className="flex flex-col items-end">
+                  <span className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${r.status === "approved" ? "bg-[#E7F7F1] text-brand" : "bg-[#F3F6F4] text-ink-muted"}`}>
+                    {a.phones.status[r.status as keyof typeof a.phones.status] ?? r.status}
+                  </span>
+                  <span className="text-[11px] text-ink-faint">{a.phones.decided(r.adminEmail ?? "—", fmtDate(language, r.decidedAt))}</span>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      )}
+    </div>
+  );
+}
+
+function PhoneRequestCard({ request: r, run, pending, busy }: { request: AdminData["phoneRequests"][number]; run: Runner; pending: boolean; busy: string | null }) {
+  const a = useDict(ADMIN_COPY);
+  const { language } = useLanguage();
+  const [note, setNote] = useState("");
+  const [warn, setWarn] = useState<string | null>(null);
+  // La boutique a déjà changé de numéro depuis la demande : la valider
+  // écraserait ce changement.
+  const stale = (r.currentPhone ?? "") !== (r.oldPhone ?? "");
+  const working = pending && busy?.endsWith(r.id);
+
+  function decide(decision: "approve" | "reject") {
+    setWarn(null);
+    if (decision === "reject" && !note.trim()) return setWarn(a.phones.rejectNeedsNote);
+    if (decision === "approve" && !window.confirm(a.phones.confirmApprove(r.businessName, r.newPhone))) return;
+    run(`phone-${decision}-${r.id}`, () => decidePhoneChange(r.id, decision, note));
+  }
+
+  const docLink = (url: string, label: string) => (
+    <a key={url} href={url} target="_blank" rel="noopener noreferrer"
+      className="flex h-9 items-center rounded-lg bg-[#E7F1FB] px-3 text-[12px] font-bold text-[#1A6BB8]">
+      📎 {label}
+    </a>
+  );
+
+  return (
+    <div className="rounded-2xl border border-amber-300 bg-amber-50/60 p-3.5">
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <div className="min-w-0">
+          <p className="truncate text-[14px] font-extrabold">{r.businessName}</p>
+          <p className="text-[12px] text-ink-muted">
+            {a.phones.owner} : {r.ownerName ?? "—"} · {r.ownerEmail ?? "—"}
+          </p>
+        </div>
+        <span className="text-[11px] text-ink-faint">{fmtDateTime(language, r.createdAt)}</span>
+      </div>
+
+      <div className="mt-2.5 grid grid-cols-1 gap-2 text-[12.5px] sm:grid-cols-2">
+        <div className="rounded-xl bg-white px-3 py-2">
+          <span className="block text-[11px] font-semibold text-ink-faint">{a.phones.current}</span>
+          <span className="font-bold">{r.currentPhone ?? "—"}</span>
+        </div>
+        <div className="rounded-xl bg-white px-3 py-2 ring-2 ring-brand/30">
+          <span className="block text-[11px] font-semibold text-ink-faint">{a.phones.requested}</span>
+          <span className="font-extrabold text-brand">{r.newPhone}</span>
+        </div>
+      </div>
+
+      <p className="mt-2 text-[12.5px]">
+        <span className="font-bold">{a.phones.reason} : </span>
+        {a.phones.reasons[r.reason as keyof typeof a.phones.reasons] ?? r.reason} · {a.phones.notice(r.noticeDays)}
+      </p>
+      {r.note && (
+        <p className="mt-1 whitespace-pre-line rounded-xl bg-white px-3 py-2 text-[12.5px] text-ink-soft">
+          <span className="font-bold">{a.phones.note} : </span>
+          {r.note}
+        </p>
+      )}
+      {stale && <p className="mt-2 rounded-xl bg-[#FCE4E4] px-3 py-2 text-[12px] font-bold text-[#C0392B]">{a.phones.stale}</p>}
+
+      <div className="mt-2.5 flex flex-wrap gap-2">
+        {r.idDocUrl ? docLink(r.idDocUrl, a.phones.idDoc) : <span className="text-[12px] text-ink-faint">{a.phones.idDoc} : {a.phones.noDoc}</span>}
+        {r.proofUrls.map((u, i) => docLink(u, `${a.phones.proofs} ${i + 1}`))}
+      </div>
+
+      <label className="mt-3 flex flex-col gap-1">
+        <span className="text-[11.5px] font-semibold text-ink-muted">{a.phones.adminNote}</span>
+        <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={2} maxLength={500} placeholder={a.phones.adminNotePlaceholder}
+          className="rounded-xl border border-line bg-white px-3 py-2 text-[13px] outline-none focus:border-brand" />
+      </label>
+      {warn && <p className="mt-1.5 text-[12px] font-bold text-[#C0392B]">{warn}</p>}
+
+      <div className="mt-2.5 flex flex-wrap gap-2">
+        <button type="button" disabled={working} onClick={() => decide("approve")}
+          className="h-10 flex-1 cursor-pointer rounded-xl bg-brand px-4 text-[13px] font-black text-white disabled:opacity-60">
+          {a.phones.approve}
+        </button>
+        <button type="button" disabled={working} onClick={() => decide("reject")}
+          className="h-10 cursor-pointer rounded-xl bg-[#FCE4E4] px-4 text-[13px] font-black text-[#C0392B] disabled:opacity-60">
+          {a.phones.reject}
+        </button>
+      </div>
+    </div>
+  );
+}
 
 function BillingTab({ data, run, pending, busy }: { data: AdminData; run: Runner; pending: boolean; busy: string | null }) {
   const a = useDict(ADMIN_COPY);
@@ -973,11 +1126,9 @@ function PlatformTab({ data, run, pending }: { data: AdminData; run: Runner; pen
   const settings = data.platformSettings;
   const [saved, setSaved] = useState(false);
   const [previewLayout, setPreviewLayout] = useState<LayoutKey | null>(null);
-  // Les miniatures montrent la vitrine la plus fournie, pour voir de vraies photos.
-  const sampleSlug = useMemo(
-    () => [...data.merchants].sort((x, y) => y.products - x.products).find((m) => m.products > 0)?.slug ?? null,
-    [data.merchants],
-  );
+  // Par défaut, une vitrine d'exemple : on voit chaque modèle par type de
+  // commerce sans dépendre d'un compte marchand.
+  const [source, setSource] = useState<PreviewSource>({ kind: "demo", sector: "commerce_vente", theme: "whatsapp" });
 
   const [designs, setDesigns] = useState<DesignLayoutConfig[]>(
     settings?.designs ?? [
@@ -1079,6 +1230,7 @@ function PlatformTab({ data, run, pending }: { data: AdminData; run: Runner; pen
 
       <Card>
         <CardTitle title={a.platform.designsTitle} hint={a.platform.designsHint} />
+        <PreviewControls source={source} onChange={setSource} merchants={data.merchants} />
         <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
           {STOREFRONT_LAYOUTS.map((l) => {
             const rule = layoutRule(l.key, designs);
@@ -1093,11 +1245,7 @@ function PlatformTab({ data, run, pending }: { data: AdminData; run: Runner; pen
               });
             return (
               <div key={l.key} className={`flex flex-col gap-2.5 rounded-xl border p-3 ${rule.enabled ? "border-emerald-300 bg-[#F3F8F6]" : "border-line bg-[#F7F8F9] opacity-70"}`}>
-                {sampleSlug ? (
-                  <MiniStorefront slug={sampleSlug} layout={l.key} title={look.designs[l.key]} onOpen={() => setPreviewLayout(l.key)} />
-                ) : (
-                  <LayoutThumb layout={l.key} active={rule.enabled} />
-                )}
+                <MiniStorefront src={`${previewSrc(source, l.key)}#vedettes`} title={look.designs[l.key]} onOpen={() => setPreviewLayout(l.key)} />
                 <div className="flex items-baseline justify-between gap-2">
                   <span className="text-sm font-extrabold">{look.designs[l.key]}</span>
                   <span className="text-[11px] font-bold text-ink-muted">{look.images(l.slots)}</span>
@@ -1140,7 +1288,7 @@ function PlatformTab({ data, run, pending }: { data: AdminData; run: Runner; pen
       </Card>
 
       {previewLayout && (
-        <LayoutPreviewModal merchants={data.merchants} initial={previewLayout} onClose={() => setPreviewLayout(null)} />
+        <LayoutPreviewModal merchants={data.merchants} initial={previewLayout} initialSource={source} onClose={() => setPreviewLayout(null)} />
       )}
 
       <Card>
@@ -1331,8 +1479,9 @@ function SecurityTab({ data }: { data: AdminData }) {
     { ok: checks.auditTable, label: a.security.checks.auditTable.label, desc: a.security.checks.auditTable.desc },
     { ok: checks.statsView, label: a.security.checks.statsView.label, desc: a.security.checks.statsView.desc },
     { ok: checks.extendedStats, label: a.security.checks.extendedStats.label, desc: a.security.checks.extendedStats.desc },
+    { ok: checks.phoneChanges, label: a.security.checks.phoneChanges.label, desc: a.security.checks.phoneChanges.desc },
   ];
-  const needsMigration = !checks.extendedStats || !checks.auditTable;
+  const needsMigration = !checks.extendedStats || !checks.auditTable || !checks.phoneChanges;
 
   return (
     <div className="flex flex-col gap-4 px-4 pt-5 md:px-6">
@@ -1404,8 +1553,80 @@ function SecurityTab({ data }: { data: AdminData }) {
 
 /* -------------------------------- Fiche technique --------------------------------- */
 
-/** Vitrine réelle réduite, positionnée sur les produits mis en avant. */
-function MiniStorefront({ slug, layout, title, onOpen }: { slug: string; layout: LayoutKey; title: string; onOpen: () => void }) {
+type PreviewSource = { kind: "demo"; sector: string; theme: string } | { kind: "shop"; slug: string };
+
+/** Adresse de l'aperçu : vitrine d'exemple d'un secteur, ou vitrine réelle. */
+function previewSrc(source: PreviewSource, layout: LayoutKey): string {
+  return source.kind === "demo"
+    ? `/apercu/${source.sector}?design=${layout}&theme=${source.theme}`
+    : `/b/${source.slug}?apercu=${layout}`;
+}
+
+/**
+ * Choix du type de commerce (exemple fictif) ou d'une vitrine réelle, et des
+ * couleurs de l'exemple.
+ */
+function PreviewControls({ source, onChange, merchants }: { source: PreviewSource; onChange: (s: PreviewSource) => void; merchants: AdminMerchant[] }) {
+  const a = useDict(ADMIN_COPY);
+  const sectors = useDict(STOREFRONT_COPY).sectors;
+  const shops = useMemo(() => [...merchants].filter((m) => m.products > 0).sort((x, y) => y.products - x.products), [merchants]);
+  const value = source.kind === "demo" ? `demo:${source.sector}` : `shop:${source.slug}`;
+  const theme = source.kind === "demo" ? source.theme : "whatsapp";
+
+  return (
+    <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl bg-[#F7F8F9] p-2.5">
+      <label className="flex min-w-0 items-center gap-2 text-xs font-bold text-ink-muted">
+        {a.platform.sectorLabel}
+        <select
+          value={value}
+          onChange={(e) => {
+            const [kind, id] = e.target.value.split(":");
+            onChange(kind === "demo" ? { kind: "demo", sector: id, theme } : { kind: "shop", slug: id });
+          }}
+          className="h-9 max-w-[240px] rounded-lg border border-line bg-white px-2 text-xs font-bold text-ink outline-none"
+        >
+          <optgroup label={a.platform.demoGroup}>
+            {Object.keys(INDUSTRY_SECTORS).map((k) => (
+              <option key={k} value={`demo:${k}`}>{sectors[k]?.label ?? k}</option>
+            ))}
+          </optgroup>
+          {shops.length > 0 && (
+            <optgroup label={a.platform.shopsGroup}>
+              {shops.map((m) => (
+                <option key={m.id} value={`shop:${m.slug}`}>{m.name} ({m.products})</option>
+              ))}
+            </optgroup>
+          )}
+        </select>
+      </label>
+      {source.kind === "demo" ? (
+        <div className="flex items-center gap-2 text-xs font-bold text-ink-muted">
+          {a.platform.colorsLabel}
+          <div className="flex gap-1.5">
+            {Object.entries(THEMES).map(([k, th]) => (
+              <button
+                key={k}
+                type="button"
+                title={th.label}
+                aria-label={th.label}
+                aria-pressed={theme === k}
+                onClick={() => onChange({ ...source, theme: k })}
+                className={`h-7 w-7 cursor-pointer rounded-full ${theme === k ? "ring-2 ring-ink ring-offset-2" : ""}`}
+                style={{ background: th.accent }}
+              />
+            ))}
+          </div>
+        </div>
+      ) : (
+        <span className="text-[11px] text-ink-faint">{a.platform.shopColorsNote}</span>
+      )}
+      {source.kind === "demo" && <span className="w-full text-[11px] text-ink-faint">{a.platform.demoNote}</span>}
+    </div>
+  );
+}
+
+/** Vitrine réduite, positionnée sur les produits mis en avant. */
+function MiniStorefront({ src, title, onOpen }: { src: string; title: string; onOpen: () => void }) {
   return (
     <button
       type="button"
@@ -1415,7 +1636,7 @@ function MiniStorefront({ slug, layout, title, onOpen }: { slug: string; layout:
     >
       {/* Un téléphone de 390 × 800 px réduit à 55 % : la section entière tient. */}
       <iframe
-        src={`/b/${slug}?apercu=${layout}#vedettes`}
+        src={src}
         title={title}
         loading="lazy"
         tabIndex={-1}
@@ -1430,15 +1651,23 @@ function MiniStorefront({ slug, layout, title, onOpen }: { slug: string; layout:
  * `/b/<slug>?apercu=<disposition>` : rien n'est enregistré, et on voit le rendu
  * avec de vraies photos plutôt qu'une maquette.
  */
-function LayoutPreviewModal({ merchants, initial, onClose }: { merchants: AdminMerchant[]; initial: LayoutKey; onClose: () => void }) {
+function LayoutPreviewModal({
+  merchants,
+  initial,
+  initialSource,
+  onClose,
+}: {
+  merchants: AdminMerchant[];
+  initial: LayoutKey;
+  initialSource: PreviewSource;
+  onClose: () => void;
+}) {
   const a = useDict(ADMIN_COPY);
   const look = useDict(SETTINGS_COPY).look;
-  // La vitrine la plus fournie montre le mieux chaque disposition.
-  const candidates = useMemo(() => [...merchants].sort((x, y) => y.products - x.products), [merchants]);
-  const [slug, setSlug] = useState(candidates[0]?.slug ?? "");
+  const [source, setSource] = useState<PreviewSource>(initialSource);
   const [layout, setLayout] = useState<LayoutKey>(initial);
   const [device, setDevice] = useState<"phone" | "desktop">("phone");
-  const src = `/b/${slug}?apercu=${layout}`;
+  const src = previewSrc(source, layout);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-3 backdrop-blur-xs">
@@ -1450,10 +1679,10 @@ function LayoutPreviewModal({ merchants, initial, onClose }: { merchants: AdminM
           </button>
         </div>
 
-        {candidates.length === 0 ? (
-          <p className="p-6 text-sm text-ink-muted">{a.platform.noMerchant}</p>
-        ) : (
-          <>
+        <>
+            <div className="px-3.5">
+              <PreviewControls source={source} onChange={setSource} merchants={merchants} />
+            </div>
             <div className="flex flex-wrap items-center gap-2 border-b border-line px-3.5 py-2.5">
               <div className="flex gap-1 rounded-xl bg-[#F3F6F4] p-1">
                 {STOREFRONT_LAYOUTS.map((l) => (
@@ -1477,16 +1706,6 @@ function LayoutPreviewModal({ merchants, initial, onClose }: { merchants: AdminM
                   </button>
                 ))}
               </div>
-              <label className="flex min-w-0 items-center gap-2 text-xs font-bold text-ink-muted">
-                {a.platform.previewOn}
-                <select value={slug} onChange={(e) => setSlug(e.target.value)} className="h-8 max-w-[200px] rounded-lg border border-line bg-white px-2 text-xs font-bold text-ink outline-none">
-                  {candidates.map((m) => (
-                    <option key={m.id} value={m.slug}>
-                      {m.name} ({m.products})
-                    </option>
-                  ))}
-                </select>
-              </label>
               <a href={src} target="_blank" rel="noopener noreferrer" className="ml-auto text-xs font-bold text-[#1A6BB8]">
                 {a.platform.openTab} ↗
               </a>
@@ -1500,8 +1719,7 @@ function LayoutPreviewModal({ merchants, initial, onClose }: { merchants: AdminM
                 className={`h-full rounded-2xl bg-white shadow-lg ${device === "phone" ? "w-[390px] max-w-full" : "w-full"}`}
               />
             </div>
-          </>
-        )}
+        </>
       </div>
     </div>
   );

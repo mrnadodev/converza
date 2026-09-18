@@ -66,6 +66,10 @@ export interface Business {
   usdt_qr_url?: string | null;
   delivery_zones: DeliveryZone[];
   default_currency: Currency;
+  // Changement de numéro validé par CONVERZA (db/migrate-2026-4-numero.sql).
+  previous_phone_e164?: string | null;
+  phone_changed_at?: string | null;
+  phone_notice_until?: string | null;
 }
 
 // Zone de livraison configurée par le marchand (nom + frais).

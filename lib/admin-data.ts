@@ -8,6 +8,7 @@ import { loadPlans, loadPaymentInfo, loadPlatformSettings } from "@/lib/platform
 const RECENT_PAYMENTS_LIMIT = 500;
 const AUDIT_LIMIT = 50;
 const EXPIRING_SOON_DAYS = 7;
+const PHONE_REQUESTS_LIMIT = 40;
 
 export interface AdminMerchant {
   id: string;
@@ -39,6 +40,30 @@ export interface AdminMerchant {
   social_instagram: string | null;
   social_facebook: string | null;
   social_tiktok: string | null;
+}
+
+/** Demande de changement de numéro, telle que la console la présente. */
+export interface AdminPhoneRequest {
+  id: string;
+  businessId: string;
+  businessName: string;
+  slug: string;
+  ownerName: string | null;
+  ownerEmail: string | null;
+  /** Numéro actuel de la boutique, pour repérer une demande devenue obsolète. */
+  currentPhone: string | null;
+  oldPhone: string | null;
+  newPhone: string;
+  reason: string;
+  note: string | null;
+  noticeDays: number;
+  status: string;
+  adminEmail: string | null;
+  adminNote: string | null;
+  createdAt: string;
+  decidedAt: string | null;
+  idDocUrl: string | null;
+  proofUrls: string[];
 }
 
 export async function getAdminData() {
@@ -209,6 +234,49 @@ export async function getAdminData() {
     .order("created_at", { ascending: false })
     .limit(AUDIT_LIMIT);
 
+  // Changements de numéro : la file en attente et les dernières décisions.
+  const phoneRes = await admin
+    .from("phone_change_requests")
+    .select("id,business_id,old_phone_e164,new_phone_e164,reason,note,notice_days,proof_paths,id_doc_path,status,admin_email,admin_note,created_at,decided_at")
+    .order("created_at", { ascending: false })
+    .limit(PHONE_REQUESTS_LIMIT);
+  const bizById = new Map(businesses.map((b) => [b.id, b]));
+  const phoneRequests: AdminPhoneRequest[] = [];
+  for (const r of phoneRes.data ?? []) {
+    const b = bizById.get(r.business_id);
+    // Les pièces ne sont lisibles que par des liens signés d'une heure : le
+    // bucket est privé et elles sont supprimées après la décision.
+    const paths = [r.id_doc_path, ...(r.proof_paths ?? [])].filter(Boolean) as string[];
+    let urls: string[] = [];
+    if (r.status === "pending" && paths.length) {
+      const { data: signed } = await admin.storage.from("verification").createSignedUrls(paths, 3600);
+      // Pas de filtre ici : l'ordre doit rester celui des chemins.
+      urls = (signed ?? []).map((s) => s.signedUrl ?? "");
+    }
+    const idUrl = r.id_doc_path ? urls[0] || null : null;
+    phoneRequests.push({
+      id: r.id,
+      businessId: r.business_id,
+      businessName: b?.name ?? "—",
+      slug: b?.slug ?? "",
+      ownerName: owners.find((o) => o.business_id === r.business_id)?.full_name ?? null,
+      ownerEmail: ownerEmailByBusiness.get(r.business_id) ?? null,
+      currentPhone: b?.phone_e164 ?? null,
+      oldPhone: r.old_phone_e164,
+      newPhone: r.new_phone_e164,
+      reason: r.reason,
+      note: r.note,
+      noticeDays: r.notice_days,
+      status: r.status,
+      adminEmail: r.admin_email,
+      adminNote: r.admin_note,
+      createdAt: r.created_at,
+      decidedAt: r.decided_at,
+      idDocUrl: idUrl,
+      proofUrls: (r.id_doc_path ? urls.slice(1) : urls).filter(Boolean),
+    });
+  }
+
   // État de la configuration : ce que la console peut vraiment vérifier.
   const checks = {
     serviceRoleKey: true, // sans elle, getAdminData aurait déjà renvoyé null
@@ -218,6 +286,7 @@ export async function getAdminData() {
     auditTable: !auditRes.error,
     statsView: !statsRes.error,
     extendedStats: lastOrder.size > 0 && [...lastOrder.values()].some((v) => v !== null),
+    phoneChanges: !phoneRes.error,
   };
 
   return {
@@ -241,6 +310,7 @@ export async function getAdminData() {
     expiringSoon,
     merchants,
     auditLogs: auditRes.data ?? [],
+    phoneRequests,
     checks,
     platformPlans,
     platformPaymentInfo,

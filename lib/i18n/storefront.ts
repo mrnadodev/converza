@@ -53,6 +53,8 @@ export interface StorefrontCopy {
   confirmSend: string;
   scheduleVisit: string;
   previewBanner: string;
+  phoneBanner: (phone: string, old: string) => string;
+  phoneMention: (date: string) => string;
   sectors: Record<string, { label: string; catalog: string }>;
   // Libellés insérés dans le message WhatsApp reçu par le marchand.
   message: {
@@ -113,6 +115,8 @@ const fr: StorefrontCopy = {
   confirmSend: "Envoyer la commande sur WhatsApp",
   scheduleVisit: "Demander une visite",
   previewBanner: "Aperçu de la mise en page — rien n'est enregistré",
+  phoneBanner: (phone, old) => `Notre numéro WhatsApp a changé : ${phone}. L'ancien (${old}) n'est plus utilisé.`,
+  phoneMention: (date) => `Nouveau numéro WhatsApp depuis le ${date}`,
   sectors: {
     commerce_vente: { label: "Commerce", catalog: "Catalogue" },
     restauration: { label: "Restauration", catalog: "Menu" },
@@ -184,6 +188,8 @@ const ht: StorefrontCopy = {
   confirmSend: "Voye kòmand lan sou WhatsApp",
   scheduleVisit: "Mande yon vizit",
   previewBanner: "Apèsi mizanpaj la — anyen pa anrejistre",
+  phoneBanner: (phone, old) => `Nimewo WhatsApp nou an chanje : ${phone}. Nou pa sèvi ak ansyen an (${old}) ankò.`,
+  phoneMention: (date) => `Nouvo nimewo WhatsApp depi ${date}`,
   sectors: {
     commerce_vente: { label: "Komès", catalog: "Katalòg" },
     restauration: { label: "Restoran", catalog: "Meni" },
@@ -255,6 +261,8 @@ const en: StorefrontCopy = {
   confirmSend: "Send the order on WhatsApp",
   scheduleVisit: "Request a visit",
   previewBanner: "Layout preview — nothing is saved",
+  phoneBanner: (phone, old) => `Our WhatsApp number has changed: ${phone}. The old one (${old}) is no longer used.`,
+  phoneMention: (date) => `New WhatsApp number since ${date}`,
   sectors: {
     commerce_vente: { label: "Retail", catalog: "Catalogue" },
     restauration: { label: "Food", catalog: "Menu" },
