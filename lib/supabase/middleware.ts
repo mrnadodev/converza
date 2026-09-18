@@ -42,6 +42,8 @@ export async function updateSession(request: NextRequest) {
     // le marchand arrive ici, elle se crée à partir du jeton dans l'URL.
     path === "/nouvo-modpas" ||
     path.startsWith("/b/") ||
+    // Suivi de commande envoyé au client, qui n'a pas de compte.
+    path.startsWith("/suivi/") ||
     path.startsWith("/api") ||
     path.startsWith("/manifest") ||
     path === "/sw.js" ||

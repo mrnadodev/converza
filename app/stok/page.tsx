@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { BottomNav } from "@/components/BottomNav";
-import { StockManager, type MovementRow } from "@/components/StockManager";
+import { StockManager, type MovementRow, type PurchaseRow } from "@/components/StockManager";
 import { getCatalog, getMyBusiness, getPipeline, getCurrentUserSession, getRolePermissions, hasSupabase } from "@/lib/data";
 import { createClient } from "@/lib/supabase/server";
 
@@ -13,7 +13,7 @@ export default async function StockPage() {
     redirect("/");
   }
 
-  const [products, business, cards, history] = await Promise.all([getCatalog(), getMyBusiness(), getPipeline(), loadMovements()]);
+  const [products, business, cards, history, purchases] = await Promise.all([getCatalog(), getMyBusiness(), getPipeline(), loadMovements(), loadPurchases()]);
 
   return (
     <div className="app-page with-topnav relative flex min-h-[100dvh] flex-col bg-[#F0F2F3]">
@@ -24,11 +24,47 @@ export default async function StockPage() {
         canEdit={permissions.canEditStock}
         movements={history.rows}
         movementsAvailable={history.available}
+        purchases={purchases.rows}
+        suppliers={purchases.suppliers}
+        purchasesAvailable={purchases.available}
       />
 
       <BottomNav active="stok" userSession={session} />
     </div>
   );
+}
+
+/** Réceptions récentes et fournisseurs (migration 6). */
+async function loadPurchases(): Promise<{ rows: PurchaseRow[]; suppliers: { id: string; name: string }[]; available: boolean }> {
+  if (!hasSupabase()) return { rows: [], suppliers: [], available: false };
+  const sb = createClient();
+  const [{ data, error }, { data: suppliers }] = await Promise.all([
+    sb
+      .from("purchases")
+      .select("id, total_cents, paid_cents, currency, received_on, note, suppliers(name), purchase_items(qty, unit_cost_cents, products(name))")
+      .order("received_on", { ascending: false })
+      .order("created_at", { ascending: false })
+      .limit(30),
+    sb.from("suppliers").select("id, name").order("name"),
+  ]);
+  if (error) return { rows: [], suppliers: [], available: false };
+
+  const one = <T,>(v: T | T[] | null): T | null => (Array.isArray(v) ? v[0] ?? null : v);
+  const rows: PurchaseRow[] = (data ?? []).map((p) => ({
+    id: p.id,
+    supplier: one(p.suppliers as { name: string } | { name: string }[] | null)?.name ?? null,
+    receivedOn: p.received_on,
+    total: Number(p.total_cents),
+    paid: Number(p.paid_cents),
+    currency: p.currency,
+    note: p.note,
+    lines: ((p.purchase_items ?? []) as { qty: number; unit_cost_cents: number; products: { name: string } | { name: string }[] | null }[]).map((it) => ({
+      name: one(it.products)?.name ?? "—",
+      qty: Number(it.qty),
+      unitCost: Number(it.unit_cost_cents),
+    })),
+  }));
+  return { rows, suppliers: suppliers ?? [], available: true };
 }
 
 /**

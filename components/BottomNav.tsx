@@ -7,7 +7,7 @@ import { useDict } from "@/components/LanguageContext";
 import { COMMON_COPY } from "@/lib/i18n/app/common";
 import { getRolePermissions, type NavTab, type UserSession } from "@/lib/rbac";
 
-const ALL_TABS: NavTab[] = ["tablo", "komand", "katalog", "stok", "kliyan"];
+const ALL_TABS: NavTab[] = ["tablo", "komand", "katalog", "stok", "kliyan", "kes"];
 
 function Icon({ node, on }: { node: React.ReactNode; on: boolean }) {
   return (
@@ -29,6 +29,7 @@ export function BottomNav({ active, userSession }: { active: NavTab | null; user
     { key: "katalog", label: c.nav.catalog, href: "/katalog", icon: <><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /></> },
     { key: "stok", label: c.nav.stock, href: "/stok", icon: <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" /> },
     { key: "kliyan", label: c.nav.customers, href: "/kliyan", icon: <><path d="M16 21v-2a4 4 0 0 0-8 0v2" /><circle cx="12" cy="7" r="4" /></> },
+    { key: "kes", label: c.nav.cash, href: "/kes", icon: <><rect x="2" y="6" width="20" height="14" rx="2.5" /><path d="M2 10h20" /><circle cx="16.5" cy="15" r="1.4" /></> },
   ];
   const visible = items.filter((it) => allowedTabs.includes(it.key));
 

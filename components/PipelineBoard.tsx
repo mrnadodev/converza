@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useRef, useState, useTransition } from "react";
-import { closeOrder, markOrderPaid, moveOrderStatus } from "@/app/komand/actions";
+import { closeOrder, confirmDeliveryWithCode, markOrderPaid, moveOrderStatus, setCourier } from "@/app/komand/actions";
 import { InvoiceModal } from "@/components/InvoiceModal";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { useDict, useLanguage } from "@/components/LanguageContext";
@@ -485,6 +485,11 @@ function OrderCard({
         </a>
       )}
 
+      {column === "sou_wout" && <DeliveryBlock card={card} businessName={props.businessName} currency={currency} />}
+      {column === "livre" && card.deliveredWithCode && (
+        <span className="w-fit rounded-full bg-[#E7F7F1] px-2 py-0.5 text-[10.5px] font-bold text-brand">✓ {o.delivery.withCode}</span>
+      )}
+
       {column === "metod_peman" && (
         <div className="flex flex-col gap-1.5 border-t border-line/70 pt-2">
           <span className="text-[11px] font-bold text-ink-soft">{o.card.payMethodsTitle}</span>
@@ -552,6 +557,112 @@ function OrderCard({
         </button>
       )}
     </article>
+  );
+}
+
+/**
+ * Livraison d'une commande en route : livreur, fiche envoyée au livreur,
+ * lien de suivi pour le client, validation par le code du client.
+ */
+function DeliveryBlock({ card, businessName, currency }: { card: PipelineCard; businessName: string; currency: Currency }) {
+  const o = useDict(ORDERS_COPY);
+  const d = o.delivery;
+  const [editing, setEditing] = useState(!card.courierName);
+  const [name, setName] = useState(card.courierName ?? "");
+  const [phone, setPhone] = useState(card.courierPhone ?? "");
+  const [code, setCode] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [pending, start] = useTransition();
+
+  const origin = typeof window === "undefined" ? "" : window.location.origin;
+  const trackLink = card.trackingToken ? `${origin}/suivi/${card.trackingToken}` : null;
+  const errorText = (e?: string) => (e === "badCode" ? d.badCode : e === "forbidden" ? d.forbidden : e === "migration" ? d.migration : o.errors.move);
+
+  function saveCourier() {
+    setError(null);
+    start(async () => {
+      const res = await setCourier(card.id, name, phone);
+      if (res.ok) setEditing(false);
+      else setError(errorText(res.error));
+    });
+  }
+
+  function validate() {
+    setError(null);
+    start(async () => {
+      const res = await confirmDeliveryWithCode(card.id, code);
+      if (!res.ok) setError(errorText(res.error));
+      else window.location.reload();
+    });
+  }
+
+  const courierText = d.courierMessage({
+    shop: businessName,
+    ref: card.ref,
+    customer: card.customerName,
+    phone: card.phone_e164,
+    address: card.deliveryAddr ?? "",
+    items: card.itemsSummary,
+    collect: card.owedCents > 0 ? formatMoney(card.owedCents, currency) : null,
+  });
+  const trackText = trackLink
+    ? d.trackMessage({ customer: card.customerName, ref: card.ref, shop: businessName, link: trackLink, courier: card.courierName ?? (name || null) })
+    : null;
+  const input = "h-8 w-full rounded-lg border border-line bg-white px-2 text-[12px] text-ink outline-none focus:border-brand";
+
+  return (
+    <div className="flex flex-col gap-1.5 rounded-xl bg-[#F7F8F9] p-2">
+      <span className="text-[11px] font-extrabold uppercase text-ink-soft">🛵 {d.title}</span>
+
+      {editing ? (
+        <div className="flex flex-col gap-1.5">
+          <input value={name} onChange={(e) => setName(e.target.value)} placeholder={d.name} aria-label={d.name} maxLength={60} className={input} />
+          <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder={d.phone} aria-label={d.phone} inputMode="tel" className={input} />
+          <button type="button" onClick={saveCourier} disabled={pending || !name.trim()} className="h-8 cursor-pointer rounded-lg bg-brand text-[11.5px] font-extrabold text-white disabled:opacity-50">
+            {d.save}
+          </button>
+        </div>
+      ) : (
+        <div className="flex items-center justify-between gap-2">
+          <span className="min-w-0 truncate text-[12px] font-bold text-ink">
+            {name}
+            {phone ? <span className="font-medium text-ink-muted"> · {phone}</span> : null}
+          </span>
+          <button type="button" onClick={() => setEditing(true)} className="shrink-0 cursor-pointer text-[11px] font-bold text-brand">
+            {d.edit}
+          </button>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 gap-1">
+        {!editing && phone && (
+          <a href={waMeLink(phone, courierText)} target="_blank" rel="noopener noreferrer" className="flex h-8 items-center justify-center rounded-lg border border-line bg-white text-[11.5px] font-bold text-ink">
+            {d.sheet}
+          </a>
+        )}
+        {trackText && card.phone_e164 && (
+          <a href={waMeLink(card.phone_e164, trackText)} target="_blank" rel="noopener noreferrer" className="flex h-8 items-center justify-center rounded-lg border border-line bg-white text-[11.5px] font-bold text-ink">
+            {d.track}
+          </a>
+        )}
+      </div>
+
+      <div className="flex gap-1">
+        <input
+          value={code}
+          onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 4))}
+          inputMode="numeric"
+          placeholder="••••"
+          aria-label={d.code}
+          className={`${input} w-20 shrink-0 text-center font-mono tracking-widest`}
+        />
+        <button type="button" onClick={validate} disabled={pending || code.length !== 4} className="h-8 flex-1 cursor-pointer rounded-lg bg-brand-green px-2 text-[11.5px] font-extrabold text-white disabled:opacity-50">
+          {pending ? d.validating : d.validate}
+        </button>
+      </div>
+
+      {error && <span className="text-[11px] font-semibold text-[#C0392B]">{error}</span>}
+    </div>
   );
 }
 

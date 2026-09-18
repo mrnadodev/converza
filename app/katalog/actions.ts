@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { hasSupabase, setBusinessOverride, addDemoProduct, removeDemoProduct } from "@/lib/data";
 import { getMemberPermissions } from "@/lib/auth";
 import { demoBusiness } from "@/lib/demo";
@@ -14,6 +15,8 @@ export interface ProductInput {
   name: string;
   category: string;
   priceGdes: string;
+  /** Prix d'achat, vide si inconnu. */
+  costGdes?: string;
   currency: "HTG" | "USD";
   unit: string;
   stockQty: string;
@@ -108,8 +111,22 @@ export async function saveProduct(input: ProductInput) {
   // `eq("business_id", bid)` sur la mise à jour : sans ça, un identifiant de
   // produit d'un autre marchand serait accepté tel quel.
   const res = input.id
-    ? await sb.from("products").update(row).eq("id", input.id).eq("business_id", bid)
-    : await sb.from("products").insert(row);
+    ? await sb.from("products").update(row).eq("id", input.id).eq("business_id", bid).select("id").maybeSingle()
+    : await sb.from("products").insert(row).select("id").maybeSingle();
+
+  // Prix d'achat : table séparée, jamais lisible par les visiteurs de la
+  // vitrine. Sans la migration 6, l'écriture échoue sans bloquer le produit.
+  const productId = res.data?.id;
+  if (!res.error && productId && input.costGdes !== undefined) {
+    const admin = createAdminClient();
+    if (admin) {
+      const cost = input.costGdes.trim();
+      const { error: costError } = cost
+        ? await admin.from("product_costs").upsert({ product_id: productId, business_id: bid, cost_cents: toCents(cost), updated_at: new Date().toISOString() })
+        : await admin.from("product_costs").delete().eq("product_id", productId).eq("business_id", bid);
+      if (costError) console.warn("product_costs:", costError.message);
+    }
+  }
 
   revalidatePath("/katalog");
   revalidatePath("/stok");

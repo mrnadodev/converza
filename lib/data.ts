@@ -235,17 +235,21 @@ export async function getPipeline(): Promise<PipelineCard[]> {
   const bid = await myBusinessId(sb);
   if (!bid) return [];
 
-  const { data, error } = await sb
-    .from("orders")
-    .select(
-      "id, ref, status, delivery_fee_cents, amount_paid_cents, security_code, pay_method, customers(full_name, phone_e164), order_items(name, qty, unit_price_cents)",
-    )
-    .eq("business_id", bid)
-    .neq("status", "anile")
-    // Une commande suivie et clôturée quitte le tableau, sinon la colonne
-    // « Suivi » s'allongerait sans fin.
-    .or("status.neq.swivi,followed_up_at.is.null")
-    .order("created_at", { ascending: false });
+  const base =
+    "id, ref, status, delivery_fee_cents, amount_paid_cents, security_code, pay_method, delivery_addr, customers(full_name, phone_e164), order_items(name, qty, unit_price_cents)";
+  const query = (columns: string) =>
+    sb
+      .from("orders")
+      .select(columns)
+      .eq("business_id", bid)
+      .neq("status", "anile")
+      // Une commande suivie et clôturée quitte le tableau, sinon la colonne
+      // « Suivi » s'allongerait sans fin.
+      .or("status.neq.swivi,followed_up_at.is.null")
+      .order("created_at", { ascending: false });
+  let { data, error } = await query(`${base}, courier_name, courier_phone, tracking_token, delivered_with_code`);
+  // Colonnes de livraison absentes (migration 6 pas encore passée).
+  if (error && /courier_|tracking_token|delivered_with_code/.test(error.message)) ({ data, error } = await query(base));
 
   // Un échec de requête ne doit pas retomber sur des commandes de démo : le
   // marchand croirait à de vraies ventes.
@@ -273,6 +277,11 @@ export async function getPipeline(): Promise<PipelineCard[]> {
       owedCents: Math.max(totalCents - (o.amount_paid_cents ?? 0), 0),
       securityCode: o.security_code ?? null,
       pay_method: o.pay_method ?? null,
+      deliveryAddr: o.delivery_addr ?? null,
+      courierName: o.courier_name ?? null,
+      courierPhone: o.courier_phone ?? null,
+      trackingToken: o.tracking_token ?? null,
+      deliveredWithCode: Boolean(o.delivered_with_code),
     };
   });
 }
@@ -446,15 +455,17 @@ export async function getCatalog(): Promise<Product[]> {
   const sb = createClient();
   const bid = await myBusinessId(sb);
   if (!bid) return demoProducts;
-  const { data } = await sb
-    .from("products")
-    .select("*")
-    .eq("business_id", bid)
-    .order("name");
+  const [{ data }, { data: costs }] = await Promise.all([
+    sb.from("products").select("*").eq("business_id", bid).order("name"),
+    // Prix d'achat : table privée (migration 6). Absente, la requête échoue
+    // et les produits restent simplement sans coût.
+    sb.from("product_costs").select("product_id, cost_cents").eq("business_id", bid),
+  ]);
+  const costOf = new Map((costs ?? []).map((c: { product_id: string; cost_cents: number }) => [c.product_id, Number(c.cost_cents)]));
 
   // Un catalogue vide reste vide : injecter les produits de démo ferait croire
   // à un nouveau marchand qu'il a déjà un stock en ligne.
-  return (data ?? []) as Product[];
+  return ((data ?? []) as Product[]).map((p) => ({ ...p, cost_cents: costOf.get(p.id) ?? null }));
 }
 
 // --- Sources de vente (attribution des campagnes) ---

@@ -113,9 +113,11 @@ begin
 
   -- Signale au déclencheur des produits que ce changement est déjà journalisé.
   perform set_config('converza.stock_logged', '1', true);
+  -- stock_state est un type énuméré dans schema.sql : sans conversion
+  -- explicite, Postgres refuse le texte renvoyé par stock_state_of.
   update products
   set stock_qty = v_after,
-      stock_state = stock_state_of(v_after, stock_threshold)
+      stock_state = stock_state_of(v_after, stock_threshold)::stock_state
   where id = p_product;
   perform set_config('converza.stock_logged', '0', true);
 

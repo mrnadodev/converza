@@ -25,6 +25,9 @@ export interface CatalogCopy {
     unitPlaceholder: string;
     category: string;
     categoryPlaceholder: string;
+    cost: (currency: string) => string;
+    costHelp: string;
+    margin: (amount: string, pct: number) => string;
     stockQty: string;
     stockQtyHint: string;
     stockQtyHelp: string;
@@ -76,6 +79,9 @@ const fr: CatalogCopy = {
     unitPlaceholder: "douzaine",
     category: "Catégorie",
     categoryPlaceholder: "Alimentation",
+    cost: (currency) => `Prix d'achat (${currency}) — facultatif`,
+    costHelp: "Ce que le produit vous coûte. Il sert à calculer votre bénéfice ; vos clients ne le voient jamais.",
+    margin: (amount, pct) => `Marge : ${amount} par unité (${pct} %)`,
     stockQty: "Quantité en stock",
     stockQtyHint: "42",
     stockQtyHelp: "En stock, stock faible ou épuisé se calcule tout seul à partir de cette quantité.",
@@ -127,6 +133,9 @@ const ht: CatalogCopy = {
     unitPlaceholder: "douzèn",
     category: "Kategori",
     categoryPlaceholder: "Manje",
+    cost: (currency) => `Pri acha (${currency}) — si w vle`,
+    costHelp: "Sa pwodwi a koute w. Li sèvi pou kalkile benefis ou ; kliyan ou yo pa janm wè l.",
+    margin: (amount, pct) => `Maj : ${amount} pa inite (${pct} %)`,
     stockQty: "Kantite nan stòk",
     stockQtyHint: "42",
     stockQtyHelp: "Nan stòk, stòk fèb oswa fini kalkile poukont li apati kantite sa a.",
@@ -178,6 +187,9 @@ const en: CatalogCopy = {
     unitPlaceholder: "dozen",
     category: "Category",
     categoryPlaceholder: "Food",
+    cost: (currency) => `Purchase cost (${currency}) — optional`,
+    costHelp: "What the product costs you. It's used to work out your profit; customers never see it.",
+    margin: (amount, pct) => `Margin: ${amount} per unit (${pct}%)`,
     stockQty: "Quantity in stock",
     stockQtyHint: "42",
     stockQtyHelp: "In stock, low stock or sold out is worked out from this quantity.",

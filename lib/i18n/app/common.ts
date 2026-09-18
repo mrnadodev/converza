@@ -9,6 +9,7 @@ export interface CommonCopy {
     catalog: string;
     stock: string;
     customers: string;
+    cash: string;
     team: string;
     settings: string;
     signOut: string;
@@ -48,6 +49,7 @@ const fr: CommonCopy = {
     home: "Accueil",
     orders: "Commandes",
     catalog: "Catalogue",
+    cash: "Kès",
     stock: "Stock",
     customers: "Clients",
     team: "Équipe",
@@ -107,6 +109,7 @@ const ht: CommonCopy = {
     home: "Akèy",
     orders: "Kòmand",
     catalog: "Katalòg",
+    cash: "Kès",
     stock: "Stòk",
     customers: "Kliyan",
     team: "Ekip",
@@ -166,6 +169,7 @@ const en: CommonCopy = {
     home: "Home",
     orders: "Orders",
     catalog: "Catalog",
+    cash: "Cash",
     stock: "Stock",
     customers: "Customers",
     team: "Team",

@@ -13,7 +13,7 @@ export interface StockCopy {
   filters: { all: (n: number) => string; low: (n: number) => string; out: (n: number) => string };
   quantity: string;
   untracked: string;
-  tabs: { products: string; history: string };
+  tabs: { products: string; purchases: string; history: string };
   auto: string;
   movement: {
     open: string;
@@ -28,6 +28,34 @@ export interface StockCopy {
     saving: string;
     cancel: string;
     errors: Record<StockMovementError, string>;
+  };
+  purchase: {
+    new: string;
+    title: string;
+    hint: string;
+    supplier: string;
+    noSupplier: string;
+    newSupplier: string;
+    newSupplierPlaceholder: string;
+    product: string;
+    qty: string;
+    unitCost: string;
+    addLine: string;
+    removeLine: string;
+    total: string;
+    paid: string;
+    paidHint: string;
+    method: string;
+    date: string;
+    note: string;
+    save: string;
+    saving: string;
+    empty: string;
+    unavailable: string;
+    debt: (amount: string) => string;
+    settled: string;
+    lines: (n: number) => string;
+    noProducts: string;
   };
   history: {
     title: string;
@@ -58,7 +86,7 @@ const fr: StockCopy = {
   filters: { all: (n) => `Tous (${n})`, low: (n) => `Stock faible (${n})`, out: (n) => `Épuisés (${n})` },
   quantity: "Quantité en stock",
   untracked: "Non suivi",
-  tabs: { products: "Produits", history: "Historique" },
+  tabs: { products: "Produits", purchases: "Réceptions", history: "Historique" },
   auto: "Les ventes confirmées retirent le stock automatiquement ; une commande annulée le remet.",
   movement: {
     open: "Mouvement",
@@ -78,6 +106,34 @@ const fr: StockCopy = {
       migration: "Mise à jour de la base nécessaire (migration 5) avant d'enregistrer des mouvements.",
       failed: "L'enregistrement a échoué. Réessayez.",
     },
+  },
+  purchase: {
+    new: "Nouvelle réception",
+    title: "Réception de marchandise",
+    hint: "Le stock augmente et le prix d'achat de chaque produit est mis à jour.",
+    supplier: "Fournisseur",
+    noSupplier: "— Sans fournisseur —",
+    newSupplier: "Ou nouveau fournisseur",
+    newSupplierPlaceholder: "Nom du fournisseur",
+    product: "Produit",
+    qty: "Quantité",
+    unitCost: "Prix d'achat unitaire",
+    addLine: "+ Ajouter un produit",
+    removeLine: "Retirer",
+    total: "Total de la réception",
+    paid: "Montant payé",
+    paidHint: "Laissez moins que le total si vous payez plus tard : la différence devient une dette fournisseur.",
+    method: "Payé par",
+    date: "Date de réception",
+    note: "Note (facultatif)",
+    save: "Enregistrer la réception",
+    saving: "Enregistrement…",
+    empty: "Aucune réception enregistrée.",
+    unavailable: "Les réceptions seront disponibles après la mise à jour de la base (migration 6).",
+    debt: (a) => `Reste à payer : ${a}`,
+    settled: "Payé",
+    lines: (n) => (n <= 1 ? `${n} produit` : `${n} produits`),
+    noProducts: "Ajoutez d'abord vos produits au catalogue.",
   },
   history: {
     title: "Historique des mouvements",
@@ -113,7 +169,7 @@ const ht: StockCopy = {
   filters: { all: (n) => `Tout (${n})`, low: (n) => `Stòk fèb (${n})`, out: (n) => `Fini (${n})` },
   quantity: "Kantite nan stòk",
   untracked: "Pa swiv",
-  tabs: { products: "Pwodwi", history: "Istorik" },
+  tabs: { products: "Pwodwi", purchases: "Resepsyon", history: "Istorik" },
   auto: "Vant ki konfime yo retire stòk la otomatikman ; yon kòmand ki anile remèt li.",
   movement: {
     open: "Mouvman",
@@ -133,6 +189,34 @@ const ht: StockCopy = {
       migration: "Fòk baz done a mete ajou (migrasyon 5) anvan ou anrejistre mouvman.",
       failed: "Anrejistreman an pa mache. Eseye ankò.",
     },
+  },
+  purchase: {
+    new: "Nouvo resepsyon",
+    title: "Resepsyon machandiz",
+    hint: "Stòk la monte epi pri acha chak pwodwi mete ajou.",
+    supplier: "Founisè",
+    noSupplier: "— San founisè —",
+    newSupplier: "Oswa nouvo founisè",
+    newSupplierPlaceholder: "Non founisè a",
+    product: "Pwodwi",
+    qty: "Kantite",
+    unitCost: "Pri acha pa inite",
+    addLine: "+ Ajoute yon pwodwi",
+    removeLine: "Retire",
+    total: "Total resepsyon an",
+    paid: "Kantite ki peye",
+    paidHint: "Mete mwens pase total la si w ap peye pita : diferans lan tounen yon dèt founisè.",
+    method: "Peye ak",
+    date: "Dat resepsyon",
+    note: "Nòt (si w vle)",
+    save: "Anrejistre resepsyon an",
+    saving: "N ap anrejistre…",
+    empty: "Poko gen resepsyon.",
+    unavailable: "Resepsyon yo ap disponib lè baz done a mete ajou (migrasyon 6).",
+    debt: (a) => `Rès pou peye : ${a}`,
+    settled: "Peye",
+    lines: (n) => `${n} pwodwi`,
+    noProducts: "Ajoute pwodwi ou yo nan katalòg la anvan.",
   },
   history: {
     title: "Istorik mouvman yo",
@@ -168,7 +252,7 @@ const en: StockCopy = {
   filters: { all: (n) => `All (${n})`, low: (n) => `Low stock (${n})`, out: (n) => `Sold out (${n})` },
   quantity: "Quantity in stock",
   untracked: "Not tracked",
-  tabs: { products: "Products", history: "History" },
+  tabs: { products: "Products", purchases: "Receipts", history: "History" },
   auto: "Confirmed sales remove stock automatically; a cancelled order puts it back.",
   movement: {
     open: "Movement",
@@ -188,6 +272,34 @@ const en: StockCopy = {
       migration: "A database update (migration 5) is needed before recording movements.",
       failed: "Saving failed. Try again.",
     },
+  },
+  purchase: {
+    new: "New receipt",
+    title: "Goods received",
+    hint: "Stock goes up and each product's purchase cost is updated.",
+    supplier: "Supplier",
+    noSupplier: "— No supplier —",
+    newSupplier: "Or a new supplier",
+    newSupplierPlaceholder: "Supplier name",
+    product: "Product",
+    qty: "Quantity",
+    unitCost: "Unit purchase cost",
+    addLine: "+ Add a product",
+    removeLine: "Remove",
+    total: "Receipt total",
+    paid: "Amount paid",
+    paidHint: "Enter less than the total if you'll pay later: the difference becomes supplier debt.",
+    method: "Paid with",
+    date: "Date received",
+    note: "Note (optional)",
+    save: "Save receipt",
+    saving: "Saving…",
+    empty: "No receipts yet.",
+    unavailable: "Receipts will be available after the database update (migration 6).",
+    debt: (a) => `Still owed: ${a}`,
+    settled: "Paid",
+    lines: (n) => (n === 1 ? "1 product" : `${n} products`),
+    noProducts: "Add your products to the catalog first.",
   },
   history: {
     title: "Movement history",

@@ -20,6 +20,7 @@ const EMPTY = (currency: "HTG" | "USD"): ProductInput => ({
   name: "",
   category: "",
   priceGdes: "",
+  costGdes: "",
   currency,
   unit: "",
   stockQty: "",
@@ -53,6 +54,7 @@ export function CatalogManager({ business, initial, userSession }: { business: B
       name: p.name,
       category: p.category ?? "",
       priceGdes: String(p.price_cents / 100),
+      costGdes: p.cost_cents == null ? "" : String(p.cost_cents / 100),
       currency: p.currency,
       unit: p.unit ?? "",
       stockQty: p.stock_qty == null ? "" : String(p.stock_qty),
@@ -86,6 +88,15 @@ export function CatalogManager({ business, initial, userSession }: { business: B
   }
 
   const set = (patch: Partial<ProductInput>) => setForm((f) => (f ? { ...f, ...patch } : f));
+
+  // Marge unitaire affichée sous le prix d'achat dès que les deux sont saisis.
+  function marginHint(f: ProductInput): string | null {
+    const price = parseFloat(f.priceGdes.replace(",", "."));
+    const cost = parseFloat((f.costGdes ?? "").replace(",", "."));
+    if (!Number.isFinite(price) || !Number.isFinite(cost) || price <= 0) return null;
+    const margin = price - cost;
+    return k.form.margin(formatMoney(Math.round(margin * 100), f.currency), Math.round((margin / price) * 100));
+  }
 
   return (
     <div className="app-page with-topnav relative min-h-[100dvh] bg-[#F7F8F9] pb-[110px]">
@@ -272,6 +283,10 @@ export function CatalogManager({ business, initial, userSession }: { business: B
                   <input value={form.unit} onChange={(e) => set({ unit: e.target.value })} className={inputCls} placeholder={k.form.unitPlaceholder} />
                 </Field>
               </div>
+
+              <Field label={k.form.cost(form.currency)} hint={marginHint(form) ?? k.form.costHelp}>
+                <input value={form.costGdes ?? ""} onChange={(e) => set({ costGdes: e.target.value })} inputMode="decimal" className={inputCls} placeholder="120" />
+              </Field>
 
               <Field label={k.form.category}>
                 <input value={form.category} onChange={(e) => set({ category: e.target.value })} list="cats" className={inputCls} placeholder={k.form.categoryPlaceholder} />

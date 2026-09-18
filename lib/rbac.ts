@@ -7,7 +7,7 @@ export interface UserSession {
   agentId?: string;
 }
 
-export type NavTab = "tablo" | "komand" | "stok" | "katalog" | "kliyan";
+export type NavTab = "tablo" | "komand" | "stok" | "katalog" | "kliyan" | "kes";
 
 export interface RolePermissions {
   canEditCatalog: boolean;
@@ -33,7 +33,7 @@ export function getRolePermissions(session: UserSession): RolePermissions {
       canSwitchPipelineAgentFilter: true,
       canViewFinancialTurnover: true,
       allowedPipelineColumns: ["demand_acha", "kontak", "metod_peman", "konfime_peman", "sou_wout", "livre", "swivi"],
-      allowedNavTabs: ["tablo", "komand", "stok", "katalog", "kliyan"],
+      allowedNavTabs: ["tablo", "komand", "stok", "katalog", "kliyan", "kes"],
       isReadOnly: false,
     };
   }
@@ -114,7 +114,7 @@ export function getRolePermissions(session: UserSession): RolePermissions {
         canSwitchPipelineAgentFilter: true, // Peut voir et filtrer tout le pipeline
         canViewFinancialTurnover: false, // 🔒 Masquage du bénéfice net final
         allowedPipelineColumns: ["demand_acha", "kontak", "metod_peman", "konfime_peman", "sou_wout", "livre", "swivi"],
-        allowedNavTabs: ["tablo", "komand", "stok", "katalog", "kliyan"],
+        allowedNavTabs: ["tablo", "komand", "stok", "katalog", "kliyan", "kes"],
         isReadOnly: false,
       };
     default:

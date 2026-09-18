@@ -44,6 +44,26 @@ export interface OrdersCopy {
     send: string;
   };
   errors: { move: string; markPaid: string };
+  delivery: {
+    title: string;
+    courier: string;
+    assign: string;
+    name: string;
+    phone: string;
+    save: string;
+    edit: string;
+    sheet: string;
+    track: string;
+    code: string;
+    validate: string;
+    validating: string;
+    badCode: string;
+    forbidden: string;
+    migration: string;
+    withCode: string;
+    courierMessage: (p: { shop: string; ref: string; customer: string; phone: string; address: string; items: string; collect: string | null }) => string;
+    trackMessage: (p: { customer: string; ref: string; shop: string; link: string; courier: string | null }) => string;
+  };
 }
 
 const fr: OrdersCopy = {
@@ -96,6 +116,38 @@ const fr: OrdersCopy = {
   errors: {
     move: "L'étape n'a pas pu être changée. Réessayez.",
     markPaid: "Le paiement n'a pas pu être enregistré. Réessayez.",
+  },
+  delivery: {
+    title: "Livraison",
+    courier: "Livreur",
+    assign: "Choisir un livreur",
+    name: "Nom du livreur",
+    phone: "WhatsApp du livreur",
+    save: "Enregistrer",
+    edit: "Modifier",
+    sheet: "Fiche au livreur",
+    track: "Lien de suivi au client",
+    code: "Code donné par le client",
+    validate: "Valider la livraison",
+    validating: "Vérification…",
+    badCode: "Code incorrect : demandez au client le code reçu à la commande.",
+    forbidden: "Vous ne gérez pas les livraisons.",
+    migration: "Mise à jour de la base nécessaire (migration 6).",
+    withCode: "Livrée avec le code du client",
+    courierMessage: ({ shop, ref, customer, phone, address, items, collect }) =>
+      [
+        `🛵 Livraison ${shop} — commande #${ref}`,
+        `Client : ${customer}`,
+        phone ? `Téléphone : ${phone}` : null,
+        address ? `Adresse : ${address}` : null,
+        items ? `Articles : ${items}` : null,
+        collect ? `À encaisser : ${collect}` : "Déjà payé : rien à encaisser.",
+        "À la remise, demandez au client son code à 4 chiffres.",
+      ]
+        .filter(Boolean)
+        .join("\n"),
+    trackMessage: ({ customer, ref, shop, link, courier }) =>
+      `Bonjour ${customer}, votre commande #${ref} chez ${shop} est en route${courier ? ` avec ${courier}` : ""} 🛵\nSuivez-la ici : ${link}\nGardez votre code à 4 chiffres : le livreur vous le demandera.`,
   },
 };
 
@@ -150,6 +202,38 @@ const ht: OrdersCopy = {
     move: "Nou pa rive chanje etap la. Eseye ankò.",
     markPaid: "Nou pa rive anrejistre pèman an. Eseye ankò.",
   },
+  delivery: {
+    title: "Livrezon",
+    courier: "Livrè",
+    assign: "Chwazi yon livrè",
+    name: "Non livrè a",
+    phone: "WhatsApp livrè a",
+    save: "Anrejistre",
+    edit: "Chanje",
+    sheet: "Fich pou livrè a",
+    track: "Lyen swivi pou kliyan an",
+    code: "Kòd kliyan an bay",
+    validate: "Valide livrezon an",
+    validating: "N ap verifye…",
+    badCode: "Kòd la pa bon : mande kliyan an kòd li te resevwa lè l te kòmande a.",
+    forbidden: "Ou pa jere livrezon.",
+    migration: "Fòk baz done a mete ajou (migrasyon 6).",
+    withCode: "Livre ak kòd kliyan an",
+    courierMessage: ({ shop, ref, customer, phone, address, items, collect }) =>
+      [
+        `🛵 Livrezon ${shop} — kòmand #${ref}`,
+        `Kliyan : ${customer}`,
+        phone ? `Telefòn : ${phone}` : null,
+        address ? `Adrès : ${address}` : null,
+        items ? `Atik : ${items}` : null,
+        collect ? `Pou touche : ${collect}` : "Deja peye : pa gen anyen pou touche.",
+        "Lè w ap remèt li, mande kliyan an kòd 4 chif li a.",
+      ]
+        .filter(Boolean)
+        .join("\n"),
+    trackMessage: ({ customer, ref, shop, link, courier }) =>
+      `Bonjou ${customer}, kòmand #${ref} ou a lakay ${shop} sou wout${courier ? ` ak ${courier}` : ""} 🛵\nSwiv li isit la : ${link}\nKenbe kòd 4 chif ou a : livrè a ap mande w li.`,
+  },
 };
 
 const en: OrdersCopy = {
@@ -202,6 +286,38 @@ const en: OrdersCopy = {
   errors: {
     move: "The stage could not be changed. Please try again.",
     markPaid: "The payment could not be recorded. Please try again.",
+  },
+  delivery: {
+    title: "Delivery",
+    courier: "Courier",
+    assign: "Choose a courier",
+    name: "Courier's name",
+    phone: "Courier's WhatsApp",
+    save: "Save",
+    edit: "Edit",
+    sheet: "Sheet to courier",
+    track: "Tracking link to customer",
+    code: "Code given by the customer",
+    validate: "Confirm delivery",
+    validating: "Checking…",
+    badCode: "Wrong code: ask the customer for the code they received when ordering.",
+    forbidden: "You don't handle deliveries.",
+    migration: "A database update is needed (migration 6).",
+    withCode: "Delivered with the customer's code",
+    courierMessage: ({ shop, ref, customer, phone, address, items, collect }) =>
+      [
+        `🛵 ${shop} delivery — order #${ref}`,
+        `Customer: ${customer}`,
+        phone ? `Phone: ${phone}` : null,
+        address ? `Address: ${address}` : null,
+        items ? `Items: ${items}` : null,
+        collect ? `To collect: ${collect}` : "Already paid: nothing to collect.",
+        "At hand-over, ask the customer for their 4-digit code.",
+      ]
+        .filter(Boolean)
+        .join("\n"),
+    trackMessage: ({ customer, ref, shop, link, courier }) =>
+      `Hello ${customer}, your order #${ref} from ${shop} is on its way${courier ? ` with ${courier}` : ""} 🛵\nTrack it here: ${link}\nKeep your 4-digit code: the courier will ask for it.`,
   },
 };
 

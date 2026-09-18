@@ -106,6 +106,8 @@ export interface Product {
   photos?: string[];
   sold_count: number;
   is_active: boolean;
+  /** Prix d'achat unitaire (migration 6), pour le calcul du bénéfice. */
+  cost_cents?: number | null;
 }
 
 export interface Order {
@@ -194,4 +196,10 @@ export interface PipelineCard {
   pay_method?: PayMethod | null;
   securityCode?: string | null; // code livraison stocké en base (4 chiffres)
   badge?: string; // ex: "→ Jean", "MonCash 8842"
+  // Livraison (migration 6).
+  deliveryAddr?: string | null;
+  courierName?: string | null;
+  courierPhone?: string | null;
+  trackingToken?: string | null;
+  deliveredWithCode?: boolean;
 }

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { getMemberContext, getMemberPermissions } from "@/lib/auth";
 import { hasSupabase } from "@/lib/data";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { toCents } from "@/lib/money";
 
 // Mouvements de stock saisis par le marchand : réception de marchandise,
 // perte ou casse, inventaire. Les ventes et annulations sont enregistrées
@@ -53,4 +54,69 @@ export async function recordStockMovement(input: {
   revalidatePath("/stok");
   revalidatePath("/katalog");
   return { ok: true, qtyAfter: (data as number | null) ?? null };
+}
+
+/**
+ * Réception de marchandise : l'achat, ses lignes, l'entrée en stock et le
+ * nouveau prix d'achat de chaque produit, en une seule transaction
+ * (record_purchase, db/migrate-2026-6-gestion.sql).
+ */
+export async function recordPurchase(input: {
+  supplierId: string | null;
+  newSupplier: string;
+  items: { productId: string; qty: number; unitCost: string }[];
+  paid: string;
+  payMethod: string;
+  note: string;
+  receivedOn: string;
+}): Promise<{ ok: true } | { ok: false; error: StockMovementError }> {
+  if (!hasSupabase()) return { ok: true };
+
+  const me = await getMemberContext();
+  const permissions = await getMemberPermissions();
+  if (!me || (permissions && !permissions.canEditStock)) return { ok: false, error: "forbidden" };
+
+  const items = input.items
+    .map((it) => ({ product_id: it.productId, qty: Math.floor(Number(it.qty)), unit_cost_cents: toCents(it.unitCost) }))
+    .filter((it) => it.product_id && it.qty > 0 && it.unit_cost_cents >= 0);
+  const date = /^\d{4}-\d{2}-\d{2}$/.test(input.receivedOn) ? input.receivedOn : null;
+  if (items.length === 0 || items.length !== input.items.length || !date) return { ok: false, error: "invalid" };
+
+  const admin = createAdminClient();
+  if (!admin) return { ok: false, error: "failed" };
+
+  // Nouveau fournisseur saisi à la volée : on le crée, ou on reprend celui du
+  // même nom (contrainte d'unicité par boutique).
+  let supplierId = input.supplierId;
+  const name = input.newSupplier.trim().slice(0, 80);
+  if (!supplierId && name) {
+    const { data, error } = await admin
+      .from("suppliers")
+      .upsert({ business_id: me.businessId, name }, { onConflict: "business_id,name" })
+      .select("id")
+      .single();
+    if (error) return { ok: false, error: /suppliers/.test(error.message) ? "migration" : "failed" };
+    supplierId = data.id;
+  }
+
+  const { error } = await admin.rpc("record_purchase", {
+    p_business: me.businessId,
+    p_supplier: supplierId,
+    p_items: items,
+    p_paid_cents: Math.max(toCents(input.paid) || 0, 0),
+    p_pay_method: input.payMethod.slice(0, 40) || null,
+    p_note: input.note.slice(0, 200),
+    p_received_on: date,
+    p_actor: me.userId,
+  });
+  if (error) {
+    if (/record_purchase|function|schema cache/i.test(error.message)) return { ok: false, error: "migration" };
+    console.error("recordPurchase:", error.message);
+    return { ok: false, error: "failed" };
+  }
+
+  revalidatePath("/stok");
+  revalidatePath("/katalog");
+  revalidatePath("/kes");
+  return { ok: true };
 }

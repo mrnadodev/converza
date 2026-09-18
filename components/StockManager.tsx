@@ -6,11 +6,23 @@ import { useRouter } from "next/navigation";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { useDict, useLanguage } from "@/components/LanguageContext";
 import { STOCK_COPY } from "@/lib/i18n/app/stock";
+import { KES_COPY } from "@/lib/i18n/app/kes";
 import { formatMoney } from "@/lib/money";
-import { recordStockMovement, type ManualMovementKind, type StockMovementError } from "@/app/stok/actions";
+import { recordPurchase, recordStockMovement, type ManualMovementKind, type StockMovementError } from "@/app/stok/actions";
 import { generateSalesReportCSV, triggerSalesReportPDF } from "@/lib/reports";
 import { stockStateFor } from "@/lib/stock_ai";
 import type { Business, PipelineCard, Product } from "@/lib/types";
+
+export interface PurchaseRow {
+  id: string;
+  supplier: string | null;
+  receivedOn: string;
+  total: number;
+  paid: number;
+  currency: string;
+  note: string | null;
+  lines: { name: string; qty: number; unitCost: number }[];
+}
 
 export interface MovementRow {
   id: string;
@@ -32,6 +44,9 @@ export function StockManager({
   canEdit = true,
   movements = [],
   movementsAvailable = false,
+  purchases = [],
+  suppliers = [],
+  purchasesAvailable = false,
 }: {
   business: Business;
   initialProducts: Product[];
@@ -40,6 +55,10 @@ export function StockManager({
   movements?: MovementRow[];
   /** Faux tant que la migration 5 n'a pas créé le journal. */
   movementsAvailable?: boolean;
+  purchases?: PurchaseRow[];
+  suppliers?: { id: string; name: string }[];
+  /** Faux tant que la migration 6 n'a pas créé les tables d'achats. */
+  purchasesAvailable?: boolean;
 }) {
   const s = useDict(STOCK_COPY);
   const { language } = useLanguage();
@@ -47,7 +66,7 @@ export function StockManager({
   const [filter, setFilter] = useState<"all" | "low" | "out">("all");
   const [search, setSearch] = useState("");
   const [timeframe, setTimeframe] = useState<"week" | "month" | "all">("month");
-  const [tab, setTab] = useState<"products" | "history">("products");
+  const [tab, setTab] = useState<"products" | "purchases" | "history">("products");
   const [editing, setEditing] = useState<Product | null>(null);
   const router = useRouter();
 
@@ -147,7 +166,7 @@ export function StockManager({
         {products.length > 0 && (
           <div className="flex flex-col gap-2">
             <div className="flex gap-1 rounded-xl bg-white p-1 ring-1 ring-line">
-              {(["products", "history"] as const).map((k) => (
+              {(["products", "purchases", "history"] as const).map((k) => (
                 <button
                   key={k}
                   onClick={() => setTab(k)}
@@ -164,6 +183,8 @@ export function StockManager({
 
         {tab === "history" && products.length > 0 ? (
           <MovementHistory rows={movements} available={movementsAvailable} />
+        ) : tab === "purchases" && products.length > 0 ? (
+          <Purchases rows={purchases} suppliers={suppliers} products={products} available={purchasesAvailable} canEdit={canEdit} currency={business.default_currency ?? "HTG"} />
         ) : products.length === 0 ? (
           <section className="flex flex-col items-center gap-2 rounded-2xl border border-line bg-white p-8 text-center">
             <h2 className="text-base font-extrabold text-ink">{s.empty.title}</h2>
@@ -412,5 +433,238 @@ function MovementHistory({ rows, available }: { rows: MovementRow[]; available: 
         })}
       </ul>
     </section>
+  );
+}
+
+/* ─────────── Réceptions ─────────── */
+
+type Line = { productId: string; qty: string; unitCost: string };
+
+function Purchases({
+  rows,
+  suppliers,
+  products,
+  available,
+  canEdit,
+  currency,
+}: {
+  rows: PurchaseRow[];
+  suppliers: { id: string; name: string }[];
+  products: Product[];
+  available: boolean;
+  canEdit: boolean;
+  currency: "HTG" | "USD";
+}) {
+  const s = useDict(STOCK_COPY);
+  const { language } = useLanguage();
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const [pending, start] = useTransition();
+  const [error, setError] = useState<StockMovementError | null>(null);
+  const today = new Date().toLocaleDateString("en-CA", { timeZone: "America/Port-au-Prince" });
+
+  // Le prix d'achat connu du produit pré-remplit la ligne.
+  const costOf = (id: string) => {
+    const c = products.find((p) => p.id === id)?.cost_cents;
+    return c == null ? "" : String(c / 100);
+  };
+  const newLine = (): Line => ({ productId: products[0]?.id ?? "", qty: "", unitCost: costOf(products[0]?.id ?? "") });
+  const [lines, setLines] = useState<Line[]>([newLine()]);
+  const [supplierId, setSupplierId] = useState("");
+  const [newSupplier, setNewSupplier] = useState("");
+  const [paid, setPaid] = useState<string | null>(null);
+  const [payMethod, setPayMethod] = useState("cash");
+  const [note, setNote] = useState("");
+  const [receivedOn, setReceivedOn] = useState(today);
+
+  const num = (v: string) => parseFloat(v.replace(",", "."));
+  const totalCents = lines.reduce((a, l) => {
+    const q = num(l.qty);
+    const c = num(l.unitCost);
+    return Number.isFinite(q) && Number.isFinite(c) ? a + Math.round(q * c * 100) : a;
+  }, 0);
+  const valid = lines.length > 0 && lines.every((l) => l.productId && num(l.qty) > 0 && num(l.unitCost) >= 0);
+  const money = (c: number) => formatMoney(c, currency);
+  const field = "h-10 w-full rounded-xl border border-line bg-[#F7F8F9] px-3 text-[13.5px] text-ink outline-none focus:border-brand focus:bg-white";
+  const setLine = (i: number, patch: Partial<Line>) => setLines((ls) => ls.map((l, j) => (j === i ? { ...l, ...patch } : l)));
+
+  function save() {
+    if (!valid) return setError("invalid");
+    setError(null);
+    start(async () => {
+      const res = await recordPurchase({
+        supplierId: supplierId || null,
+        newSupplier: supplierId ? "" : newSupplier,
+        items: lines.map((l) => ({ productId: l.productId, qty: num(l.qty), unitCost: l.unitCost })),
+        paid: paid ?? String(totalCents / 100),
+        payMethod,
+        note,
+        receivedOn,
+      });
+      if (res.ok) {
+        setOpen(false);
+        setLines([newLine()]);
+        setPaid(null);
+        setNote("");
+        setNewSupplier("");
+        router.refresh();
+      } else setError(res.error);
+    });
+  }
+
+  if (!available) return <p className="rounded-2xl border border-dashed border-line bg-white p-5 text-center text-[13px] text-ink-muted">{s.purchase.unavailable}</p>;
+
+  return (
+    <div className="flex flex-col gap-3">
+      {canEdit && !open && (
+        <button type="button" onClick={() => setOpen(true)} className="h-11 cursor-pointer rounded-2xl bg-brand text-sm font-extrabold text-white">
+          + {s.purchase.new}
+        </button>
+      )}
+
+      {open && (
+        <section className="flex flex-col gap-3 rounded-2xl border border-line bg-white p-3.5">
+          <div>
+            <h2 className="text-sm font-extrabold text-ink">{s.purchase.title}</h2>
+            <p className="text-[11.5px] text-ink-muted">{s.purchase.hint}</p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            <label className="flex flex-col gap-1">
+              <span className="text-[11.5px] font-bold text-ink-muted">{s.purchase.supplier}</span>
+              <select value={supplierId} onChange={(e) => setSupplierId(e.target.value)} className={field}>
+                <option value="">{s.purchase.noSupplier}</option>
+                {suppliers.map((sup) => (
+                  <option key={sup.id} value={sup.id}>
+                    {sup.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            {!supplierId && (
+              <label className="flex flex-col gap-1">
+                <span className="text-[11.5px] font-bold text-ink-muted">{s.purchase.newSupplier}</span>
+                <input value={newSupplier} onChange={(e) => setNewSupplier(e.target.value)} maxLength={80} placeholder={s.purchase.newSupplierPlaceholder} className={field} />
+              </label>
+            )}
+          </div>
+
+          <div className="flex flex-col gap-2">
+            {lines.map((l, i) => (
+              <div key={i} className="grid grid-cols-[1fr_auto] gap-2 rounded-xl bg-[#F7F8F9] p-2.5">
+                <select
+                  value={l.productId}
+                  onChange={(e) => setLine(i, { productId: e.target.value, unitCost: costOf(e.target.value) })}
+                  aria-label={s.purchase.product}
+                  className={`${field} col-span-2 bg-white`}
+                >
+                  {products.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name}
+                    </option>
+                  ))}
+                </select>
+                <div className="grid grid-cols-2 gap-2">
+                  <label className="flex flex-col gap-1">
+                    <span className="text-[11px] font-bold text-ink-muted">{s.purchase.qty}</span>
+                    <input value={l.qty} onChange={(e) => setLine(i, { qty: e.target.value })} inputMode="numeric" className={`${field} bg-white`} />
+                  </label>
+                  <label className="flex flex-col gap-1">
+                    <span className="text-[11px] font-bold text-ink-muted">{s.purchase.unitCost} ({currency})</span>
+                    <input value={l.unitCost} onChange={(e) => setLine(i, { unitCost: e.target.value })} inputMode="decimal" className={`${field} bg-white`} />
+                  </label>
+                </div>
+                {lines.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => setLines((ls) => ls.filter((_, j) => j !== i))}
+                    className="self-end rounded-lg px-2 py-2 text-[12px] font-bold text-[#C0392B]"
+                  >
+                    {s.purchase.removeLine}
+                  </button>
+                )}
+              </div>
+            ))}
+            <button type="button" onClick={() => setLines((ls) => [...ls, newLine()])} className="h-10 cursor-pointer rounded-xl border-2 border-dashed border-line text-[13px] font-bold text-brand">
+              {s.purchase.addLine}
+            </button>
+          </div>
+
+          <div className="flex items-center justify-between rounded-xl bg-[#E7F7F1] px-3 py-2.5">
+            <span className="text-[12.5px] font-bold text-brand">{s.purchase.total}</span>
+            <span className="text-base font-extrabold text-brand">{money(totalCents)}</span>
+          </div>
+
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+            <label className="flex flex-col gap-1">
+              <span className="text-[11.5px] font-bold text-ink-muted">{s.purchase.paid} ({currency})</span>
+              <input value={paid ?? String(totalCents / 100)} onChange={(e) => setPaid(e.target.value)} inputMode="decimal" className={field} />
+            </label>
+            <label className="flex flex-col gap-1">
+              <span className="text-[11.5px] font-bold text-ink-muted">{s.purchase.method}</span>
+              <select value={payMethod} onChange={(e) => setPayMethod(e.target.value)} className={field}>
+                {["cash", "moncash", "natcash", "banque", "autre"].map((m) => (
+                  <option key={m} value={m}>
+                    {KES_COPY[language].methods[m] ?? m}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="flex flex-col gap-1">
+              <span className="text-[11.5px] font-bold text-ink-muted">{s.purchase.date}</span>
+              <input type="date" value={receivedOn} max={today} onChange={(e) => setReceivedOn(e.target.value)} className={field} />
+            </label>
+          </div>
+          <p className="-mt-1 text-[11px] leading-snug text-ink-muted">{s.purchase.paidHint}</p>
+
+          <label className="flex flex-col gap-1">
+            <span className="text-[11.5px] font-bold text-ink-muted">{s.purchase.note}</span>
+            <input value={note} onChange={(e) => setNote(e.target.value)} maxLength={200} className={field} />
+          </label>
+
+          {error && <p className="rounded-lg bg-[#FCE4E4] px-3 py-2 text-[12px] font-semibold text-[#C0392B]">{error === "migration" ? s.purchase.unavailable : s.movement.errors[error]}</p>}
+
+          <div className="grid grid-cols-2 gap-2">
+            <button type="button" onClick={() => setOpen(false)} className="h-11 cursor-pointer rounded-xl border border-line bg-white text-[13px] font-bold text-ink">
+              {s.movement.cancel}
+            </button>
+            <button type="button" onClick={save} disabled={pending || !valid} className="h-11 cursor-pointer rounded-xl bg-brand-green text-[13px] font-extrabold text-white disabled:opacity-50">
+              {pending ? s.purchase.saving : s.purchase.save}
+            </button>
+          </div>
+        </section>
+      )}
+
+      {rows.length === 0 ? (
+        <p className="rounded-2xl border border-dashed border-line bg-white p-5 text-center text-[13px] text-ink-muted">{s.purchase.empty}</p>
+      ) : (
+        <ul className="flex flex-col gap-2">
+          {rows.map((r) => {
+            const owed = Math.max(r.total - r.paid, 0);
+            return (
+              <li key={r.id} className="rounded-2xl border border-line bg-white p-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex min-w-0 flex-col">
+                    <span className="truncate text-[13.5px] font-extrabold text-ink">{r.supplier ?? s.purchase.noSupplier}</span>
+                    <span className="text-[11.5px] text-ink-muted">
+                      {new Date(`${r.receivedOn}T12:00:00`).toLocaleDateString(language === "en" ? "en-US" : "fr-HT", { day: "2-digit", month: "short", year: "numeric" })} · {s.purchase.lines(r.lines.length)}
+                    </span>
+                  </div>
+                  <div className="flex shrink-0 flex-col items-end">
+                    <span className="text-[13.5px] font-extrabold text-ink">{formatMoney(r.total, r.currency as "HTG" | "USD")}</span>
+                    <span className={`text-[11px] font-bold ${owed > 0 ? "text-owed-text" : "text-brand"}`}>
+                      {owed > 0 ? s.purchase.debt(formatMoney(owed, r.currency as "HTG" | "USD")) : s.purchase.settled}
+                    </span>
+                  </div>
+                </div>
+                <p className="mt-1.5 truncate text-[11.5px] text-ink-soft">
+                  {r.lines.map((l) => `${l.qty} × ${l.name}`).join(" · ")}
+                </p>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </div>
   );
 }

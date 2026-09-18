@@ -138,3 +138,63 @@ export async function closeOrder(orderId: string) {
   revalidatePath("/");
   return { ok: true };
 }
+
+/** Droit d'agir sur la livraison : l'étape « en route » ou « livré ». */
+async function canDeliver() {
+  const me = await getMemberContext();
+  if (!me) return null;
+  const permissions = await getMemberPermissions();
+  if (permissions && !permissions.allowedPipelineColumns.some((s) => s === "sou_wout" || s === "livre")) return null;
+  return me;
+}
+
+/** Livreur d'une commande : nom et téléphone WhatsApp (vides pour retirer). */
+export async function setCourier(orderId: string, name: string, phone: string) {
+  if (!hasSupabase()) return { ok: true, demo: true };
+  const me = await canDeliver();
+  if (!me) return { ok: false, error: "forbidden" };
+  const cleanPhone = phone.replace(/[^\d+]/g, "").slice(0, 20);
+  const sb = createClient();
+  const { error } = await sb
+    .from("orders")
+    .update({ courier_name: name.trim().slice(0, 60) || null, courier_phone: cleanPhone || null })
+    .eq("id", orderId)
+    .eq("business_id", me.businessId);
+  if (error) return { ok: false, error: /courier_/.test(error.message) ? "migration" : "failed" };
+  revalidatePath("/komand");
+  return { ok: true };
+}
+
+/**
+ * Livraison confirmée avec le code à 4 chiffres que le client donne au
+ * livreur : la commande passe à « livré » seulement si le code correspond.
+ */
+export async function confirmDeliveryWithCode(orderId: string, code: string) {
+  if (!hasSupabase()) return { ok: true, demo: true };
+  const me = await canDeliver();
+  if (!me) return { ok: false, error: "forbidden" };
+  const sb = createClient();
+  const { data: order } = await sb
+    .from("orders")
+    .select("security_code, status")
+    .eq("id", orderId)
+    .eq("business_id", me.businessId)
+    .maybeSingle();
+  if (!order) return { ok: false, error: "failed" };
+  if (!order.security_code || code.replace(/\D/g, "") !== String(order.security_code)) return { ok: false, error: "badCode" };
+
+  const now = new Date().toISOString();
+  let { error } = await sb
+    .from("orders")
+    .update({ status: "livre", delivered_at: now, delivered_with_code: true })
+    .eq("id", orderId)
+    .eq("business_id", me.businessId);
+  // Sans la migration 6, on valide quand même la livraison.
+  if (error && /delivered_with_code/.test(error.message)) {
+    ({ error } = await sb.from("orders").update({ status: "livre", delivered_at: now }).eq("id", orderId).eq("business_id", me.businessId));
+  }
+  if (error) return { ok: false, error: "failed" };
+  revalidatePath("/komand");
+  revalidatePath("/");
+  return { ok: true };
+}
