@@ -11,14 +11,14 @@ import { COMMON_COPY } from "@/lib/i18n/app/common";
 import { SETTINGS_COPY } from "@/lib/i18n/app/settings";
 import { STOREFRONT_COPY } from "@/lib/i18n/storefront";
 import { VERTICALS, verticalOf } from "@/lib/verticals";
-import { THEMES } from "@/lib/themes";
+import { SECTOR_THEME, THEMES, THEME_KEYS, isThemeKey, themeOf } from "@/lib/themes";
 import { updateBusiness, type BusinessInput } from "@/app/reglaj/actions";
 import { parseBankAccounts, formatBankAccountsString, HAITI_BANKS, type BankAccountItem } from "@/lib/bank";
 import type { Business } from "@/lib/types";
 import type { DesignLayoutConfig } from "@/lib/platform-config";
 import { STOREFRONT_LAYOUTS, layoutAllowed, layoutRule, resolveLayout } from "@/lib/storefront-layouts";
 import { LayoutThumb } from "@/components/LayoutThumb";
-import { designFor, paletteFor } from "@/lib/storefront-designs";
+import { designFor } from "@/lib/storefront-designs";
 import { DESIGN_COPY, designName } from "@/lib/i18n/app/designs";
 
 type Tab = "store" | "payments" | "delivery" | "look";
@@ -42,7 +42,7 @@ export function SettingsForm({ business, designs }: { business: Business; design
     name: business.name,
     business_type: business.business_type ?? "commerce_vente",
     employees_count: business.employees_count == null ? "" : String(business.employees_count),
-    theme: business.theme ?? "whatsapp",
+    theme: isThemeKey(business.theme) ? business.theme : SECTOR_THEME,
     // Une ancienne valeur (« auto ») ou une disposition que le plan ne couvre
     // plus s'affiche comme celle que la vitrine montre réellement.
     layout: resolveLayout(business.layout, business.plan, designs),
@@ -106,6 +106,7 @@ export function SettingsForm({ business, designs }: { business: Business; design
   const phoneLocked = Boolean(business.phone_e164?.trim());
   const designCopy = useDict(DESIGN_COPY);
   const sectorId = verticalOf(f.business_type).id;
+  const themeLabel = (k: string) => (k === SECTOR_THEME ? s.look.sectorColors : THEMES[k]?.label ?? k);
 
   return (
     <div className="app-page min-h-[100dvh] bg-[#F7F8F9] pb-28">
@@ -476,22 +477,24 @@ export function SettingsForm({ business, designs }: { business: Business; design
             <Card title={s.look.title}>
               <Field label={s.look.theme}>
                 <select value={f.theme} onChange={(e) => set({ theme: e.target.value })} className={cls}>
-                  {Object.entries(THEMES).map(([k, t]) => (
+                  {THEME_KEYS.map((k) => (
                     <option key={k} value={k}>
-                      {t.label}
+                      {themeLabel(k)}
                     </option>
                   ))}
                 </select>
               </Field>
+              {/* La couleur choisie s'applique à la bannière, aux cartes et aux boutons. */}
               <div className="flex gap-2">
-                {Object.entries(THEMES).map(([k, t]) => (
+                {THEME_KEYS.map((k) => (
                   <button
                     key={k}
                     type="button"
                     onClick={() => set({ theme: k })}
                     className={`h-10 flex-1 cursor-pointer rounded-lg ${f.theme === k ? "ring-2 ring-ink ring-offset-2" : ""}`}
-                    style={{ background: t.accent }}
-                    aria-label={t.label}
+                    style={{ background: themeOf(k, sectorId).accent }}
+                    aria-label={themeLabel(k)}
+                    title={themeLabel(k)}
                   />
                 ))}
               </div>
@@ -524,7 +527,7 @@ export function SettingsForm({ business, designs }: { business: Business; design
                           aria-pressed={selected}
                           className="flex cursor-pointer flex-col gap-2 text-left disabled:cursor-not-allowed"
                         >
-                          <LayoutThumb shape={spec.shape} color={paletteFor(sectorId).strong} active={selected} />
+                          <LayoutThumb shape={spec.shape} color={themeOf(f.theme, sectorId).accent} active={selected} />
                           <span className="flex items-center justify-between gap-2">
                             <span className="text-[13.5px] font-extrabold text-ink">{names.name}</span>
                             {selected && <span className="rounded-full bg-brand px-2 py-0.5 text-[10.5px] font-bold text-white">{s.look.selected}</span>}

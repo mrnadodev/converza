@@ -1,3 +1,5 @@
+import { paletteFor, type SectorPalette } from "./storefront-designs";
+
 // Thèmes visuels de la vitrine. Un secteur propose un thème par défaut,
 // mais le owner peut le changer dans les réglages.
 
@@ -40,6 +42,38 @@ export const THEMES: Record<string, Theme> = {
   },
 };
 
-export function themeOf(key: string | null | undefined): Theme {
+/**
+ * « Couleurs du secteur » : la palette propre au type de commerce
+ * (lib/storefront-designs). Choix par défaut des nouvelles boutiques.
+ */
+export const SECTOR_THEME = "secteur";
+
+/** Tous les choix proposés, couleurs du secteur en premier. */
+export const THEME_KEYS = [SECTOR_THEME, ...Object.keys(THEMES)];
+
+export function isThemeKey(key: unknown): key is string {
+  return typeof key === "string" && THEME_KEYS.includes(key);
+}
+
+export function themeOf(key: string | null | undefined, sector?: string | null): Theme {
+  if (key === SECTOR_THEME) {
+    const { soft, strong } = paletteFor(sector);
+    return {
+      label: SECTOR_THEME,
+      cover: `radial-gradient(120% 90% at 80% -10%, ${soft} 0%, transparent 55%), linear-gradient(135deg, ${strong} 0%, #111827 140%)`,
+      accent: strong,
+      accentSoft: soft,
+      accentText: strong,
+    };
+  }
   return THEMES[key ?? "whatsapp"] ?? THEMES.whatsapp;
+}
+
+/**
+ * Couleurs des cartes et boutons de la vitrine : celles du thème choisi par
+ * le marchand, pour que changer de couleur change toute la page.
+ */
+export function paletteOfTheme(key: string | null | undefined, sector?: string | null): SectorPalette {
+  const t = themeOf(key, sector);
+  return { soft: t.accentSoft, strong: t.accent };
 }

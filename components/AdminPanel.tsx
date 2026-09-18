@@ -27,7 +27,7 @@ import { SETTINGS_COPY } from "@/lib/i18n/app/settings";
 import { STOREFRONT_COPY } from "@/lib/i18n/storefront";
 import { csvCell } from "@/lib/reports";
 import { formatMoney } from "@/lib/money";
-import { THEMES } from "@/lib/themes";
+import { SECTOR_THEME, THEMES, THEME_KEYS, themeOf } from "@/lib/themes";
 import { INDUSTRY_SECTORS, verticalOf } from "@/lib/verticals";
 import { designFor, paletteFor } from "@/lib/storefront-designs";
 import { DESIGN_COPY, designName } from "@/lib/i18n/app/designs";
@@ -1131,7 +1131,7 @@ function PlatformTab({ data, run, pending }: { data: AdminData; run: Runner; pen
   const [previewLayout, setPreviewLayout] = useState<LayoutKey | null>(null);
   // Par défaut, une vitrine d'exemple : on voit chaque modèle par type de
   // commerce sans dépendre d'un compte marchand.
-  const [source, setSource] = useState<PreviewSource>({ kind: "demo", sector: "commerce_vente", theme: "whatsapp" });
+  const [source, setSource] = useState<PreviewSource>({ kind: "demo", sector: "commerce_vente", theme: SECTOR_THEME });
   const designCopy = useDict(DESIGN_COPY);
   const previewSector = sectorOfSource(source, data.merchants);
 
@@ -1256,7 +1256,7 @@ function PlatformTab({ data, run, pending }: { data: AdminData; run: Runner; pen
                 <MiniStorefront src={`${previewSrc(source, l.key)}#vedettes`} title={names.name} onOpen={() => setPreviewLayout(l.key)} />
                 <div className="flex items-baseline justify-between gap-2">
                   <span className="flex min-w-0 items-center gap-2">
-                    <span className="w-14 shrink-0"><LayoutThumbMini shape={spec.shape} color={paletteFor(previewSector).strong} /></span>
+                    <span className="w-14 shrink-0"><LayoutThumbMini shape={spec.shape} color={themeOf(source.kind === "demo" ? source.theme : SECTOR_THEME, previewSector).accent} /></span>
                     <span className="text-sm font-extrabold">{names.name}</span>
                   </span>
                   <span className="shrink-0 text-[11px] font-bold text-ink-muted">{look.images(spec.slots)}</span>
@@ -1587,7 +1587,8 @@ function PreviewControls({ source, onChange, merchants }: { source: PreviewSourc
   const a = useDict(ADMIN_COPY);
   const sectors = useDict(STOREFRONT_COPY).sectors;
   const shops = useMemo(() => [...merchants].filter((m) => m.products > 0).sort((x, y) => y.products - x.products), [merchants]);
-  const theme = source.kind === "demo" ? source.theme : "whatsapp";
+  const look = useDict(SETTINGS_COPY).look;
+  const theme = source.kind === "demo" ? source.theme : SECTOR_THEME;
   const current = sectorOfSource(source, merchants);
 
   return (
@@ -1615,18 +1616,21 @@ function PreviewControls({ source, onChange, merchants }: { source: PreviewSourc
           <div className="flex items-center gap-2 text-xs font-bold text-ink-muted">
             {a.platform.colorsLabel}
             <div className="flex gap-1.5">
-              {Object.entries(THEMES).map(([k, th]) => (
-                <button
-                  key={k}
-                  type="button"
-                  title={th.label}
-                  aria-label={th.label}
-                  aria-pressed={theme === k}
-                  onClick={() => onChange({ ...source, theme: k })}
-                  className={`h-7 w-7 cursor-pointer rounded-full ${theme === k ? "ring-2 ring-ink ring-offset-2" : ""}`}
-                  style={{ background: th.accent }}
-                />
-              ))}
+              {THEME_KEYS.map((k) => {
+                const label = k === SECTOR_THEME ? look.sectorColors : THEMES[k].label;
+                return (
+                  <button
+                    key={k}
+                    type="button"
+                    title={label}
+                    aria-label={label}
+                    aria-pressed={theme === k}
+                    onClick={() => onChange({ ...source, theme: k })}
+                    className={`h-7 w-7 cursor-pointer rounded-full ${theme === k ? "ring-2 ring-ink ring-offset-2" : ""}`}
+                    style={{ background: themeOf(k, current).accent }}
+                  />
+                );
+              })}
             </div>
           </div>
         ) : (
@@ -1924,9 +1928,9 @@ function CockpitModal({ merchant, onClose, onRefresh }: { merchant: AdminMerchan
               </Field>
               <Field label={a.cockpit.structure.theme}>
                 <select value={form.theme} onChange={(e) => set({ theme: e.target.value })} className={inputCls}>
-                  {Object.entries(THEMES).map(([key, t]) => (
+                  {THEME_KEYS.map((key) => (
                     <option key={key} value={key}>
-                      {t.label}
+                      {key === SECTOR_THEME ? look.sectorColors : THEMES[key].label}
                     </option>
                   ))}
                 </select>

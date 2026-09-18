@@ -13,7 +13,7 @@ export const DESIGN_COPY: Record<Language, DesignCopy> = {
     commerce_vente: [
       e("Boutique e-commerce", "4 cartes égales, photo et prix bien lisibles"),
       e("Vedette", "1 grande carte vedette et 2 plus petites"),
-      e("Showcase Deluxe", "Bannière VIP et carrousel de 3 produits"),
+      e("Showcase Deluxe", "Bannière VIP et 3 produits en vitrine"),
     ],
     restauration: [
       e("Cercle bistrot", "Photos rondes façon assiette, prix en pastille"),
@@ -43,7 +43,7 @@ export const DESIGN_COPY: Record<Language, DesignCopy> = {
     education: [
       e("Catalogue académique", "Formations présentées en cartes"),
       e("Fiche programme", "Liste des cours avec tarif et inscription"),
-      e("Masterclass hub", "Bannière vedette et carrousel de cours"),
+      e("Masterclass hub", "Bannière vedette et 3 cours en vitrine"),
     ],
     services_pros: [
       e("Packs executive", "3 offres sur fond sombre élégant"),
@@ -70,7 +70,7 @@ export const DESIGN_COPY: Record<Language, DesignCopy> = {
     commerce_vente: [
       e("Boutik e-commerce", "4 kat menm gwosè, foto ak pri byen klè"),
       e("Vedèt", "1 gwo kat vedèt ak 2 pi piti"),
-      e("Showcase Deluxe", "Banyè VIP ak karousèl 3 pwodui"),
+      e("Showcase Deluxe", "Banyè VIP ak 3 pwodui an vitrin"),
     ],
     restauration: [
       e("Sèk bistwo", "Foto won tankou yon asyèt, pri nan yon pastiy"),
@@ -100,7 +100,7 @@ export const DESIGN_COPY: Record<Language, DesignCopy> = {
     education: [
       e("Katalòg akademik", "Fòmasyon yo an kat"),
       e("Fich pwogram", "Lis kou ak pri ak enskripsyon"),
-      e("Masterclass hub", "Banyè vedèt ak karousèl kou"),
+      e("Masterclass hub", "Banyè vedèt ak 3 kou an vitrin"),
     ],
     services_pros: [
       e("Pake executive", "3 òf sou fon nwa elegan"),
@@ -127,7 +127,7 @@ export const DESIGN_COPY: Record<Language, DesignCopy> = {
     commerce_vente: [
       e("E-commerce shop", "4 equal cards, clear photo and price"),
       e("Spotlight", "1 large featured card and 2 smaller ones"),
-      e("Showcase Deluxe", "VIP banner and a 3-product carousel"),
+      e("Showcase Deluxe", "VIP banner and 3 featured products"),
     ],
     restauration: [
       e("Bistro circles", "Round plate-style photos, price in a pill"),
@@ -157,7 +157,7 @@ export const DESIGN_COPY: Record<Language, DesignCopy> = {
     education: [
       e("Course catalog", "Programs shown as cards"),
       e("Program sheet", "Course list with fees and sign-up"),
-      e("Masterclass hub", "Featured banner and course carousel"),
+      e("Masterclass hub", "Featured banner and 3 highlighted courses"),
     ],
     services_pros: [
       e("Executive packs", "3 offers on an elegant dark background"),

@@ -6,7 +6,7 @@ import { formatMoney } from "@/lib/money";
 import { waMeLink } from "@/lib/whatsapp";
 import { buildOrderMessage, type CartLine } from "@/lib/order";
 import { verticalOf } from "@/lib/verticals";
-import { themeOf } from "@/lib/themes";
+import { paletteOfTheme, themeOf } from "@/lib/themes";
 import type { Business, Product } from "@/lib/types";
 import { createStorefrontOrderAction } from "@/app/p/actions";
 import { DEFAULT_LAYOUT, type LayoutKey } from "@/lib/storefront-layouts";
@@ -60,7 +60,8 @@ export function Storefront({
   const phoneNotice = phoneNoticeState(business);
   const vertical = verticalOf(business.business_type);
   const sector = c.sectors[vertical.id] ?? { label: vertical.label, catalog: vertical.catalogWord };
-  const theme = themeOf(business.theme);
+  const theme = themeOf(business.theme, vertical.id);
+  const palette = paletteOfTheme(business.theme, vertical.id);
   const { theme: globalTheme, toggleTheme } = useTheme();
   const darkMode = globalTheme === "dark";
   const [cart, setCart] = useState<Record<string, number>>({});
@@ -377,6 +378,7 @@ export function Storefront({
                 dark={darkMode}
                 onZoom={openZoom}
                 visitHref={visitHref}
+                palette={palette}
               />
               <div className="px-4 pt-5">
                 <Link

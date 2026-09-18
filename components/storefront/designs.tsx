@@ -4,7 +4,7 @@ import type { CSSProperties, ReactNode } from "react";
 import { formatMoney } from "@/lib/money";
 import type { Product } from "@/lib/types";
 import type { LayoutKey } from "@/lib/storefront-layouts";
-import { designFor, paletteFor, type DesignCta, type DesignSkin, type SectorPalette } from "@/lib/storefront-designs";
+import { designFor, type DesignCta, type DesignSkin, type SectorPalette } from "@/lib/storefront-designs";
 import { ProductImage, photosOf, useCopy, type CartOps } from "@/components/storefront/cards";
 
 // Section « mis en avant » de la vitrine : le design du secteur de la boutique
@@ -33,9 +33,12 @@ export function FeaturedSection({
   ops,
   onZoom,
   visitHref,
+  palette,
 }: {
   layout: LayoutKey;
   verticalId: string;
+  /** Couleurs du thème choisi par le marchand (lib/themes). */
+  palette: SectorPalette;
   featured: Product[];
   cart: Record<string, number>;
   ops: CartOps;
@@ -45,7 +48,7 @@ export function FeaturedSection({
 }) {
   const spec = designFor(verticalId, layout);
   const items = featured.slice(0, spec.slots);
-  const ctx: Ctx = { cart, ops, onZoom, visitHref, cta: spec.cta, skin: spec.skin, pal: paletteFor(verticalId) };
+  const ctx: Ctx = { cart, ops, onZoom, visitHref, cta: spec.cta, skin: spec.skin, pal: palette };
   if (items.length === 0) return null;
 
   const tile = (p: Product, className: string, extra?: { tone?: "dark" | "light"; shape?: string }) => (
@@ -150,16 +153,15 @@ export function FeaturedSection({
         </div>
       );
     case "feature4": {
-      // Bannière vedette, puis un carrousel de trois cartes.
+      // Bannière vedette, puis 3 cartes sur une ligne. Pas de défilement
+      // horizontal : sur téléphone, une carte coupée au bord passait pour un bug.
       const [hero, ...rest] = items;
       return (
-        <div className="mt-3 flex flex-col gap-3 px-4">
+        <div className="mt-3 flex flex-col gap-2.5 px-4 sm:gap-3">
           {tile(hero, "h-[230px] md:h-[300px]", { tone: "dark" })}
-          <div className="-mx-4 flex snap-x gap-3 overflow-x-auto px-4 pb-1 [scrollbar-width:none] md:mx-0 md:grid md:grid-cols-3 md:overflow-visible md:px-0">
+          <div className="grid grid-cols-3 gap-2 sm:gap-3">
             {rest.map((p) => (
-              <div key={p.id} className="w-[46%] shrink-0 snap-start md:w-auto">
-                {sheet(p, "aspect-square", `${p.id}-s`)}
-              </div>
+              <Sheet key={p.id} p={p} ctx={ctx} aspect="aspect-square" compact />
             ))}
           </div>
         </div>
@@ -227,9 +229,9 @@ function skinOf(skin: DesignSkin, pal: SectorPalette): SkinStyle {
   }
 }
 
-function PriceText({ p, className, style }: { p: Product; className?: string; style?: CSSProperties }) {
+function PriceText({ p, className, style, wrap }: { p: Product; className?: string; style?: CSSProperties; wrap?: boolean }) {
   return (
-    <span className={`whitespace-nowrap font-extrabold ${className ?? ""}`} style={style}>
+    <span className={`${wrap ? "" : "whitespace-nowrap"} font-extrabold ${className ?? ""}`} style={style}>
       {formatMoney(p.price_cents, p.currency)}
       {p.unit ? <span className="text-[11px] font-semibold opacity-70"> / {p.unit}</span> : null}
     </span>
@@ -238,13 +240,14 @@ function PriceText({ p, className, style }: { p: Product; className?: string; st
 
 /* ─────────── Bouton d'action ─────────── */
 
-function Cta({ p, ctx, variant, full }: { p: Product; ctx: Ctx; variant: SkinStyle["button"]; full?: boolean }) {
+function Cta({ p, ctx, variant, full, compact }: { p: Product; ctx: Ctx; variant: SkinStyle["button"]; full?: boolean; compact?: boolean }) {
   const c = useCopy();
   const qty = ctx.cart[p.id] ?? 0;
   const { pal } = ctx;
   // Hauteur minimale plutôt que fixe : sur une carte étroite (tablette, 4 par
   // ligne) un libellé long passe sur deux lignes au lieu de déborder.
-  const base = `flex min-h-9 shrink-0 items-center justify-center gap-1 rounded-xl px-3 py-1.5 text-center text-[12.5px] font-extrabold leading-tight active:scale-95 ${full ? "w-full" : "max-w-full"}`;
+  const size = compact ? "min-h-8 px-1.5 text-[11px] sm:min-h-9 sm:px-3 sm:text-[12.5px]" : "min-h-9 px-3 text-[12.5px]";
+  const base = `flex ${size} shrink-0 items-center justify-center gap-1 rounded-xl py-1.5 text-center font-extrabold leading-tight active:scale-95 ${full ? "w-full" : "max-w-full"}`;
   const look: { className: string; style?: CSSProperties } =
     variant === "gold"
       ? { className: "bg-gradient-to-r from-amber-300 to-amber-500 text-amber-950 shadow" }
@@ -263,7 +266,7 @@ function Cta({ p, ctx, variant, full }: { p: Product; ctx: Ctx; variant: SkinSty
 
   if (qty > 0) {
     return (
-      <div className={`flex h-9 shrink-0 items-center gap-2 rounded-xl bg-white px-1.5 text-slate-900 shadow-sm ${full ? "w-full justify-between" : ""}`}>
+      <div className={`flex h-9 shrink-0 items-center rounded-xl bg-white px-1 text-slate-900 shadow-sm ${compact ? "gap-0.5 sm:gap-2 sm:px-1.5" : "gap-2 px-1.5"} ${full ? "w-full justify-between" : ""}`}>
         <button onClick={() => ctx.ops.sub(p.id)} aria-label="−" className="flex h-7 w-7 items-center justify-center rounded-lg font-bold" style={{ background: `${pal.soft}` }}>−</button>
         <span className="min-w-4 text-center text-sm font-extrabold">{qty}</span>
         <button onClick={() => ctx.ops.add(p.id)} aria-label="+" className="flex h-7 w-7 items-center justify-center rounded-lg font-bold" style={{ background: `${pal.soft}` }}>+</button>
@@ -323,25 +326,28 @@ function Tile({ p, ctx, className, tone, shapeClass }: { p: Product; ctx: Ctx; c
 }
 
 /** Photo en haut, fiche en dessous. */
-function Sheet({ p, ctx, aspect }: { p: Product; ctx: Ctx; aspect: string }) {
+function Sheet({ p, ctx, aspect, compact }: { p: Product; ctx: Ctx; aspect: string; compact?: boolean }) {
   const s = skinOf(ctx.skin, ctx.pal);
   const c = useCopy();
   const photos = photosOf(p);
+  // « compact » : 3 cartes par ligne sur téléphone. On retire la catégorie et
+  // le compteur de ventes sous 640 px, et le prix peut passer à la ligne.
+  const hideSmall = compact ? "hidden sm:block" : "";
   return (
-    <div className={`flex h-full flex-col overflow-hidden rounded-2xl ${s.shell}`} style={s.style}>
+    <div className={`flex h-full min-w-0 flex-col overflow-hidden rounded-2xl ${s.shell}`} style={s.style}>
       <div className={`relative w-full overflow-hidden ${aspect}`}>
         <ProductImage photos={photos} name={p.name} dark={ctx.skin === "vip" || ctx.skin === "neon" || ctx.skin === "executive"} onZoom={ctx.onZoom} />
         {p.sold_count > 0 && (
-          <span className="absolute left-2 top-2 rounded-full bg-white/90 px-2 py-0.5 text-[10.5px] font-bold text-slate-900 shadow-sm">{c.sold(p.sold_count)}</span>
+          <span className={`absolute left-2 top-2 rounded-full bg-white/90 px-2 py-0.5 text-[10.5px] font-bold text-slate-900 shadow-sm ${hideSmall}`}>{c.sold(p.sold_count)}</span>
         )}
       </div>
-      <div className="flex flex-1 flex-col justify-between gap-2 p-3">
+      <div className={`flex flex-1 flex-col justify-between gap-2 ${compact ? "p-2 sm:p-3" : "p-3"}`}>
         <div className="flex min-w-0 flex-col gap-0.5">
-          {p.category && <span className={`truncate text-[10.5px] font-bold uppercase tracking-wide ${s.sub}`}>{p.category}</span>}
-          <h4 className="line-clamp-2 text-[13.5px] font-extrabold leading-snug">{p.name}</h4>
-          <PriceText p={p} className={`text-[14px] ${s.price}`} style={s.priceStyle} />
+          {p.category && <span className={`truncate text-[10.5px] font-bold uppercase tracking-wide ${s.sub} ${hideSmall}`}>{p.category}</span>}
+          <h4 className={`line-clamp-2 font-extrabold leading-snug ${compact ? "text-[12px] sm:text-[13.5px]" : "text-[13.5px]"}`}>{p.name}</h4>
+          <PriceText p={p} wrap={compact} className={`${compact ? "text-[12px] sm:text-[14px]" : "text-[14px]"} ${s.price}`} style={s.priceStyle} />
         </div>
-        <Cta p={p} ctx={ctx} variant={s.button} full />
+        <Cta p={p} ctx={ctx} variant={s.button} full compact={compact} />
       </div>
     </div>
   );

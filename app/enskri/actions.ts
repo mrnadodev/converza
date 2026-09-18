@@ -3,6 +3,7 @@
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { SECTOR_THEME } from "@/lib/themes";
 import { hasSupabase, setBusinessOverride, resetDataForNewBusiness } from "@/lib/data";
 
 export interface RegisterInput {
@@ -127,6 +128,7 @@ export async function registerMerchant(
         business_type: input.businessType,
         employees_count: employeesCount,
         phone_e164: input.phone.trim() || null,
+        theme: SECTOR_THEME,
       })
       .select("id")
       .single();

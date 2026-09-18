@@ -74,6 +74,7 @@ export interface SettingsCopy {
     lockedPro: string;
     lockedPremium: string;
     lockedOff: string;
+    sectorColors: string;
   };
   tables: {
     title: string;
@@ -200,6 +201,7 @@ const fr: SettingsCopy = {
     lockedPro: "réservé au plan Pro",
     lockedPremium: "réservé au plan Premium",
     lockedOff: "Désactivée par CONVERZA",
+    sectorColors: "Couleurs du secteur",
     images: (n: number) => `${n} images en vitrine`,
     preview: "Aperçu",
     selected: "Choisie",
@@ -329,6 +331,7 @@ const ht: SettingsCopy = {
     lockedPro: "sèlman ak plan Pro",
     lockedPremium: "sèlman ak plan Premium",
     lockedOff: "CONVERZA dezaktive l",
+    sectorColors: "Koulè sektè a",
     images: (n: number) => `${n} imaj nan vitrin`,
     preview: "Apèsi",
     selected: "Chwazi",
@@ -458,6 +461,7 @@ const en: SettingsCopy = {
     lockedPro: "Pro plan only",
     lockedPremium: "Premium plan only",
     lockedOff: "Turned off by CONVERZA",
+    sectorColors: "Sector colors",
     images: (n: number) => `${n} images on the storefront`,
     preview: "Preview",
     selected: "Selected",
