@@ -86,6 +86,41 @@ export async function revokePlan(businessId: string) {
   return { ok: !error, error: error?.message };
 }
 
+/**
+ * Prolonge l'abonnement en cours de N mois.
+ * Le renouvellement repart de la date de fin quand elle est encore devant nous :
+ * repartir d'aujourd'hui, comme le faisait « upgrade », effaçait les jours déjà
+ * payés par le marchand.
+ */
+export async function renewPlan(businessId: string, months: number) {
+  const adminEmail = await requireAdmin();
+  if (!adminEmail) return { ok: false, error: "Non autorisé" };
+  const admin = createAdminClient();
+  if (!admin) return { ok: false, error: "SUPABASE_SERVICE_ROLE_KEY manquante" };
+  if (!Number.isFinite(months) || months < 1 || months > 24) return { ok: false, error: "Durée invalide" };
+
+  const { data: business } = await admin.from("businesses").select("plan, plan_until").eq("id", businessId).maybeSingle();
+  if (!business) return { ok: false, error: "Marchand introuvable" };
+  if ((business.plan ?? "gratis") === "gratis") return { ok: false, error: "Ce marchand est sur le plan gratuit" };
+
+  const current = business.plan_until ? new Date(business.plan_until) : null;
+  const base = current && current.getTime() > Date.now() ? current : new Date();
+  const until = new Date(base);
+  until.setMonth(until.getMonth() + months);
+
+  const { error } = await admin.from("businesses").update({ plan_until: until.toISOString() }).eq("id", businessId);
+
+  await logAdminAction({
+    adminEmail,
+    action: "RENEW_PLAN",
+    targetBusinessId: businessId,
+    details: { months, plan: business.plan, plan_until: until.toISOString() },
+  });
+
+  revalidatePath("/admin");
+  return { ok: !error, error: error?.message, until: until.toISOString() };
+}
+
 export async function upgradePlan(businessId: string, targetPlan: string, months: number = 1) {
   const adminEmail = await requireAdmin();
   if (!adminEmail) return { ok: false, error: "Non otorize" };
@@ -140,7 +175,7 @@ export async function updatePlanConfig(key: string, priceGdes: number, tagline: 
 
   await logAdminAction({
     adminEmail,
-    action: "SET_PLAN",
+    action: "UPDATE_PLAN_CONFIG",
     details: { key, priceGdes, tagline, features },
   });
 
@@ -170,7 +205,7 @@ export async function updatePaymentInfoConfig(
 
   await logAdminAction({
     adminEmail,
-    action: "SET_PLAN",
+    action: "UPDATE_PAYMENT_INFO",
     details: { type: "PLATFORM_PAYMENT_INFO", moncash, natcash, bank, zelle, usdt, moncash_qr_url, natcash_qr_url, bank_details },
   });
 
@@ -193,7 +228,7 @@ export async function updateGlobalSettingsAction(patch: Partial<PlatformGlobalSe
 
   await logAdminAction({
     adminEmail,
-    action: "SET_PLAN",
+    action: "UPDATE_PLATFORM_SETTINGS",
     details: { type: "GLOBAL_PLATFORM_SETTINGS", patch },
   });
 
@@ -242,9 +277,9 @@ export async function updateMerchantStructureAction(businessId: string, patch: R
 
   await logAdminAction({
     adminEmail,
-    action: "SET_PLAN",
+    action: "UPDATE_MERCHANT",
     targetBusinessId: businessId,
-    details: { type: "MERCHANT_STRUCTURE_REPAIR", patch: safePatch },
+    details: { patch: safePatch },
   });
 
   revalidatePath("/admin");
@@ -282,12 +317,12 @@ export async function repairMerchantDataAction(businessId: string) {
 
   await logAdminAction({
     adminEmail,
-    action: "SET_PLAN",
+    action: "REPAIR_MERCHANT_MEDIA",
     targetBusinessId: businessId,
-    details: { type: "MERCHANT_DATA_MEDIA_REPAIR", repaired },
+    details: { repaired },
   });
 
   revalidatePath("/admin");
   revalidatePath("/");
-  return { ok: true, message: `Estrikti medya normalize (${repaired} pwodwi).` };
+  return { ok: true, repaired };
 }

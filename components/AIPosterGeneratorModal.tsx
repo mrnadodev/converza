@@ -23,21 +23,24 @@ export function AIPosterGeneratorModal({
   // ==========================================
   // DIRECTIVE #3 : TEXTES ÉDITABLES PAR LE MARCHAND + DEVISE HTG/USD
   // ==========================================
-  const [headline, setHeadline] = useState<string>("VANT FLACH -15%");
-  const [productName, setProductName] = useState<string>(selectedProduct?.name || "Robe de Soirée");
+  const [headline, setHeadline] = useState<string>("");
+  const [productName, setProductName] = useState<string>(selectedProduct?.name ?? "");
   const [currency, setCurrency] = useState<"HTG" | "USD">((selectedProduct?.currency as "HTG" | "USD") || "HTG");
   const [priceText, setPriceText] = useState<string>(
     selectedProduct?.currency === "USD" ? `$${selectedProduct.price_cents / 100}` : formatMoney(selectedProduct?.price_cents || 240000)
   );
-  const [ctaText, setCtaText] = useState<string>("Kòmande an 1-click sou WhatsApp");
-  const [customStoreLink, setCustomStoreLink] = useState<string>(`converza.app/b/${storeSlug}`);
+  const [ctaText, setCtaText] = useState<string>("");
+  // Le lien imprimé sur l'affiche doit être celui que le client peut ouvrir :
+  // il part du domaine réellement servi, pas d'un domaine codé en dur.
+  const origin = typeof window === "undefined" ? "" : window.location.origin;
+  const [customStoreLink, setCustomStoreLink] = useState<string>(`${origin.replace(/^https?:\/\//, "")}/b/${storeSlug}`);
 
   const [styleTheme, setStyleTheme] = useState<"tiktok" | "luxe" | "whatsapp" | "facebook">("tiktok");
   const [statusMsg, setStatusMsg] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const storeUrl = `https://converza.app/b/${storeSlug}`;
+  const storeUrl = `${origin}/b/${storeSlug}`;
 
   // Mise à jour synchrone si changement de produit
   useEffect(() => {
@@ -190,7 +193,7 @@ export function AIPosterGeneratorModal({
     // Watermark
     ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
     ctx.font = "28px system-ui, sans-serif";
-    ctx.fillText("✨ Kreye sou CONVERZA (converza.app)", 540, 1850);
+    ctx.fillText("CONVERZA", 540, 1850);
 
     // Convert Canvas to File
     return new Promise((resolve) => {

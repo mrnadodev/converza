@@ -1,101 +1,50 @@
-import type { Product } from "./types";
-import { waMeLink } from "./whatsapp";
+import type { Product, StockState } from "./types";
 
 export interface StockAlert {
   productId: string;
   productName: string;
   currentStock: number;
   stockThreshold: number;
-  daysRemaining: number;
-  supplierRecommendation?: {
-    depositName: string;
-    location: string;
-    phone_e164: string;
-    availableStock: number;
-    unitPriceCents: number;
-    currency: string;
-    orderHref: string;
-  };
+  soldOut: boolean;
 }
 
-// Réseau simulé de dépôts/fournisseurs partenaires enregistrés sur Converza
-const NETWORK_DEPOSITS = [
-  {
-    name: "Dépôt Central Delmas 19",
-    location: "Delmas 19, Pòtoprens",
-    phone_e164: "+50938445566",
-    inventory: [
-      { keywords: ["robe", "rad", "soirée"], qty: 50, priceCents: 350000 },
-      { keywords: ["diri", "tchako", "sak"], qty: 120, priceCents: 110000 },
-      { keywords: ["lwil", "mazola"], qty: 80, priceCents: 29000 },
-      { keywords: ["ze"], qty: 200, priceCents: 16000 },
-    ],
-  },
-  {
-    name: "Dépôt Wholesale Pétion-Ville",
-    location: "Rue Faubert, Petyonvil",
-    phone_e164: "+50937112233",
-    inventory: [
-      { keywords: ["robe", "veste", "rad"], qty: 35, priceCents: 480000 },
-      { keywords: ["kola", "bwason"], qty: 500, priceCents: 4500 },
-      { keywords: ["dlo"], qty: 300, priceCents: 2000 },
-    ],
-  },
-];
-
 /**
- * Analyse le catalogue marchand pour identifier les ruptures imminentes et trouver des dépôts partenaires.
+ * Produits suivis en stock dont la quantité est passée sous le seuil d'alerte.
+ *
+ * On s'en tient à ce que le catalogue sait réellement : la quantité et le seuil
+ * fixés par le marchand. Aucune estimation de date de rupture (le nombre de
+ * ventes n'est pas daté) et aucun fournisseur suggéré (il n'existe pas de
+ * réseau de dépôts vérifié). Les ruptures remontent en premier.
  */
 export function analyzeStockRisk(products: Product[]): StockAlert[] {
   const alerts: StockAlert[] = [];
 
   for (const p of products) {
     if (p.stock_qty === null || p.stock_qty === undefined) continue;
-
     const threshold = p.stock_threshold ?? 5;
-    const isLow = p.stock_qty <= threshold || p.stock_state === "ba_stok" || p.stock_state === "fini";
+    const soldOut = p.stock_qty <= 0 || p.stock_state === "fini";
+    if (!soldOut && p.stock_qty > threshold && p.stock_state !== "ba_stok") continue;
 
-    if (isLow) {
-      // Estimation arbitraire des jours restants basée sur le nombre de ventes passées
-      const dailySalesRate = Math.max(p.sold_count / 14, 0.5); // ventes estimées/jour sur 2 semaines
-      const daysRemaining = Math.max(Math.round(p.stock_qty / dailySalesRate), 0);
-
-      // Sourcing inter-dépôts : chercher si un fournisseur partenaire possède cet article
-      const lowerName = p.name.toLowerCase();
-      let supplierRec: StockAlert["supplierRecommendation"] | undefined = undefined;
-
-      for (const deposit of NETWORK_DEPOSITS) {
-        const item = deposit.inventory.find((inv) =>
-          inv.keywords.some((kw) => lowerName.includes(kw))
-        );
-
-        if (item && item.qty > 0) {
-          const msg = `Bonjou ${deposit.name}! Mwen jwenn depo ou sou CONVERZA. Mwen ta renmen kòmande [${p.name}] an gwo. Èske li disponib toujou?`;
-          const href = waMeLink(deposit.phone_e164, msg);
-
-          supplierRec = {
-            depositName: deposit.name,
-            location: deposit.location,
-            phone_e164: deposit.phone_e164,
-            availableStock: item.qty,
-            unitPriceCents: item.priceCents,
-            currency: p.currency,
-            orderHref: href,
-          };
-          break; // Prendre le 1er dépôt disponible
-        }
-      }
-
-      alerts.push({
-        productId: p.id,
-        productName: p.name,
-        currentStock: p.stock_qty,
-        stockThreshold: threshold,
-        daysRemaining,
-        supplierRecommendation: supplierRec,
-      });
-    }
+    alerts.push({
+      productId: p.id,
+      productName: p.name,
+      currentStock: Math.max(p.stock_qty, 0),
+      stockThreshold: threshold,
+      soldOut,
+    });
   }
 
-  return alerts;
+  return alerts.sort((a, b) => Number(b.soldOut) - Number(a.soldOut) || a.currentStock - b.currentStock);
+}
+
+/**
+ * État du stock déduit de la quantité : « épuisé » à zéro, « stock faible »
+ * sous le seuil, « en stock » au-dessus. Il était choisi à la main dans le
+ * formulaire du catalogue, si bien qu'un produit à 3 unités sous un seuil de 5
+ * pouvait rester marqué « en stock » et n''apparaître dans aucune alerte.
+ */
+export function stockStateFor(qty: number | null | undefined, threshold = 5): StockState {
+  if (qty === null || qty === undefined) return "en_stok";
+  if (qty <= 0) return "fini";
+  return qty <= threshold ? "ba_stok" : "en_stok";
 }

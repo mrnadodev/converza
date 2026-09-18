@@ -17,15 +17,21 @@ export default async function StorefrontPage({
 // SEO / partage social (Open Graph) — pour que le lien soit joli dans les pubs.
 export async function generateMetadata({ params }: { params: { slug: string } }) {
   const data = await getStorefront(params.slug);
-  if (!data) return { title: "Boutik pa jwenn — CONVERZA" };
+  if (!data) return { title: "Boutique introuvable · CONVERZA" };
   const { business } = data;
+  // Le titre et la description apparaissent dans l'aperçu du lien partagé sur
+  // WhatsApp : on n'y met que des informations réelles du marchand.
+  const where = [business.category, business.address].filter(Boolean).join(" · ");
+  const description = where
+    ? `${where}. Commandez sur WhatsApp · Kòmande sou WhatsApp.`
+    : "Commandez sur WhatsApp · Kòmande sou WhatsApp.";
   return {
-    title: `${business.name} — Kòmande sou WhatsApp`,
-    description: `${business.category ?? "Boutik"} · ${business.address ?? ""}. Kòmande fasil sou WhatsApp.`,
+    title: `${business.name} · Commander sur WhatsApp`,
+    description,
     openGraph: {
       title: business.name,
-      description: "Kòmande fasil sou WhatsApp.",
-      images: business.cover_url ? [business.cover_url] : [],
+      description,
+      images: business.cover_url ? [business.cover_url] : business.logo_url ? [business.logo_url] : [],
     },
   };
 }

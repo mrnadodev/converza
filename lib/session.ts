@@ -49,15 +49,3 @@ export function getCurrentUserSession(): UserSession {
 
   return DEFAULT_OWNER_SESSION;
 }
-
-export function getUnreadAuditCount(): number {
-  try {
-    const auditCookie = cookies().get("converza_audit_read")?.value;
-    if (auditCookie === "true" || auditCookie === "all") {
-      return 0;
-    }
-  } catch {
-    // hors contexte de requête
-  }
-  return 3;
-}

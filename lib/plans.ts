@@ -79,26 +79,22 @@ export const DEFAULT_PLANS: Plan[] = [
   },
 ];
 
+/**
+ * Coordonnées d'encaissement de la plateforme, avant toute configuration.
+ *
+ * Elles sont vides à dessein : les valeurs de démonstration livrées ici
+ * (numéro MonCash, comptes bancaires « CONVERZA S.A. ») s'affichaient aux
+ * marchands sur la page Abonnement comme le compte où envoyer leur paiement.
+ * Tant que le super-admin n'a pas saisi les vraies coordonnées, la page le dit
+ * au lieu d'inventer un numéro.
+ */
 export const DEFAULT_PAYMENT_INFO: PlatformPaymentInfo = {
-  moncash: "+509 3712 4488",
-  natcash: "+509 4123 9988",
-  bank: "Sogebank HTG #402-998-1120 / Unibank HTG #220-410-098",
-  bank_details: [
-    {
-      bank_name: "Sogebank",
-      account_number: "402-998-1120",
-      currency: "HTG",
-      account_holder: "CONVERZA S.A.",
-    },
-    {
-      bank_name: "Unibank",
-      account_number: "220-410-0981",
-      currency: "USD",
-      account_holder: "CONVERZA S.A.",
-    },
-  ],
-  zelle: "payments@converza.ht",
-  usdt: "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t",
+  moncash: "",
+  natcash: "",
+  bank: "",
+  bank_details: [],
+  zelle: "",
+  usdt: "",
   moncash_qr_url: "",
   natcash_qr_url: "",
 };
@@ -107,4 +103,22 @@ export const DEFAULT_PAYMENT_INFO: PlatformPaymentInfo = {
  *  utiliser `planByKey` de lib/platform-store.ts. */
 export function planOf(key: string | null | undefined, plans: Plan[] = DEFAULT_PLANS): Plan {
   return plans.find((p) => p.key === key) ?? plans[0];
+}
+
+/**
+ * Nombre de membres autorisés par plan (propriétaire compris), `null` = illimité.
+ * La limite était contrôlée uniquement dans l'interface : un lien d'invitation
+ * suffisait à la contourner. Elle est désormais vérifiée aussi côté serveur.
+ */
+export function memberSeatsFor(plan: string | null | undefined): number | null {
+  switch ((plan ?? "gratis").toLowerCase()) {
+    case "premium":
+      return null;
+    case "pro":
+      return 4; // le propriétaire + 3 agents
+    case "qr_express":
+      return 2;
+    default:
+      return 1;
+  }
 }

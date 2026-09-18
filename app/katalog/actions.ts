@@ -6,6 +6,7 @@ import { hasSupabase, setBusinessOverride, addDemoProduct, removeDemoProduct } f
 import { getMemberPermissions } from "@/lib/auth";
 import { demoBusiness } from "@/lib/demo";
 import { toCents } from "@/lib/money";
+import { stockStateFor } from "@/lib/stock_ai";
 import type { Product, StockState } from "@/lib/types";
 
 export interface ProductInput {
@@ -59,6 +60,9 @@ export async function saveProduct(input: ProductInput) {
   if (input.photoUrl) photosList.push(input.photoUrl);
   if (input.photoUrl2) photosList.push(input.photoUrl2);
 
+  const qty = input.stockQty === "" ? null : Math.max(0, parseInt(input.stockQty, 10) || 0);
+  const state = stockStateFor(qty);
+
   const newProd: Product = {
     id: input.id || `prod-${Date.now()}`,
     business_id: demoBusiness.id,
@@ -67,8 +71,8 @@ export async function saveProduct(input: ProductInput) {
     price_cents: toCents(input.priceGdes),
     currency: input.currency,
     unit: input.unit.trim() || null,
-    stock_qty: input.stockQty === "" ? null : Math.max(0, parseInt(input.stockQty, 10) || 0),
-    stock_state: input.stockState,
+    stock_qty: qty,
+    stock_state: state,
     photo_url: photosList[0] || null,
     photos: photosList,
     sold_count: 0,
@@ -94,8 +98,8 @@ export async function saveProduct(input: ProductInput) {
     price_cents: toCents(input.priceGdes),
     currency: input.currency,
     unit: input.unit.trim() || null,
-    stock_qty: input.stockQty === "" ? null : Math.max(0, parseInt(input.stockQty, 10) || 0),
-    stock_state: input.stockState,
+    stock_qty: qty,
+    stock_state: state,
     photo_url: photosList[0] || null,
     photos: photosList,
     is_active: input.isActive,
@@ -133,7 +137,7 @@ export async function saveBulkProducts(items: Partial<Product>[]) {
       unit: p.unit || null,
       stock_qty: p.stock_qty ?? null,
       stock_threshold: p.stock_threshold ?? 5,
-      stock_state: p.stock_state || "en_stok",
+      stock_state: stockStateFor(p.stock_qty ?? null, p.stock_threshold ?? 5),
       photo_url: p.photo_url || null,
       photos: p.photos || [],
       is_active: p.is_active ?? true,
@@ -164,16 +168,24 @@ export async function deleteProduct(id: string) {
   return { ok: !error, error: error?.message };
 }
 
-export async function updateProductStock(id: string, qty: number, state: StockState) {
+export async function updateProductStock(id: string, qty: number) {
   const denied = await denyUnless("canEditStock");
   if (denied) return denied;
   if (!hasSupabase()) return { ok: true, demo: true };
   const sb = createClient();
   const bid = await memberBusinessId(sb);
   if (!bid) return { ok: false, error: "Ou pa konekte ak yon biznis" };
+  // Le seuil du produit fait foi pour l'état : l'appelant n'a pas à le calculer.
+  const { data: product } = await sb
+    .from("products")
+    .select("stock_threshold")
+    .eq("id", id)
+    .eq("business_id", bid)
+    .maybeSingle();
+  const cleanQty = Math.max(0, Math.floor(qty) || 0);
   const { error } = await sb
     .from("products")
-    .update({ stock_qty: Math.max(0, Math.floor(qty) || 0), stock_state: state })
+    .update({ stock_qty: cleanQty, stock_state: stockStateFor(cleanQty, product?.stock_threshold ?? 5) })
     .eq("id", id)
     .eq("business_id", bid);
   revalidatePath("/katalog");

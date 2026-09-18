@@ -1,15 +1,8 @@
-import { redirect } from "next/navigation";
-import { AuditManager } from "@/components/AuditManager";
-import { getCurrentUserSession, getRolePermissions } from "@/lib/data";
+﻿import { redirect } from "next/navigation";
 
-// Écran Audit (owner uniquement).
-export default async function AuditPage() {
-  const session = getCurrentUserSession();
-  const permissions = getRolePermissions(session);
-
-  if (!permissions.allowedNavTabs.includes("audit")) {
-    redirect("/");
-  }
-
-  return <AuditManager userSession={session} />;
+// Le journal d'audit affichait des activités d'agents inventées. Tant qu'aucune
+// action n'est réellement journalisée côté marchand, l'ancienne adresse ramène
+// au tableau de bord plutôt qu'à une page trompeuse.
+export default function AuditPage() {
+  redirect("/");
 }

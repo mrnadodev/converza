@@ -48,6 +48,6 @@ describe("permissions par profil métier", () => {
     expect(p.isReadOnly).toBe(true);
     expect(p.canEditCatalog).toBe(false);
     expect(p.canManageTeam).toBe(false);
-    expect(p.allowedNavTabs).toEqual(["tablo", "chat", "komand"]);
+    expect(p.allowedNavTabs).toEqual(["tablo", "komand"]);
   });
 });

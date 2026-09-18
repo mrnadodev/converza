@@ -1,6 +1,36 @@
 import { describe, expect, it } from "vitest";
 import { translations, LANGUAGE_OPTIONS, type Language } from "./translations";
 import { LANDING_COPY } from "./landing";
+import { STOREFRONT_COPY } from "./storefront";
+import { COMMON_COPY } from "./app/common";
+import { DASHBOARD_COPY } from "./app/dashboard";
+import { ORDERS_COPY } from "./app/orders";
+import { MESSAGE_COPY } from "./app/messages";
+import { CATALOG_COPY } from "./app/catalog";
+import { STOCK_COPY } from "./app/stock";
+import { CUSTOMERS_COPY } from "./app/customers";
+import { TEAM_COPY } from "./app/team";
+import { SETTINGS_COPY } from "./app/settings";
+import { INVOICE_COPY } from "./app/invoice";
+import { REPORT_COPY } from "./app/reports";
+import { ADMIN_COPY } from "./app/admin";
+
+// Dictionnaires des écrans de l'application marchand : chaque nouvel écran
+// traduit s'ajoute ici pour hériter des contrôles de parité.
+const APP_DICTS: Record<string, Record<Language, object>> = {
+  common: COMMON_COPY,
+  dashboard: DASHBOARD_COPY,
+  orders: ORDERS_COPY,
+  messages: MESSAGE_COPY,
+  catalog: CATALOG_COPY,
+  stock: STOCK_COPY,
+  customers: CUSTOMERS_COPY,
+  team: TEAM_COPY,
+  settings: SETTINGS_COPY,
+  invoice: INVOICE_COPY,
+  reports: REPORT_COPY,
+  admin: ADMIN_COPY,
+};
 
 const LANGS: Language[] = ["fr", "ht", "en"];
 
@@ -46,6 +76,47 @@ describe("dictionnaire de l'application", () => {
       return typeof v === "string" && v.trim() === "";
     });
     expect(empty, `valeurs vides en ${lang}`).toEqual([]);
+  });
+});
+
+describe.each(Object.entries(APP_DICTS))("écran %s de l'application", (_name, dict) => {
+  const frPaths = leafPaths(dict.fr);
+
+  it.each(["ht", "en"] as const)("%s a exactement les clés du français", (lang) => {
+    const missing = frPaths.filter((p) => leafAt(dict[lang], p) === undefined);
+    const extra = leafPaths(dict[lang]).filter((p) => leafAt(dict.fr, p) === undefined);
+    expect({ missing, extra }).toEqual({ missing: [], extra: [] });
+  });
+
+  it.each(LANGS)("%s n'a aucune valeur vide et garde les mêmes types", (lang) => {
+    const problems = frPaths.filter((p) => {
+      const v = leafAt(dict[lang], p);
+      if (typeof v !== typeof leafAt(dict.fr, p)) return true;
+      return typeof v === "string" && v.trim() === "";
+    });
+    expect(problems).toEqual([]);
+  });
+});
+
+describe("textes de la vitrine publique", () => {
+  const frPaths = leafPaths(STOREFRONT_COPY.fr);
+
+  it.each(["ht", "en"] as const)("%s couvre toutes les clés du français", (lang) => {
+    const missing = frPaths.filter((p) => leafAt(STOREFRONT_COPY[lang], p) === undefined);
+    expect(missing, `clés absentes en ${lang}`).toEqual([]);
+  });
+
+  it.each(["fr", "ht", "en"] as const)("%s ne contient aucun libellé de maquette", (lang) => {
+    // Garde-fou contre le retour des libellés de conception vus par les clients.
+    const text = JSON.stringify(STOREFRONT_COPY[lang]);
+    expect(text).not.toMatch(/rectangle|héros|capsule|square|full-width|design \d/i);
+  });
+
+  it.each(["fr", "ht", "en"] as const)("%s produit un message de commande complet", (lang) => {
+    const m = STOREFRONT_COPY[lang].message;
+    expect(m.greeting("Ti Boutik")).toContain("Ti Boutik");
+    expect(m.interested("Ti Boutik")).toContain("Ti Boutik");
+    expect(m.table("5")).toContain("5");
   });
 });
 

@@ -1,5 +1,5 @@
 import { Subscription } from "@/components/Subscription";
-import { getMyBusiness } from "@/lib/data";
+import { getCurrentUserSession, getMyBusiness } from "@/lib/data";
 import { loadPlans, loadPaymentInfo } from "@/lib/platform-store";
 
 // Abonnement : plans + paiement manuel.
@@ -11,5 +11,5 @@ export default async function AbonmanPage() {
     loadPlans(),
     loadPaymentInfo(),
   ]);
-  return <Subscription business={business} plans={plans} paymentInfo={paymentInfo} />;
+  return <Subscription business={business} plans={plans} paymentInfo={paymentInfo} userSession={getCurrentUserSession()} />;
 }

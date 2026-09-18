@@ -70,17 +70,18 @@ export function LandingPage({ pricing }: { pricing?: Record<string, number> }) {
                 <a href="#questions" className="text-[14.5px] font-semibold text-[#A9C4BC] transition-colors hover:text-white">{c.nav.help}</a>
               </nav>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               <LanguageToggle />
               <Link href="/login" className="hidden text-[14.5px] font-semibold text-[#A9C4BC] transition-colors hover:text-white sm:block">
                 {c.nav.signIn}
               </Link>
               <Link
                 href="/enskri"
-                className="flex h-11 items-center rounded-[10px] px-5 text-[14.5px] font-bold transition-transform active:scale-95"
+                className="flex h-10 items-center whitespace-nowrap rounded-[10px] px-4 text-[14px] font-bold transition-transform active:scale-95 sm:h-11 sm:px-5 sm:text-[14.5px]"
                 style={{ background: ACTION, color: INK }}
               >
-                {c.nav.createAccount}
+                <span className="sm:hidden">{c.nav.createAccountShort}</span>
+                <span className="hidden sm:inline">{c.nav.createAccount}</span>
               </Link>
             </div>
           </div>

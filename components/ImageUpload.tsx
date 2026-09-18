@@ -4,6 +4,8 @@ import { useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 import { resizeImage } from "@/lib/image";
+import { useDict } from "@/components/LanguageContext";
+import { COMMON_COPY } from "@/lib/i18n/app/common";
 
 const HAS_SUPABASE = !!process.env.NEXT_PUBLIC_SUPABASE_URL;
 
@@ -16,7 +18,7 @@ export function ImageUpload({
   onChange,
   folder,
   shape = "square",
-  label = "Ajoute yon foto",
+  label,
   targetWidth,
   targetHeight,
 }: {
@@ -28,6 +30,7 @@ export function ImageUpload({
   targetWidth?: number;
   targetHeight?: number;
 }) {
+  const c = useDict(COMMON_COPY).upload;
   const inputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -39,11 +42,11 @@ export function ImageUpload({
     // L'attribut `accept` du champ ne filtre que la boîte de dialogue : un
     // glisser-déposer ou un navigateur permissif laisse passer autre chose.
     if (!file.type.startsWith("image/")) {
-      setErr("Chwazi yon imaj (jpg, png, webp).");
+      setErr(c.notImage);
       return;
     }
     if (file.size > MAX_UPLOAD_BYTES) {
-      setErr(`Imaj la twò gwo (maks ${MAX_UPLOAD_MB} Mo).`);
+      setErr(c.tooBig(MAX_UPLOAD_MB));
       return;
     }
 
@@ -52,7 +55,7 @@ export function ImageUpload({
     const h = targetHeight ?? (isCover ? 400 : folder === "products" ? 750 : 900);
     file = await resizeImage(file, w, h);
     if (!HAS_SUPABASE) {
-      setErr("Storage pa konfigire (mode demo)");
+      setErr(c.storageOff);
       return;
     }
     setErr(null);
@@ -69,16 +72,18 @@ export function ImageUpload({
       const { data } = sb.storage.from("media").getPublicUrl(path);
       onChange(data.publicUrl);
     } catch (e) {
-      setErr(e instanceof Error ? e.message : "Erè pandan upload");
+      setErr(e instanceof Error ? e.message : c.failed);
     } finally {
       setBusy(false);
     }
   }
 
-  const box = shape === "wide" ? "h-28 w-full" : "h-24 w-24";
+  // La bannière occupe toute la largeur : sur un écran de 375 px, garder le
+  // bouton sur la même ligne le poussait hors de l'écran.
+  const box = shape === "wide" ? "h-28 w-full max-w-[280px]" : "h-24 w-24";
 
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex flex-wrap items-center gap-3">
       <div className={`relative flex ${box} shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-dashed border-line bg-[#F7F8F9]`}>
         {value ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -86,17 +91,17 @@ export function ImageUpload({
         ) : (
           <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#8696A0" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="4" /><circle cx="9" cy="9" r="1.6" /><path d="m21 15-5-5L5 21" /></svg>
         )}
-        {busy && <div className="absolute inset-0 flex items-center justify-center bg-white/70 text-[11px] font-semibold text-brand">N ap chaje…</div>}
+        {busy && <div className="absolute inset-0 flex items-center justify-center bg-white/70 text-[11px] font-semibold text-brand">{c.loading}</div>}
       </div>
 
       <div className="flex flex-col gap-1.5">
         <input ref={inputRef} type="file" accept="image/*" onChange={onFile} className="hidden" />
         <button type="button" onClick={() => inputRef.current?.click()} disabled={busy} className="flex h-9 items-center justify-center rounded-lg bg-[#E7F7F1] px-3 text-[12.5px] font-bold text-brand disabled:opacity-60">
-          {value ? "Chanje foto" : label}
+          {value ? c.change : label ?? c.change}
         </button>
         {value && (
           <button type="button" onClick={() => onChange(null)} className="text-[12px] font-semibold text-[#C0392B]">
-            Retire
+            {c.remove}
           </button>
         )}
         {err && <span className="max-w-[180px] text-[11px] text-[#C0392B]">{err}</span>}

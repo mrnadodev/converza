@@ -43,6 +43,8 @@ export interface LandingCopy {
     help: string;
     signIn: string;
     createAccount: string;
+    /** Libellé court pour l'en-tête sur téléphone, où la place manque. */
+    createAccountShort: string;
   };
   hero: {
     badge: string;
@@ -172,6 +174,7 @@ const fr: LandingCopy = {
     help: "Aide",
     signIn: "Se connecter",
     createAccount: "Créer mon compte",
+    createAccountShort: "S'inscrire",
   },
   hero: {
     badge: "Sans API WhatsApp payante",
@@ -236,8 +239,8 @@ const fr: LandingCopy = {
       "Fonctionne sur un téléphone d'entrée de gamme",
     ],
     receivedOn: "Reçu sur votre WhatsApp",
-    langNote: "Le message part dans la langue de votre vitrine.",
-    text: "Bonjou Ti Kòk Boutik! Mwen vle kòmande:\n• 1× Pain complet (unité) — 155 HTG\n• 1× Œufs frais (douzaine) — 180 HTG\nLivraison (Delmas): 50 HTG\nTotal: 385 HTG",
+    langNote: "Le message est rédigé dans la langue choisie par votre client : français, créole ou anglais.",
+    text: "Bonjour Ti Kòk Boutik ! Je voudrais commander :\n• 1× Pain complet (unité) — 155 HTG\n• 1× Œufs frais (douzaine) — 180 HTG\nLivraison (Delmas): 50 HTG\nTotal: 385 HTG",
   },
   features: {
     eyebrow: "Ce qui est inclus",
@@ -380,6 +383,7 @@ const ht: LandingCopy = {
     help: "Èd",
     signIn: "Konekte",
     createAccount: "Kreye kont mwen",
+    createAccountShort: "Enskri",
   },
   hero: {
     badge: "San API WhatsApp peye",
@@ -444,7 +448,7 @@ const ht: LandingCopy = {
       "Li mache sou yon telefòn senp",
     ],
     receivedOn: "Resevwa sou WhatsApp ou",
-    langNote: "Mesaj la pati nan lang vitrin ou an.",
+    langNote: "Mesaj la ekri nan lang kliyan an chwazi a: franse, kreyòl oswa angle.",
     text: "Bonjou Ti Kòk Boutik! Mwen vle kòmande:\n• 1× Pen konplè (inite) — 155 HTG\n• 1× Ze fre (douzèn) — 180 HTG\nLivrezon (Delmas): 50 HTG\nTotal: 385 HTG",
   },
   features: {
@@ -588,6 +592,7 @@ const en: LandingCopy = {
     help: "Help",
     signIn: "Sign in",
     createAccount: "Create account",
+    createAccountShort: "Sign up",
   },
   hero: {
     badge: "No paid WhatsApp API",
@@ -652,8 +657,8 @@ const en: LandingCopy = {
       "Works on an entry-level phone",
     ],
     receivedOn: "Received on your WhatsApp",
-    langNote: "The message goes out in your storefront's language.",
-    text: "Bonjou Ti Kòk Boutik! Mwen vle kòmande:\n• 1× Whole bread (unit) — 155 HTG\n• 1× Fresh eggs (dozen) — 180 HTG\nDelivery (Delmas): 50 HTG\nTotal: 385 HTG",
+    langNote: "The message is written in the language your customer picked: French, Creole or English.",
+    text: "Hello Ti Kòk Boutik! I would like to order:\n• 1× Whole bread (unit) — 155 HTG\n• 1× Fresh eggs (dozen) — 180 HTG\nDelivery (Delmas): 50 HTG\nTotal: 385 HTG",
   },
   features: {
     eyebrow: "What's included",

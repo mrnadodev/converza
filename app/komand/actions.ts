@@ -58,3 +58,79 @@ export async function moveOrderStatus(orderId: string, status: OrderStatus) {
   revalidatePath("/");
   return { ok: true };
 }
+
+/**
+ * Solde une commande : le reste dû passe à zéro.
+ * L'ancien bouton « Regle dèt » ne changeait que l'affichage ; au rechargement,
+ * la dette réapparaissait et le tableau de bord la comptait toujours.
+ */
+export async function markOrderPaid(orderId: string) {
+  if (!hasSupabase()) return { ok: true, demo: true };
+
+  const me = await getMemberContext();
+  if (!me) return { ok: false, error: "Ou pa konekte" };
+
+  const permissions = await getMemberPermissions();
+  // Encaisser, c'est toucher à l'argent : réservé aux profils qui gèrent
+  // l'étape des paiements ou le suivi des dettes.
+  if (permissions && !permissions.canViewFinancialTurnover) {
+    const allowed = permissions.allowedPipelineColumns;
+    if (!allowed.includes("konfime_peman") && !allowed.includes("swivi")) {
+      return { ok: false, error: "Ou pa gen dwa anrejistre yon pèman" };
+    }
+  }
+
+  const sb = createClient();
+  const { data: order } = await sb
+    .from("orders")
+    .select("delivery_fee_cents, order_items(qty, unit_price_cents)")
+    .eq("id", orderId)
+    .eq("business_id", me.businessId)
+    .maybeSingle();
+  if (!order) return { ok: false, error: "Kòmand la pa jwenn" };
+
+  const items: { qty: number; unit_price_cents: number }[] = order.order_items ?? [];
+  const total =
+    items.reduce((a, it) => a + Math.round(it.unit_price_cents * it.qty), 0) + (order.delivery_fee_cents ?? 0);
+
+  const { error } = await sb
+    .from("orders")
+    .update({ amount_paid_cents: total, paid_at: new Date().toISOString() })
+    .eq("id", orderId)
+    .eq("business_id", me.businessId);
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath("/komand");
+  revalidatePath("/");
+  return { ok: true, paidCents: total };
+}
+
+/**
+ * Clôture une commande suivie : elle quitte le tableau.
+ * On marque la relance comme faite, ce qui la sort aussi de la vue
+ * « relances dues » — sinon le suivi grossirait indéfiniment.
+ */
+export async function closeOrder(orderId: string) {
+  if (!hasSupabase()) return { ok: true, demo: true };
+
+  const me = await getMemberContext();
+  if (!me) return { ok: false, error: "Ou pa konekte" };
+
+  const permissions = await getMemberPermissions();
+  if (permissions && !permissions.allowedPipelineColumns.includes("swivi")) {
+    return { ok: false, error: "Ou pa gen dwa fèmen kòmand sa a" };
+  }
+
+  const sb = createClient();
+  const { error } = await sb
+    .from("orders")
+    .update({ followed_up_at: new Date().toISOString() })
+    .eq("id", orderId)
+    .eq("business_id", me.businessId)
+    .eq("status", "swivi");
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath("/komand");
+  revalidatePath("/");
+  return { ok: true };
+}

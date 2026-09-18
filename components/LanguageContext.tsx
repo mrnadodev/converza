@@ -113,3 +113,9 @@ export function useLanguage() {
 export function useTranslation() {
   return useLanguage();
 }
+
+/** Sélectionne la version d'un dictionnaire d'écran dans la langue active. */
+export function useDict<T>(dict: Record<Language, T>): T {
+  const { language } = useLanguage();
+  return dict[language] ?? dict.fr;
+}

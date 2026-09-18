@@ -2,7 +2,20 @@ import { createAdminClient } from "@/lib/supabase/admin";
 
 export interface AuditLogEntry {
   adminEmail: string;
-  action: "ACTIVATE_PLAN" | "SET_PLAN" | "REJECT_PAYMENT" | "REVOKE_PLAN" | "UPGRADE_PLAN" | "TOGGLE_FREEZE" | "SECURITY_ALERT";
+  action:
+    | "ACTIVATE_PLAN"
+    | "SET_PLAN"
+    | "RENEW_PLAN"
+    | "REJECT_PAYMENT"
+    | "REVOKE_PLAN"
+    | "UPGRADE_PLAN"
+    | "UPDATE_PLAN_CONFIG"
+    | "UPDATE_PAYMENT_INFO"
+    | "UPDATE_PLATFORM_SETTINGS"
+    | "UPDATE_MERCHANT"
+    | "REPAIR_MERCHANT_MEDIA"
+    | "TOGGLE_FREEZE"
+    | "SECURITY_ALERT";
   targetBusinessId?: string;
   targetPaymentId?: string;
   details?: Record<string, unknown>;

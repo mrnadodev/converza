@@ -181,6 +181,8 @@ export interface PipelineCard {
   customerName: string;
   phone_e164: string;
   itemsSummary: string;
+  /** Lignes réelles de la commande, quand elles sont connues (facture exacte). */
+  items?: { name: string; qty: number; unitPriceCents: number }[];
   totalCents: number;
   owedCents: number;
   deliveryFeeCents?: number;

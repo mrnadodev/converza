@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { hasSupabase } from "@/lib/data";
 import { getMemberContext } from "@/lib/auth";
 import { createInviteToken } from "@/lib/invite";
+import { memberSeatsFor } from "@/lib/plans";
 import { storefrontBaseUrl } from "@/lib/order";
 
 export async function removeAgent(memberId: string) {
@@ -54,10 +55,23 @@ export async function setAgentProfile(memberId: string, profile: string) {
 }
 
 /** Lien d'invitation signé, valable 7 jours. Réservé au propriétaire. */
-export async function createInviteLinkAction(): Promise<{ ok: boolean; url?: string; error?: string }> {
+export async function createInviteLinkAction(): Promise<{ ok: boolean; url?: string; error?: string; seatsFull?: boolean }> {
   const me = await getMemberContext();
   if (!me) return { ok: false, error: "Ou pa konekte" };
   if (me.role !== "owner") return { ok: false, error: "Sèlman patwon an ka envite" };
+
+  // La limite de sièges du plan se vérifie ici : sinon un lien copié une fois
+  // continuerait d'ajouter des membres au-delà de ce que le plan autorise.
+  const sb = createClient();
+  const { data: business } = await sb.from("businesses").select("plan").eq("id", me.businessId).maybeSingle();
+  const seats = memberSeatsFor(business?.plan);
+  if (seats !== null) {
+    const { count } = await sb
+      .from("members")
+      .select("id", { count: "exact", head: true })
+      .eq("business_id", me.businessId);
+    if ((count ?? 0) >= seats) return { ok: false, seatsFull: true, error: "Plan an pa pèmèt plis manm" };
+  }
 
   try {
     const token = createInviteToken(me.businessId);

@@ -87,7 +87,7 @@ export function getActivePayMethods(business: {
   moncash_name?: string | null;
   natcash_number?: string | null;
   natcash_name?: string | null;
-}): ActivePayMethodOption[] {
+}, labels: { cashOnDelivery: string } = { cashOnDelivery: "Kach nan livrezon" }): ActivePayMethodOption[] {
   const options: ActivePayMethodOption[] = [];
   let num = 1;
 
@@ -102,7 +102,7 @@ export function getActivePayMethods(business: {
   }
 
   // 3. Kach nan livrezon (toujours présent)
-  options.push({ id: "kach", label: "Kach nan livrezon", num: num++ });
+  options.push({ id: "kach", label: labels.cashOnDelivery, num: num++ });
 
   // 4. USDT TRC20 (actif UNIQUEMENT si usdt_trc20_address est renseigné)
   if (business.usdt_trc20_address && business.usdt_trc20_address.trim().length > 0) {

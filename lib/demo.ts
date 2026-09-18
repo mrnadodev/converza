@@ -129,6 +129,7 @@ export const demoTeam = [
 export const demoStats = {
   weekSalesCents: 12450000,
   weekTrendPct: 18.5,
+  hasLastWeek: true,
   ordersToday: 6,
   owedCents: 350000,
   weekBars: [40, 65, 80, 55, 90, 100, 70],

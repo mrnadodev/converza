@@ -14,7 +14,7 @@ import {
   demoTeam,
   demoTopCustomers,
 } from "./demo";
-import type { Business, Customer, PipelineCard, Product } from "./types";
+import type { Business, Customer, OrderStatus, PipelineCard, Product } from "./types";
 
 export function hasSupabase(): boolean {
   return (
@@ -35,6 +35,16 @@ export async function getDashboard() {
     stats: demoStats,
     topCustomers: demoTopCustomers,
     funnel: demoFunnel,
+    statusCounts: countByStatus(demoPipeline),
+    recentOrders: demoPipeline.map((c) => ({
+      id: c.id,
+      ref: c.ref,
+      status: c.status,
+      customerName: c.customerName,
+      totalCents: c.totalCents,
+      owedCents: c.owedCents,
+      created_at: "",
+    })),
     userName,
     isOwner,
     specialty,
@@ -55,9 +65,11 @@ export async function getDashboard() {
   if (!member) {
     return {
       business: { id: "", name: "Mon Business", slug: "boutik", business_type: "boutik" } as Business,
-      stats: { weekSalesCents: 0, weekTrendPct: 0, ordersToday: 0, owedCents: 0, weekBars: [0, 0, 0, 0, 0, 0, 0] },
+      stats: { weekSalesCents: 0, weekTrendPct: 0, hasLastWeek: false, ordersToday: 0, owedCents: 0, weekBars: [0, 0, 0, 0, 0, 0, 0] },
       topCustomers: [],
       funnel: { leads: 0, orders: 0, paid: 0, delivered: 0 },
+      statusCounts: {} as Partial<Record<OrderStatus, number>>,
+      recentOrders: [] as DashboardOrder[],
       userName: userName || "Fondateur",
       isOwner,
       specialty,
@@ -73,10 +85,11 @@ export async function getDashboard() {
   const { data: orders } = await sb
     .from("orders")
     .select(
-      "status, created_at, delivery_fee_cents, amount_paid_cents, customer_id, customers(full_name), order_items(qty, unit_price_cents)",
+      "id, ref, status, created_at, delivery_fee_cents, amount_paid_cents, customer_id, customers(full_name), order_items(qty, unit_price_cents)",
     )
     .eq("business_id", member.business_id)
-    .neq("status", "anile");
+    .neq("status", "anile")
+    .order("created_at", { ascending: false });
 
   const { count: leadsCount } = await sb
     .from("customers")
@@ -90,15 +103,47 @@ export async function getDashboard() {
     stats: aggregateStats(rows),
     topCustomers: aggregateTopCustomers(rows),
     funnel: computeFunnel(rows, leadsCount ?? 0),
+    statusCounts: countByStatus(rows),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    recentOrders: rows.slice(0, 30).map((o: any): DashboardOrder => {
+      const totalCents = orderTotalOf(o);
+      return {
+        id: o.id,
+        ref: o.ref,
+        status: o.status,
+        customerName: o.customers?.full_name ?? "",
+        totalCents,
+        owedCents: Math.max(totalCents - (o.amount_paid_cents ?? 0), 0),
+        created_at: o.created_at,
+      };
+    }),
     userName: member.full_name || userName || "Fondateur",
     isOwner,
     specialty,
   };
 }
 
+export interface DashboardOrder {
+  id: string;
+  ref: string;
+  status: OrderStatus;
+  /** Vide quand la commande n'a pas de client rattaché. */
+  customerName: string;
+  totalCents: number;
+  owedCents: number;
+  created_at: string;
+}
+
+function countByStatus(orders: { status: OrderStatus }[]): Partial<Record<OrderStatus, number>> {
+  const counts: Partial<Record<OrderStatus, number>> = {};
+  for (const o of orders) counts[o.status] = (counts[o.status] ?? 0) + 1;
+  return counts;
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function computeFunnel(orders: any[], leads: number) {
-  const paid = orders.filter((o) => ["peye", "livre", "swivi"].includes(o.status)).length;
+  // Une commande est payée dès que le paiement est confirmé, donc à partir de « sou_wout ».
+  const paid = orders.filter((o) => ["peye", "sou_wout", "livre", "swivi"].includes(o.status)).length;
   const delivered = orders.filter((o) => ["livre", "swivi"].includes(o.status)).length;
   return { leads, orders: orders.length, paid, delivered };
 }
@@ -150,7 +195,7 @@ function aggregateStats(orders: any[]) {
   const weekTrendPct =
     lastWeekCents > 0 ? Math.round(((weekSalesCents - lastWeekCents) / lastWeekCents) * 100) : 0;
 
-  return { weekSalesCents, weekTrendPct, ordersToday, owedCents, weekBars };
+  return { weekSalesCents, weekTrendPct, hasLastWeek: lastWeekCents > 0, ordersToday, owedCents, weekBars };
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -197,6 +242,9 @@ export async function getPipeline(): Promise<PipelineCard[]> {
     )
     .eq("business_id", bid)
     .neq("status", "anile")
+    // Une commande suivie et clôturée quitte le tableau, sinon la colonne
+    // « Suivi » s'allongerait sans fin.
+    .or("status.neq.swivi,followed_up_at.is.null")
     .order("created_at", { ascending: false });
 
   // Un échec de requête ne doit pas retomber sur des commandes de démo : le
@@ -219,6 +267,7 @@ export async function getPipeline(): Promise<PipelineCard[]> {
       customerName: o.customers?.full_name ?? "Kliyan",
       phone_e164: o.customers?.phone_e164 ?? "",
       itemsSummary: items.map((it) => `${it.qty}× ${it.name}`).join(" · "),
+      items: items.map((it) => ({ name: it.name, qty: it.qty, unitPriceCents: it.unit_price_cents })),
       totalCents,
       deliveryFeeCents: o.delivery_fee_cents ?? 0,
       owedCents: Math.max(totalCents - (o.amount_paid_cents ?? 0), 0),
@@ -251,11 +300,10 @@ import {
   type UserSession,
   type RolePermissions,
   getRolePermissions,
-  getRoleTailoredConfig,
 } from "./rbac";
 
 export type { UserSession, RolePermissions };
-export { getCurrentUserSession, getRolePermissions, getRoleTailoredConfig };
+export { getCurrentUserSession, getRolePermissions };
 
 export const getGlobalUserOverride = (): UserSession => {
   return getCurrentUserSession();
@@ -418,7 +466,7 @@ export interface SourceRow {
 
 /**
  * Chiffre d'affaires par source publicitaire, sur une fenêtre glissante.
- * Les commandes sans source sont regroupées sous « Dirèk » : les exclure
+ * Les commandes sans source sont regroupées sous une source vide (affichée « lien direct ») : les exclure
  * donnerait un total qui ne correspond à rien de connu.
  */
 export async function getSourceBreakdown(days = 30): Promise<SourceRow[]> {
@@ -440,7 +488,7 @@ export async function getSourceBreakdown(days = 30): Promise<SourceRow[]> {
 
   const map = new Map<string, SourceRow>();
   for (const o of data) {
-    const key = o.source?.trim() || "Dirèk";
+    const key = o.source?.trim() || "";
     const row = map.get(key) ?? { source: key, orders: 0, revenueCents: 0 };
     row.orders += 1;
     row.revenueCents += orderTotalOf(o);
