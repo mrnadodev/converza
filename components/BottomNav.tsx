@@ -36,15 +36,17 @@ export function BottomNav({ active, userSession }: { active: NavTab | null; user
   return (
     <>
       {/* Desktop / tablette : barre de nav en haut */}
-      <nav className="fixed left-1/2 top-0 z-30 hidden h-[60px] w-full max-w-[1080px] -translate-x-1/2 border-b border-line bg-white md:block">
-        <div className="mx-auto flex h-full max-w-[1080px] items-center justify-between px-3.5">
+      {/* Même largeur que la page (.app-page, 1040 px) : la barre ne dépasse
+          plus du cadre. */}
+      <nav className="fixed left-1/2 top-0 z-30 hidden h-[60px] w-full max-w-[1040px] -translate-x-1/2 border-b border-line bg-white shadow-[0_0_0_1px_#E2E9E5] md:block">
+        <div className="flex h-full min-w-0 items-center justify-between gap-2 px-3.5">
           <Link href="/" className="mr-2 flex shrink-0 items-center gap-1.5">
             <span className="flex h-8 w-8 items-center justify-center rounded-[9px] bg-gradient-to-br from-brand-green to-brand shadow-2xs">
               <svg width="18" height="18" viewBox="0 0 120 120" fill="none" aria-hidden="true"><circle cx="60" cy="56" r="34" fill="#fff" /><path d="M40 80 L32 96 L54 84 Z" fill="#fff" /><path d="M73 42 A 20 20 0 1 0 73 70" fill="none" stroke="#008069" strokeWidth="11" strokeLinecap="round" /></svg>
             </span>
             <span className="text-[16px] font-black tracking-tight text-ink">CONVERZA</span>
           </Link>
-          <div className="flex items-center gap-1">
+          <div className="flex min-w-0 items-center gap-0.5 lg:gap-1">
             {visible.map((it) => {
               const on = it.key === active;
               return (
@@ -52,10 +54,13 @@ export function BottomNav({ active, userSession }: { active: NavTab | null; user
                   key={it.key}
                   href={it.href}
                   aria-current={on ? "page" : undefined}
-                  className={`flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 text-[13px] font-extrabold transition-colors ${on ? "bg-[#E7F7F1] text-brand" : "text-ink-muted hover:bg-[#F3F6F4]"}`}
+                  aria-label={it.label}
+                  title={it.label}
+                  className={`flex items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 py-1.5 text-[13px] font-extrabold transition-colors lg:px-3 ${on ? "bg-[#E7F7F1] text-brand" : "text-ink-muted hover:bg-[#F3F6F4]"}`}
                 >
                   <Icon node={it.icon} on={on} />
-                  <span>{it.label}</span>
+                  {/* Tablette : icônes seules, sinon six onglets débordent. */}
+                  <span className="hidden lg:inline">{it.label}</span>
                 </Link>
               );
             })}
