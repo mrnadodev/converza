@@ -71,10 +71,10 @@ export const DEFAULT_PLANS: Plan[] = [
     tagline: "Pou vann san rete",
     features: [
       "Tout sa ki nan Pro",
-      "API WhatsApp (mesaj otomatik)",
-      "AI Assistant (reponn pou ou)",
+      "API WhatsApp, mesaj otomatik (byento)",
+      "Asistan IA ki reponn pou ou (byento)",
       "Ajan san limit",
-      "Notifikasyon nouvo kòmand",
+      "Notifikasyon nouvo kòmand (byento)",
     ],
   },
 ];

@@ -112,6 +112,17 @@ export function CatalogManager({ business, initial, userSession }: { business: B
           >
             {k.viewStore}
           </a>
+          {/* Ordinateur et tablette : le bouton d'ajout vit dans l'en-tête, à
+              l'intérieur du cadre de la page. */}
+          {canEdit && initial.length > 0 && (
+            <button
+              onClick={openNew}
+              className="hidden cursor-pointer items-center gap-1.5 rounded-xl bg-brand-green px-3 py-1.5 text-xs font-extrabold text-white shadow-sm active:scale-95 md:flex"
+            >
+              <span aria-hidden="true">+</span>
+              {k.addProduct}
+            </button>
+          )}
           <div className="md:hidden">
             <LanguageToggle />
           </div>
@@ -234,10 +245,13 @@ export function CatalogManager({ business, initial, userSession }: { business: B
         </div>
       )}
 
-      {canEdit && (
+      {/* Bouton flottant réservé au téléphone, et seulement quand le catalogue
+          n'est pas vide : sinon il doublait le bouton de l'état vide et, sur
+          grand écran, se plaçait hors du cadre de la page. */}
+      {canEdit && initial.length > 0 && (
         <button
           onClick={openNew}
-          className="fixed bottom-[92px] right-4 z-20 flex h-14 cursor-pointer items-center gap-2 rounded-2xl bg-brand-green px-5 shadow-[0_6px_18px_rgba(37,211,102,0.45)] active:scale-95"
+          className="fixed bottom-[92px] right-4 z-20 flex h-14 cursor-pointer items-center gap-2 rounded-2xl bg-brand-green px-5 shadow-[0_6px_18px_rgba(37,211,102,0.45)] active:scale-95 md:hidden"
           style={{ marginBottom: "env(safe-area-inset-bottom)" }}
         >
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

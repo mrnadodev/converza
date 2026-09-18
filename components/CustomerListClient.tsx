@@ -162,7 +162,10 @@ export function CustomerListClient({
         <button
           type="button"
           onClick={() => setAddOpen(true)}
-          className="fixed bottom-[92px] right-4 z-20 flex h-14 cursor-pointer items-center gap-2 rounded-2xl bg-brand-green px-5 shadow-[0_6px_18px_rgba(37,211,102,0.45)] active:scale-95"
+          // Sur grand écran, calé dans le coin du cadre de la page (1040 px)
+          // plutôt que dans celui de la fenêtre ; pas de barre en bas au-dessus
+          // de 768 px, d'où le bas ramené à 24 px.
+          className="fixed bottom-[92px] right-4 z-20 flex h-14 cursor-pointer items-center gap-2 rounded-2xl bg-brand-green px-5 shadow-[0_6px_18px_rgba(37,211,102,0.45)] active:scale-95 md:bottom-6 md:right-[max(1rem,calc((100vw-1040px)/2+1rem))]"
           style={{ marginBottom: "env(safe-area-inset-bottom)" }}
         >
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
