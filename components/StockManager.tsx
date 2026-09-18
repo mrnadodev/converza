@@ -163,27 +163,34 @@ export function StockManager({
           </section>
         )}
 
-        {products.length > 0 && (
-          <div className="flex flex-col gap-2">
-            <div className="flex gap-1 rounded-xl bg-white p-1 ring-1 ring-line">
-              {(["products", "purchases", "history"] as const).map((k) => (
-                <button
-                  key={k}
-                  onClick={() => setTab(k)}
-                  aria-pressed={tab === k}
-                  className={`h-9 flex-1 cursor-pointer rounded-lg text-xs font-extrabold ${tab === k ? "bg-brand text-white" : "text-ink-muted"}`}
-                >
-                  {s.tabs[k]}
-                </button>
-              ))}
-            </div>
-            <p className="px-1 text-[11.5px] leading-snug text-ink-muted">{s.auto}</p>
+        {/* Onglets toujours visibles : les cacher quand le catalogue est vide
+            faisait croire que les réceptions n'existaient pas. */}
+        <div className="flex flex-col gap-2">
+          <div className="flex gap-1 rounded-xl bg-white p-1 ring-1 ring-line">
+            {(["products", "purchases", "history"] as const).map((k) => (
+              <button
+                key={k}
+                onClick={() => setTab(k)}
+                aria-pressed={tab === k}
+                className={`h-9 flex-1 cursor-pointer rounded-lg text-xs font-extrabold ${tab === k ? "bg-brand text-white" : "text-ink-muted"}`}
+              >
+                {s.tabs[k]}
+              </button>
+            ))}
           </div>
-        )}
+          <p className="px-1 text-[11.5px] leading-snug text-ink-muted">{s.auto}</p>
+        </div>
 
-        {tab === "history" && products.length > 0 ? (
+        {tab === "history" ? (
           <MovementHistory rows={movements} available={movementsAvailable} />
-        ) : tab === "purchases" && products.length > 0 ? (
+        ) : tab === "purchases" && products.length === 0 ? (
+          <section className="flex flex-col items-center gap-2 rounded-2xl border border-line bg-white p-8 text-center">
+            <p className="max-w-sm text-[13px] leading-relaxed text-ink-muted">{s.purchase.noProducts}</p>
+            <Link href="/katalog" className="mt-1 flex h-11 items-center rounded-xl bg-brand px-5 text-sm font-bold text-white">
+              {s.empty.cta}
+            </Link>
+          </section>
+        ) : tab === "purchases" ? (
           <Purchases rows={purchases} suppliers={suppliers} products={products} available={purchasesAvailable} canEdit={canEdit} currency={business.default_currency ?? "HTG"} />
         ) : products.length === 0 ? (
           <section className="flex flex-col items-center gap-2 rounded-2xl border border-line bg-white p-8 text-center">
