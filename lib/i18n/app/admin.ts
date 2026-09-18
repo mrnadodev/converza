@@ -121,6 +121,15 @@ export interface AdminCopy {
     minPlan: (plan: string) => string;
     enabled: string;
     disabled: string;
+    minPlanLabel: string;
+    alwaysOn: string;
+    previewButton: string;
+    previewTitle: string;
+    previewOn: string;
+    phone: string;
+    desktop: string;
+    openTab: string;
+    noMerchant: string;
     imagesTitle: string;
     ratiosLabel: string;
     maxSize: string;
@@ -354,10 +363,19 @@ const fr: AdminCopy = {
     subtitle: "Designs, images, langues, moyens de paiement et fonctionnalités proposés aux marchands.",
     saveAll: "Enregistrer",
     designsTitle: "Mises en page de vitrine",
-    designsHint: "Ce que les marchands peuvent choisir selon leur plan.",
+    designsHint: "Chaque disposition montre un nombre fixe d'images ; les autres produits restent dans le catalogue complet.",
     minPlan: (plan) => `Plan minimum : ${plan}`,
     enabled: "Disponible",
     disabled: "Désactivée",
+    minPlanLabel: "Plan minimum",
+    alwaysOn: "Disposition de base, toujours disponible",
+    previewButton: "Voir l'aperçu",
+    previewTitle: "Aperçu des dispositions",
+    previewOn: "Vitrine utilisée",
+    phone: "Téléphone",
+    desktop: "Ordinateur",
+    openTab: "Ouvrir dans un onglet",
+    noMerchant: "Aucune vitrine à afficher pour l'instant.",
     imagesTitle: "Images des vitrines",
     ratiosLabel: "Formats autorisés",
     maxSize: "Taille maximale par image (Mo)",
@@ -612,10 +630,19 @@ const ht: AdminCopy = {
     subtitle: "Mizanpaj, imaj, lang, mwayen pèman ak fonksyon ki ofri bay machann yo.",
     saveAll: "Anrejistre",
     designsTitle: "Mizanpaj vitrin yo",
-    designsHint: "Sa machann yo ka chwazi selon plan yo.",
+    designsHint: "Chak mizanpaj montre yon kantite imaj fiks ; lòt pwodui yo rete nan katalòg konplè a.",
     minPlan: (plan) => `Plan minimòm : ${plan}`,
     enabled: "Disponib",
     disabled: "Dezaktive",
+    minPlanLabel: "Plan minimòm",
+    alwaysOn: "Mizanpaj debaz, toujou disponib",
+    previewButton: "Wè apèsi a",
+    previewTitle: "Apèsi mizanpaj yo",
+    previewOn: "Vitrin pou apèsi a",
+    phone: "Telefòn",
+    desktop: "Òdinatè",
+    openTab: "Louvri nan yon lòt onglè",
+    noMerchant: "Poko gen vitrin pou montre.",
     imagesTitle: "Imaj vitrin yo",
     ratiosLabel: "Fòma ki otorize",
     maxSize: "Gwosè maksimòm pou chak imaj (Mo)",
@@ -870,10 +897,19 @@ const en: AdminCopy = {
     subtitle: "Layouts, images, languages, payment methods and features offered to merchants.",
     saveAll: "Save",
     designsTitle: "Storefront layouts",
-    designsHint: "What merchants can pick, depending on their plan.",
+    designsHint: "Each layout shows a fixed number of images; other products stay in the full catalog.",
     minPlan: (plan) => `Minimum plan: ${plan}`,
     enabled: "Available",
     disabled: "Disabled",
+    minPlanLabel: "Minimum plan",
+    alwaysOn: "Base layout, always available",
+    previewButton: "Preview",
+    previewTitle: "Layout preview",
+    previewOn: "Storefront used",
+    phone: "Phone",
+    desktop: "Desktop",
+    openTab: "Open in a new tab",
+    noMerchant: "No storefront to show yet.",
     imagesTitle: "Storefront images",
     ratiosLabel: "Allowed ratios",
     maxSize: "Maximum size per image (MB)",

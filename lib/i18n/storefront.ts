@@ -52,6 +52,7 @@ export interface StorefrontCopy {
   total: string;
   confirmSend: string;
   scheduleVisit: string;
+  previewBanner: string;
   sectors: Record<string, { label: string; catalog: string }>;
   // Libellés insérés dans le message WhatsApp reçu par le marchand.
   message: {
@@ -111,6 +112,7 @@ const fr: StorefrontCopy = {
   total: "Total à payer",
   confirmSend: "Envoyer la commande sur WhatsApp",
   scheduleVisit: "Demander une visite",
+  previewBanner: "Aperçu de la mise en page — rien n'est enregistré",
   sectors: {
     commerce_vente: { label: "Commerce", catalog: "Catalogue" },
     restauration: { label: "Restauration", catalog: "Menu" },
@@ -181,6 +183,7 @@ const ht: StorefrontCopy = {
   total: "Total pou peye",
   confirmSend: "Voye kòmand lan sou WhatsApp",
   scheduleVisit: "Mande yon vizit",
+  previewBanner: "Apèsi mizanpaj la — anyen pa anrejistre",
   sectors: {
     commerce_vente: { label: "Komès", catalog: "Katalòg" },
     restauration: { label: "Restoran", catalog: "Meni" },
@@ -251,6 +254,7 @@ const en: StorefrontCopy = {
   total: "Total to pay",
   confirmSend: "Send the order on WhatsApp",
   scheduleVisit: "Request a visit",
+  previewBanner: "Layout preview — nothing is saved",
   sectors: {
     commerce_vente: { label: "Retail", catalog: "Catalogue" },
     restauration: { label: "Food", catalog: "Menu" },

@@ -10,6 +10,7 @@ import { themeOf } from "@/lib/themes";
 import type { Business, Product } from "@/lib/types";
 import { createStorefrontOrderAction } from "@/app/p/actions";
 import { storefrontCopy, type StorefrontCopy } from "@/lib/i18n/storefront";
+import { DEFAULT_LAYOUT, layoutSlots, type LayoutKey } from "@/lib/storefront-layouts";
 
 import { useTheme } from "@/components/ThemeProvider";
 import { LanguageToggle } from "@/components/LanguageToggle";
@@ -40,10 +41,16 @@ export function Storefront({
   business,
   products,
   view = "vitrine",
+  layout = DEFAULT_LAYOUT,
+  preview = false,
 }: {
   business: Business;
   products: Product[];
   view?: View;
+  /** Disposition déjà vérifiée contre le plan (lib/storefront-layouts). */
+  layout?: LayoutKey;
+  /** Aperçu d'une disposition non enregistrée, depuis les réglages ou la console. */
+  preview?: boolean;
 }) {
   const c = useCopy();
   const vertical = verticalOf(business.business_type);
@@ -195,6 +202,12 @@ export function Storefront({
     <div className={`relative min-h-[100dvh] pb-16 md:mx-auto md:my-6 md:max-w-5xl md:rounded-3xl md:shadow-[0_4px_24px_rgba(0,0,0,0.08)] md:ring-1 lg:max-w-6xl overflow-hidden transition-colors duration-300 ${darkMode ? "bg-[#111827] text-white md:ring-gray-800" : "bg-white text-ink md:ring-line"}`}>
       {view === "vitrine" ? (
         <>
+          {preview && (
+            <div className="sticky top-0 z-30 bg-amber-400 px-4 py-2 text-center text-[12.5px] font-extrabold text-amber-950">
+              {c.previewBanner}
+            </div>
+          )}
+
           {/* Bannière */}
           <div
             className="relative h-[220px] transition-all sm:h-[280px] md:h-[340px] lg:h-[380px]"
@@ -331,14 +344,15 @@ export function Storefront({
             </div>
           ) : (
             <>
-              <div className="flex items-center justify-between px-4 pt-7">
+              {/* Ancre visée par les aperçus de la console et des réglages. */}
+              <div id="vedettes" className="flex scroll-mt-10 items-center justify-between px-4 pt-7">
                 <h2 className="text-[16px] font-extrabold">{c.bestSellers}</h2>
                 <Link href={`/b/${business.slug}/katalog`} className="text-xs font-bold" style={{ color: theme.accentText }}>
                   {sector.catalog}
                 </Link>
               </div>
               <FeaturedSection
-                layout={business.layout}
+                layout={layout}
                 verticalId={vertical.id}
                 featured={featured}
                 cart={cart}
@@ -578,8 +592,11 @@ export function Storefront({
   );
 }
 
-/* ─────────── Produits mis en avant, selon le secteur et le design ─────────── */
+/* ─────────── Produits mis en avant, selon la disposition choisie ─────────── */
 
+// Chaque disposition affiche un nombre fixe d'images (lib/storefront-layouts) :
+// la section ne déborde jamais sur des cartes d'un autre format. Le reste des
+// produits est dans le catalogue complet.
 function FeaturedSection({
   layout,
   verticalId,
@@ -590,7 +607,7 @@ function FeaturedSection({
   onZoom,
   visitHref,
 }: {
-  layout: string | null;
+  layout: LayoutKey;
   verticalId: string;
   featured: Product[];
   cart: Record<string, number>;
@@ -600,102 +617,62 @@ function FeaturedSection({
   visitHref: (p: Product) => string;
 }) {
   const c = useCopy();
+  const items = featured.slice(0, layoutSlots(layout));
 
-  if (layout === "design3") {
-    return (
-      <div className="mt-3 grid grid-cols-1 gap-4 px-4 sm:grid-cols-2">
-        {featured.map((p) => (
-          <div key={p.id} className="group relative flex flex-col overflow-hidden rounded-3xl border border-slate-800 bg-slate-950 text-white shadow-xl">
-            <div className="relative h-52 w-full overflow-hidden">
-              <ProductImage photos={photosOf(p)} name={p.name} dark onZoom={onZoom} />
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/10 to-transparent" />
-              {p.category && (
-                <span className="absolute right-3 top-3 rounded-full border border-white/20 bg-black/50 px-2.5 py-0.5 text-[10.5px] font-bold text-white/90">{p.category}</span>
-              )}
-            </div>
-            <div className="flex items-center justify-between gap-3 p-4">
-              <div className="min-w-0">
-                <h4 className="line-clamp-1 text-base font-extrabold">{p.name}</h4>
-                <span className="text-base font-extrabold text-amber-300">{formatMoney(p.price_cents, p.currency)}</span>
-              </div>
-              <QtyControl p={p} qty={cart[p.id] ?? 0} ops={ops} />
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  }
-
-  if (verticalId === "restauration") {
-    return (
-      <div className="mt-3 grid grid-cols-2 gap-4 px-4 sm:grid-cols-3 lg:grid-cols-4">
-        {featured.map((p) => <FoodCard key={p.id} p={p} qty={cart[p.id] ?? 0} ops={ops} dark={dark} onZoom={onZoom} />)}
-      </div>
-    );
-  }
-
-  if (layout === "design2" && (verticalId === "sante_bienetre" || verticalId === "automobile")) {
-    // Grille asymétrique : une grande carte, puis des cartes plus étroites.
-    return (
-      <div className="mt-3 grid grid-cols-2 gap-3 px-4 sm:grid-cols-3">
-        {featured.slice(0, 4).map((p, idx) => (
-          <OverlayCard key={p.id} p={p} qty={cart[p.id] ?? 0} ops={ops} onZoom={onZoom}
-            className={idx === 0 || idx === 3 ? "col-span-2 sm:col-span-2 h-[170px]" : "col-span-1 h-[170px]"} />
-        ))}
-      </div>
-    );
-  }
-
-  if (layout === "design2" && verticalId === "immobilier") {
-    return (
-      <div className="mt-3 grid grid-cols-2 gap-3 px-4">
-        {featured.slice(0, 3).map((p, idx) => (
-          <OverlayCard key={p.id} p={p} onZoom={onZoom}
-            className={idx === 2 ? "col-span-2 h-[180px]" : "col-span-1 h-[160px]"}
-            action={
-              <a href={visitHref(p)} target="_blank" rel="noopener noreferrer"
-                className="rounded-xl bg-white px-3 py-1.5 text-xs font-extrabold text-slate-900">
-                {c.scheduleVisit}
-              </a>
-            } />
-        ))}
-      </div>
-    );
-  }
-
-  if (verticalId === "commerce_vente" && layout !== "design2") {
-    // Une grande carte en tête, puis deux cartes côte à côte.
-    const [hero, ...rest] = featured;
-    return (
-      <div className="flex flex-col gap-3.5 px-4 pt-3">
-        <div className="grid grid-cols-1 gap-3.5 md:grid-cols-3">
-          {hero && <OverlayCard p={hero} qty={cart[hero.id] ?? 0} ops={ops} onZoom={onZoom} className="h-[230px] md:col-span-2 md:h-[330px]" />}
-          <div className="grid grid-cols-2 gap-3.5 md:col-span-1 md:grid-cols-1">
-            {rest.slice(0, 2).map((p) => (
-              <OverlayCard key={p.id} p={p} qty={cart[p.id] ?? 0} ops={ops} onZoom={onZoom} className="h-[220px] md:h-[158px]" />
-            ))}
-          </div>
-        </div>
-        {rest.length > 2 && (
-          <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-4">
-            {rest.slice(2).map((p) => <GridCard key={p.id} p={p} qty={cart[p.id] ?? 0} ops={ops} dark={dark} onZoom={onZoom} />)}
-          </div>
-        )}
-      </div>
-    );
-  }
+  // Un bien immobilier se visite, il ne s'ajoute pas au panier.
+  const overlay = (p: Product, className: string) => (
+    <OverlayCard
+      key={p.id}
+      p={p}
+      qty={cart[p.id] ?? 0}
+      ops={ops}
+      onZoom={onZoom}
+      className={className}
+      action={
+        verticalId === "immobilier" ? (
+          <a href={visitHref(p)} target="_blank" rel="noopener noreferrer"
+            className="shrink-0 rounded-xl bg-white px-3 py-1.5 text-xs font-extrabold text-slate-900">
+            {c.scheduleVisit}
+          </a>
+        ) : undefined
+      }
+    />
+  );
 
   if (layout === "design2") {
+    // Vedette : une grande carte, deux plus petites (à droite sur ordinateur).
+    const [hero, ...rest] = items;
     return (
-      <div className="mt-3 grid grid-cols-1 gap-3 px-4 sm:grid-cols-2">
-        {featured.map((p) => <MenuRow key={p.id} p={p} qty={cart[p.id] ?? 0} ops={ops} dark={dark} boxed />)}
+      <div className="mt-3 grid grid-cols-2 gap-3 px-4 md:auto-rows-[164px] md:grid-cols-3">
+        {overlay(hero, "col-span-2 h-[230px] md:row-span-2 md:h-auto")}
+        {rest.map((p) => overlay(p, "h-[190px] md:h-auto"))}
       </div>
     );
   }
 
+  if (layout === "design3") {
+    // Mosaïque : une grande carte, puis trois autres en quinconce.
+    const [hero, second, third, fourth] = items;
+    return (
+      <div className="mt-3 grid grid-cols-2 gap-3 px-4 md:auto-rows-[164px] md:grid-cols-4">
+        {overlay(hero, "col-span-2 h-[230px] md:row-span-2 md:h-auto")}
+        {second && overlay(second, "h-[180px] md:col-span-2 md:h-auto")}
+        {third && overlay(third, "h-[180px] md:h-auto")}
+        {fourth && overlay(fourth, "col-span-2 h-[180px] md:col-span-1 md:h-auto")}
+      </div>
+    );
+  }
+
+  // Grille : quatre cartes de même format.
   return (
-    <div className="mt-3 grid grid-cols-2 gap-4 px-4 sm:grid-cols-4">
-      {featured.map((p) => <GridCard key={p.id} p={p} qty={cart[p.id] ?? 0} ops={ops} dark={dark} onZoom={onZoom} />)}
+    <div className="mt-3 grid grid-cols-2 gap-3 px-4 sm:gap-4 md:grid-cols-4">
+      {items.map((p) =>
+        verticalId === "restauration" ? (
+          <FoodCard key={p.id} p={p} qty={cart[p.id] ?? 0} ops={ops} dark={dark} onZoom={onZoom} />
+        ) : (
+          <GridCard key={p.id} p={p} qty={cart[p.id] ?? 0} ops={ops} dark={dark} onZoom={onZoom} />
+        ),
+      )}
     </div>
   );
 }
@@ -833,7 +810,7 @@ function GridCard({
   return (
     <div className={`flex flex-col overflow-hidden rounded-2xl shadow-[0_2px_10px_rgba(17,27,33,0.06)] ring-1 ${dark ? "bg-[#1F2937] text-white ring-gray-700" : "bg-white text-ink ring-line"}`}>
       <div
-        className="relative aspect-[3/5] max-h-[300px] w-full select-none"
+        className="relative aspect-[4/5] w-full select-none"
         onTouchStart={(e) => setTouchStartX(e.touches[0].clientX)}
         onTouchEnd={(e) => handleEnd(e.changedTouches[0].clientX)}
       >

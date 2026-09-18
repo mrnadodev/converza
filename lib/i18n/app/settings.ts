@@ -66,9 +66,13 @@ export interface SettingsCopy {
     theme: string;
     layout: string;
     layoutHint: string;
-    designs: { design1: string; design2: string; design3: string; auto: string };
+    designs: { design1: string; design2: string; design3: string };
+    images: (n: number) => string;
+    preview: string;
+    selected: string;
     lockedPro: string;
     lockedPremium: string;
+    lockedOff: string;
   };
   tables: {
     title: string;
@@ -185,15 +189,18 @@ const fr: SettingsCopy = {
     title: "Apparence de la vitrine",
     theme: "Couleur",
     layout: "Mise en page",
-    layoutHint: "Gratuit : 1 mise en page · Pro : 2 · Premium : 3.",
+    layoutHint: "La vitrine montre seulement ces images ; tous vos autres produits sont dans le catalogue complet.",
     designs: {
-      design1: "Grille simple",
-      design2: "Vitrine mise en avant",
-      design3: "Vitrine premium",
-      auto: "Automatique (selon le secteur)",
+      design1: "Grille",
+      design2: "Vedette",
+      design3: "Mosaïque",
     },
     lockedPro: "réservé au plan Pro",
     lockedPremium: "réservé au plan Premium",
+    lockedOff: "Désactivée par CONVERZA",
+    images: (n: number) => `${n} images en vitrine`,
+    preview: "Aperçu",
+    selected: "Choisie",
   },
   tables: {
     title: "QR codes de table",
@@ -310,15 +317,18 @@ const ht: SettingsCopy = {
     title: "Aparans vitrin nan",
     theme: "Koulè",
     layout: "Mizanpaj",
-    layoutHint: "Gratis : 1 mizanpaj · Pro : 2 · Premium : 3.",
+    layoutHint: "Vitrin nan montre imaj sa yo sèlman ; tout lòt pwodui ou yo nan katalòg konplè a.",
     designs: {
-      design1: "Kadriyaj senp",
-      design2: "Vitrin ak mizanvalè",
-      design3: "Vitrin premium",
-      auto: "Otomatik (selon sektè a)",
+      design1: "Kadriyaj",
+      design2: "Vedèt",
+      design3: "Mozayik",
     },
     lockedPro: "sèlman ak plan Pro",
     lockedPremium: "sèlman ak plan Premium",
+    lockedOff: "CONVERZA dezaktive l",
+    images: (n: number) => `${n} imaj nan vitrin`,
+    preview: "Apèsi",
+    selected: "Chwazi",
   },
   tables: {
     title: "QR kòd pou tab yo",
@@ -435,15 +445,18 @@ const en: SettingsCopy = {
     title: "Storefront appearance",
     theme: "Color",
     layout: "Layout",
-    layoutHint: "Free: 1 layout · Pro: 2 · Premium: 3.",
+    layoutHint: "Your storefront shows only these images; all your other products are in the full catalog.",
     designs: {
-      design1: "Simple grid",
-      design2: "Featured storefront",
-      design3: "Premium storefront",
-      auto: "Automatic (based on industry)",
+      design1: "Grid",
+      design2: "Spotlight",
+      design3: "Mosaic",
     },
     lockedPro: "Pro plan only",
     lockedPremium: "Premium plan only",
+    lockedOff: "Turned off by CONVERZA",
+    images: (n: number) => `${n} images on the storefront`,
+    preview: "Preview",
+    selected: "Selected",
   },
   tables: {
     title: "Table QR codes",

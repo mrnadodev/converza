@@ -32,6 +32,8 @@ import type { AdminData, AdminMerchant } from "@/lib/admin-data";
 import type { BankAccountDetails, Plan } from "@/lib/plans";
 import type { DesignLayoutConfig, QrMenuServiceConfig } from "@/lib/platform-config";
 import type { Language } from "@/lib/i18n/translations";
+import { DEFAULT_LAYOUT, STOREFRONT_LAYOUTS, isLayoutKey, layoutRule, type LayoutKey } from "@/lib/storefront-layouts";
+import { LayoutThumb } from "@/components/LayoutThumb";
 
 type Tab = "overview" | "merchants" | "billing" | "qrMenu" | "platform" | "security";
 type Runner = (id: string, fn: () => Promise<unknown>) => void;
@@ -970,6 +972,12 @@ function PlatformTab({ data, run, pending }: { data: AdminData; run: Runner; pen
   const cash = useDict(MESSAGE_COPY).cashOnDelivery;
   const settings = data.platformSettings;
   const [saved, setSaved] = useState(false);
+  const [previewLayout, setPreviewLayout] = useState<LayoutKey | null>(null);
+  // Les miniatures montrent la vitrine la plus fournie, pour voir de vraies photos.
+  const sampleSlug = useMemo(
+    () => [...data.merchants].sort((x, y) => y.products - x.products).find((m) => m.products > 0)?.slug ?? null,
+    [data.merchants],
+  );
 
   const [designs, setDesigns] = useState<DesignLayoutConfig[]>(
     settings?.designs ?? [
@@ -1072,25 +1080,68 @@ function PlatformTab({ data, run, pending }: { data: AdminData; run: Runner; pen
       <Card>
         <CardTitle title={a.platform.designsTitle} hint={a.platform.designsHint} />
         <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
-          {designs.map((d, idx) => (
-            <div key={d.key} className={`flex flex-col justify-between gap-3 rounded-xl border p-3.5 ${d.enabled ? "border-emerald-300 bg-[#F3F8F6]" : "border-line bg-[#F7F8F9] opacity-70"}`}>
-              <div className="flex flex-col gap-1">
-                {/* Les noms stockés en base datent d'une ancienne version : on
-                    affiche le libellé traduit quand la clé est connue. */}
-                <span className="text-xs font-extrabold">{look.designs[d.key as keyof typeof look.designs] ?? d.name}</span>
-                <span className="text-[10.5px] font-bold text-ink-faint">{a.platform.minPlan(d.minPlanRequired)}</span>
+          {STOREFRONT_LAYOUTS.map((l) => {
+            const rule = layoutRule(l.key, designs);
+            const isBase = l.key === DEFAULT_LAYOUT;
+            // Les noms stockés en base datent d'une ancienne version : on
+            // affiche toujours le libellé traduit de la clé.
+            const patch = (change: Partial<DesignLayoutConfig>) =>
+              setDesigns((cur) => {
+                const existing = cur.find((x) => x.key === l.key);
+                const next = { ...(existing ?? { key: l.key, name: look.designs[l.key], tag: "", minPlanRequired: rule.minPlan, enabled: rule.enabled }), ...change };
+                return existing ? cur.map((x) => (x.key === l.key ? next : x)) : [...cur, next];
+              });
+            return (
+              <div key={l.key} className={`flex flex-col gap-2.5 rounded-xl border p-3 ${rule.enabled ? "border-emerald-300 bg-[#F3F8F6]" : "border-line bg-[#F7F8F9] opacity-70"}`}>
+                {sampleSlug ? (
+                  <MiniStorefront slug={sampleSlug} layout={l.key} title={look.designs[l.key]} onOpen={() => setPreviewLayout(l.key)} />
+                ) : (
+                  <LayoutThumb layout={l.key} active={rule.enabled} />
+                )}
+                <div className="flex items-baseline justify-between gap-2">
+                  <span className="text-sm font-extrabold">{look.designs[l.key]}</span>
+                  <span className="text-[11px] font-bold text-ink-muted">{look.images(l.slots)}</span>
+                </div>
+                <label className="flex items-center justify-between gap-2 text-[11.5px] font-bold text-ink-muted">
+                  {a.platform.minPlanLabel}
+                  <select
+                    value={isBase ? "gratis" : rule.minPlan}
+                    disabled={isBase}
+                    onChange={(e) => patch({ minPlanRequired: e.target.value as DesignLayoutConfig["minPlanRequired"] })}
+                    className="h-8 rounded-lg border border-line bg-white px-2 text-xs font-bold text-ink outline-none disabled:opacity-60"
+                  >
+                    {(["gratis", "pro", "premium"] as const).map((k) => (
+                      <option key={k} value={k}>{planLabel(k, data.platformPlans ?? [])}</option>
+                    ))}
+                  </select>
+                </label>
+                {isBase ? (
+                  <span className="rounded-lg bg-white py-1.5 text-center text-[11px] font-bold text-ink-muted">{a.platform.alwaysOn}</span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => patch({ enabled: !rule.enabled })}
+                    className={`w-full cursor-pointer rounded-lg py-1.5 text-xs font-black ${rule.enabled ? "bg-brand text-white" : "bg-[#EEF2F3] text-ink-muted"}`}
+                  >
+                    {rule.enabled ? a.platform.enabled : a.platform.disabled}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setPreviewLayout(l.key)}
+                  className="w-full cursor-pointer rounded-lg border border-line bg-white py-1.5 text-xs font-bold text-ink-soft"
+                >
+                  {a.platform.previewButton}
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={() => setDesigns(designs.map((x, i) => (i === idx ? { ...x, enabled: !x.enabled } : x)))}
-                className={`w-full cursor-pointer rounded-lg py-1.5 text-xs font-black ${d.enabled ? "bg-brand text-white" : "bg-[#EEF2F3] text-ink-muted"}`}
-              >
-                {d.enabled ? a.platform.enabled : a.platform.disabled}
-              </button>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </Card>
+
+      {previewLayout && (
+        <LayoutPreviewModal merchants={data.merchants} initial={previewLayout} onClose={() => setPreviewLayout(null)} />
+      )}
 
       <Card>
         <CardTitle title={a.platform.imagesTitle} />
@@ -1353,6 +1404,109 @@ function SecurityTab({ data }: { data: AdminData }) {
 
 /* -------------------------------- Fiche technique --------------------------------- */
 
+/** Vitrine réelle réduite, positionnée sur les produits mis en avant. */
+function MiniStorefront({ slug, layout, title, onOpen }: { slug: string; layout: LayoutKey; title: string; onOpen: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      aria-label={title}
+      className="relative h-[440px] w-full cursor-zoom-in overflow-hidden rounded-lg bg-[#E9EDEF] ring-1 ring-line"
+    >
+      {/* Un téléphone de 390 × 800 px réduit à 55 % : la section entière tient. */}
+      <iframe
+        src={`/b/${slug}?apercu=${layout}#vedettes`}
+        title={title}
+        loading="lazy"
+        tabIndex={-1}
+        className="pointer-events-none absolute left-1/2 top-0 h-[800px] w-[390px] origin-top -translate-x-1/2 scale-[0.55] border-0 bg-white"
+      />
+    </button>
+  );
+}
+
+/**
+ * Aperçu d'une disposition sur la vitrine réelle d'un marchand, via
+ * `/b/<slug>?apercu=<disposition>` : rien n'est enregistré, et on voit le rendu
+ * avec de vraies photos plutôt qu'une maquette.
+ */
+function LayoutPreviewModal({ merchants, initial, onClose }: { merchants: AdminMerchant[]; initial: LayoutKey; onClose: () => void }) {
+  const a = useDict(ADMIN_COPY);
+  const look = useDict(SETTINGS_COPY).look;
+  // La vitrine la plus fournie montre le mieux chaque disposition.
+  const candidates = useMemo(() => [...merchants].sort((x, y) => y.products - x.products), [merchants]);
+  const [slug, setSlug] = useState(candidates[0]?.slug ?? "");
+  const [layout, setLayout] = useState<LayoutKey>(initial);
+  const [device, setDevice] = useState<"phone" | "desktop">("phone");
+  const src = `/b/${slug}?apercu=${layout}`;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-3 backdrop-blur-xs">
+      <div className="flex h-[94vh] w-full max-w-5xl flex-col overflow-hidden rounded-3xl bg-white text-ink shadow-2xl">
+        <div className="flex flex-wrap items-center gap-2 border-b border-line p-3.5">
+          <h2 className="mr-auto text-base font-black">{a.platform.previewTitle}</h2>
+          <button onClick={onClose} aria-label={a.cockpit.close} className="h-9 w-9 cursor-pointer rounded-full bg-[#F3F6F4] font-bold text-ink-soft">
+            ✕
+          </button>
+        </div>
+
+        {candidates.length === 0 ? (
+          <p className="p-6 text-sm text-ink-muted">{a.platform.noMerchant}</p>
+        ) : (
+          <>
+            <div className="flex flex-wrap items-center gap-2 border-b border-line px-3.5 py-2.5">
+              <div className="flex gap-1 rounded-xl bg-[#F3F6F4] p-1">
+                {STOREFRONT_LAYOUTS.map((l) => (
+                  <button
+                    key={l.key}
+                    onClick={() => setLayout(l.key)}
+                    className={`cursor-pointer rounded-lg px-3 py-1.5 text-xs font-bold ${layout === l.key ? "bg-white text-brand shadow-sm" : "text-ink-muted"}`}
+                  >
+                    {look.designs[l.key]} · {l.slots}
+                  </button>
+                ))}
+              </div>
+              <div className="flex gap-1 rounded-xl bg-[#F3F6F4] p-1">
+                {(["phone", "desktop"] as const).map((d) => (
+                  <button
+                    key={d}
+                    onClick={() => setDevice(d)}
+                    className={`cursor-pointer rounded-lg px-3 py-1.5 text-xs font-bold ${device === d ? "bg-white text-brand shadow-sm" : "text-ink-muted"}`}
+                  >
+                    {d === "phone" ? a.platform.phone : a.platform.desktop}
+                  </button>
+                ))}
+              </div>
+              <label className="flex min-w-0 items-center gap-2 text-xs font-bold text-ink-muted">
+                {a.platform.previewOn}
+                <select value={slug} onChange={(e) => setSlug(e.target.value)} className="h-8 max-w-[200px] rounded-lg border border-line bg-white px-2 text-xs font-bold text-ink outline-none">
+                  {candidates.map((m) => (
+                    <option key={m.id} value={m.slug}>
+                      {m.name} ({m.products})
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <a href={src} target="_blank" rel="noopener noreferrer" className="ml-auto text-xs font-bold text-[#1A6BB8]">
+                {a.platform.openTab} ↗
+              </a>
+            </div>
+
+            <div className="flex flex-1 justify-center overflow-hidden bg-[#E9EDEF] p-3">
+              <iframe
+                key={src}
+                src={src}
+                title={a.platform.previewTitle}
+                className={`h-full rounded-2xl bg-white shadow-lg ${device === "phone" ? "w-[390px] max-w-full" : "w-full"}`}
+              />
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function CockpitModal({ merchant, onClose, onRefresh }: { merchant: AdminMerchant; onClose: () => void; onRefresh: () => void }) {
   const a = useDict(ADMIN_COPY);
   const c = useDict(COMMON_COPY);
@@ -1367,7 +1521,7 @@ function CockpitModal({ merchant, onClose, onRefresh }: { merchant: AdminMerchan
     slug: merchant.slug,
     phone_e164: merchant.phone_e164 ?? "",
     business_type: merchant.business_type ?? "commerce_vente",
-    layout: merchant.layout ?? "auto",
+    layout: isLayoutKey(merchant.layout) ? merchant.layout : DEFAULT_LAYOUT,
     theme: merchant.theme ?? "whatsapp",
     default_currency: merchant.default_currency ?? "HTG",
     category: merchant.category ?? "",
@@ -1510,11 +1664,12 @@ function CockpitModal({ merchant, onClose, onRefresh }: { merchant: AdminMerchan
                 </select>
               </Field>
               <Field label={a.cockpit.structure.layout}>
-                <select value={form.layout} onChange={(e) => set({ layout: e.target.value })} className={inputCls}>
-                  <option value="auto">{look.designs.auto}</option>
-                  <option value="design1">{look.designs.design1}</option>
-                  <option value="design2">{look.designs.design2}</option>
-                  <option value="design3">{look.designs.design3}</option>
+                <select value={form.layout} onChange={(e) => set({ layout: e.target.value as LayoutKey })} className={inputCls}>
+                  {STOREFRONT_LAYOUTS.map((l) => (
+                    <option key={l.key} value={l.key}>
+                      {look.designs[l.key]} · {look.images(l.slots)}
+                    </option>
+                  ))}
                 </select>
               </Field>
               <Field label={a.cockpit.structure.theme}>

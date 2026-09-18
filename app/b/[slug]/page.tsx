@@ -1,17 +1,29 @@
 import { notFound } from "next/navigation";
 import { Storefront } from "@/components/Storefront";
 import { getStorefront } from "@/lib/data";
+import { loadPlatformSettings } from "@/lib/platform-store";
+import { isLayoutKey, resolveLayout } from "@/lib/storefront-layouts";
 
 // Vitrine publique partageable : converza.ht/b/<slug>
 // Page d'atterrissage des pubs TikTok / Instagram / Facebook.
 export default async function StorefrontPage({
   params,
+  searchParams,
 }: {
   params: { slug: string };
+  searchParams: { apercu?: string };
 }) {
   const data = await getStorefront(params.slug);
   if (!data) notFound();
-  return <Storefront business={data.business} products={data.products} />;
+
+  // `?apercu=design2` montre une disposition sans l'enregistrer : le marchand
+  // compare avant de choisir, le super-admin voit chaque disposition sur de
+  // vrais produits. Rien n'est écrit, la vitrine publique reste inchangée.
+  const preview = isLayoutKey(searchParams.apercu) ? searchParams.apercu : null;
+  const { designs } = await loadPlatformSettings();
+  const layout = preview ?? resolveLayout(data.business.layout, data.business.plan, designs);
+
+  return <Storefront business={data.business} products={data.products} layout={layout} preview={!!preview} />;
 }
 
 // SEO / partage social (Open Graph) — pour que le lien soit joli dans les pubs.

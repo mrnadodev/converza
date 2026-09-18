@@ -5,6 +5,8 @@ import { createClient } from "@/lib/supabase/server";
 import { hasSupabase, setBusinessOverride } from "@/lib/data";
 import { getMemberPermissions } from "@/lib/auth";
 import type { DeliveryZone } from "@/lib/types";
+import { loadPlatformSettings } from "@/lib/platform-store";
+import { resolveLayout } from "@/lib/storefront-layouts";
 
 export interface BusinessInput {
   name: string;
@@ -107,6 +109,14 @@ export async function updateBusiness(input: BusinessInput) {
     .eq("user_id", user.id)
     .maybeSingle();
   if (!member) return { ok: false, error: "Pa gen biznis" };
+
+  // Le plan limite les dispositions : l'interface grise celles qui ne sont pas
+  // incluses, le serveur ne se fie pas à elle.
+  const [{ data: current }, { designs }] = await Promise.all([
+    sb.from("businesses").select("plan").eq("id", member.business_id).maybeSingle(),
+    loadPlatformSettings(),
+  ]);
+  payload.layout = resolveLayout(input.layout, current?.plan, designs);
 
   const { error } = await sb
     .from("businesses")

@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { SettingsForm } from "@/components/SettingsForm";
 import { getMyBusiness, getCurrentUserSession } from "@/lib/data";
+import { loadPlatformSettings } from "@/lib/platform-store";
 
 // Réglages du business : logo, bannière, infos, réseaux sociaux.
 export default async function ReglajPage() {
@@ -9,6 +10,6 @@ export default async function ReglajPage() {
     redirect("/");
   }
 
-  const business = await getMyBusiness();
-  return <SettingsForm business={business} />;
+  const [business, { designs }] = await Promise.all([getMyBusiness(), loadPlatformSettings()]);
+  return <SettingsForm business={business} designs={designs} />;
 }

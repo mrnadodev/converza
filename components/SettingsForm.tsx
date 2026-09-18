@@ -15,10 +15,13 @@ import { THEMES } from "@/lib/themes";
 import { updateBusiness, type BusinessInput } from "@/app/reglaj/actions";
 import { parseBankAccounts, formatBankAccountsString, HAITI_BANKS, type BankAccountItem } from "@/lib/bank";
 import type { Business } from "@/lib/types";
+import type { DesignLayoutConfig } from "@/lib/platform-config";
+import { STOREFRONT_LAYOUTS, layoutAllowed, layoutRule, resolveLayout } from "@/lib/storefront-layouts";
+import { LayoutThumb } from "@/components/LayoutThumb";
 
 type Tab = "store" | "payments" | "delivery" | "look";
 
-export function SettingsForm({ business }: { business: Business }) {
+export function SettingsForm({ business, designs }: { business: Business; designs?: DesignLayoutConfig[] }) {
   const s = useDict(SETTINGS_COPY);
   // Les secteurs sont déjà traduits pour la vitrine : on réutilise ces libellés
   // au lieu de la liste française à émojis.
@@ -38,7 +41,9 @@ export function SettingsForm({ business }: { business: Business }) {
     business_type: business.business_type ?? "commerce_vente",
     employees_count: business.employees_count == null ? "" : String(business.employees_count),
     theme: business.theme ?? "whatsapp",
-    layout: business.layout ?? "auto",
+    // Une ancienne valeur (« auto ») ou une disposition que le plan ne couvre
+    // plus s'affiche comme celle que la vitrine montre réellement.
+    layout: resolveLayout(business.layout, business.plan, designs),
     phone_e164: business.phone_e164 ?? "",
     hours: business.hours ?? "",
     address: business.address ?? "",
@@ -475,20 +480,51 @@ export function SettingsForm({ business }: { business: Business }) {
                 ))}
               </div>
 
-              <Field label={s.look.layout} hint={s.look.layoutHint}>
-                <select value={f.layout} onChange={(e) => set({ layout: e.target.value })} className={cls}>
-                  <option value="auto">{s.look.designs.auto}</option>
-                  <option value="design1">{s.look.designs.design1}</option>
-                  <option value="design2" disabled={plan === "gratis"}>
-                    {s.look.designs.design2}
-                    {plan === "gratis" ? ` — ${s.look.lockedPro}` : ""}
-                  </option>
-                  <option value="design3" disabled={plan !== "premium"}>
-                    {s.look.designs.design3}
-                    {plan !== "premium" ? ` — ${s.look.lockedPremium}` : ""}
-                  </option>
-                </select>
-              </Field>
+              <div className="flex flex-col gap-2">
+                <span className="text-[13px] font-semibold text-ink-soft">{s.look.layout}</span>
+                <span className="text-[12px] leading-snug text-ink-muted">{s.look.layoutHint}</span>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                  {STOREFRONT_LAYOUTS.map((l) => {
+                    const rule = layoutRule(l.key, designs);
+                    const allowed = layoutAllowed(l.key, plan, designs);
+                    const selected = f.layout === l.key;
+                    const lock = !rule.enabled
+                      ? s.look.lockedOff
+                      : rule.minPlan === "premium"
+                        ? s.look.lockedPremium
+                        : s.look.lockedPro;
+                    return (
+                      <div
+                        key={l.key}
+                        className={`flex flex-col gap-2 rounded-2xl border-2 p-2.5 ${selected ? "border-brand bg-[#F3F8F6]" : "border-line bg-white"} ${allowed ? "" : "opacity-60"}`}
+                      >
+                        <button
+                          type="button"
+                          disabled={!allowed}
+                          onClick={() => set({ layout: l.key })}
+                          aria-pressed={selected}
+                          className="flex cursor-pointer flex-col gap-2 text-left disabled:cursor-not-allowed"
+                        >
+                          <LayoutThumb layout={l.key} active={selected} />
+                          <span className="flex items-center justify-between gap-2">
+                            <span className="text-[13.5px] font-extrabold text-ink">{s.look.designs[l.key]}</span>
+                            {selected && <span className="rounded-full bg-brand px-2 py-0.5 text-[10.5px] font-bold text-white">{s.look.selected}</span>}
+                          </span>
+                          <span className="text-[11.5px] text-ink-muted">{allowed ? s.look.images(l.slots) : lock}</span>
+                        </button>
+                        <a
+                          href={`/b/${business.slug}?apercu=${l.key}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex h-8 items-center justify-center rounded-lg bg-[#EEF2F3] text-[12px] font-bold text-ink-soft"
+                        >
+                          {s.look.preview}
+                        </a>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             </Card>
 
             <TableQrGenerator business={business} />
