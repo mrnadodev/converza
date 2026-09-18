@@ -19,6 +19,7 @@ export function LayoutThumb({ shape, color = "#008069", active }: { shape: Desig
     split3: { cols: "1fr 1fr", rows: "1fr 1fr", blocks: [b(""), b(""), b("col-span-2", true)] },
     alt4: { cols: "2fr 1fr", rows: "1fr 1fr", blocks: [b("", true), b(""), b("order-4", true), b("order-3")] },
     capsule4: { cols: "1fr 1fr", rows: "1fr 1fr", blocks: [b("!rounded-t-full", true), b(""), b("!rounded-b-full", true), b("")] },
+    arch4: { cols: "1fr 1fr 1fr 1fr", rows: "1fr", blocks: [0, 1, 2, 3].map((i) => b("!rounded-t-full", i === 0, String(i))) },
     masonry4: { cols: "1fr 1fr", rows: "1.4fr 1fr", blocks: [b("", true), b("row-span-2", true), b("")] },
     feature4: { cols: "1fr 1fr 1fr", rows: "1.4fr 1fr", blocks: [b("col-span-3", true), b(""), b(""), b("")] },
     columns3: { cols: "1fr 1fr 1fr", rows: "1fr", blocks: [b(""), b(""), b("")] },

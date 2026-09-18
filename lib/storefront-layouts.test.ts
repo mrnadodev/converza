@@ -13,6 +13,12 @@ describe("dispositions de vitrine", () => {
     }
   });
 
+  it("donne trois formes différentes dans chaque secteur", () => {
+    for (const [sector, specs] of Object.entries(SECTOR_DESIGNS)) {
+      expect(new Set(specs.map((s) => s.shape)).size, sector).toBe(3);
+    }
+  });
+
   it("met la Vedette en design Pro du commerce", () => {
     expect(designFor("commerce_vente", "design2").shape).toBe("hero3");
     expect(designFor("secteur inconnu", "design1")).toEqual(designFor("commerce_vente", "design1"));

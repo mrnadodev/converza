@@ -141,6 +141,14 @@ export function FeaturedSection({
         </div>
       );
     }
+    case "arch4":
+      return (
+        <div className="mt-3 grid grid-cols-2 gap-3 px-4 sm:gap-4 md:grid-cols-4">
+          {items.map((p) => (
+            <Arch key={p.id} p={p} ctx={ctx} />
+          ))}
+        </div>
+      );
     case "feature4": {
       // Bannière vedette, puis un carrousel de trois cartes.
       const [hero, ...rest] = items;
@@ -355,6 +363,21 @@ function Circle({ p, ctx }: { p: Product; ctx: Ctx }) {
   );
 }
 
+/** Photo en arche sur fond pastel, texte centré : ambiance spa. */
+function Arch({ p, ctx }: { p: Product; ctx: Ctx }) {
+  return (
+    <div className="flex flex-col items-center gap-2 rounded-[28px] p-3 text-center text-ink" style={{ background: `${ctx.pal.soft}66` }}>
+      <div className="relative aspect-[4/5] w-full overflow-hidden rounded-b-2xl rounded-t-full border-4 border-white shadow-sm">
+        <ProductImage photos={photosOf(p)} name={p.name} onZoom={ctx.onZoom} />
+      </div>
+      {p.category && <span className="text-[10.5px] font-bold uppercase tracking-wide" style={{ color: ctx.pal.strong }}>{p.category}</span>}
+      <h4 className="line-clamp-2 text-[13.5px] font-extrabold leading-snug">{p.name}</h4>
+      <PriceText p={p} className="text-[13.5px]" style={{ color: ctx.pal.strong }} />
+      <Cta p={p} ctx={ctx} variant="solid" full />
+    </div>
+  );
+}
+
 /** Ligne horizontale : menu, tarif, fiche programme. */
 function Row({ p, ctx }: { p: Product; ctx: Ctx }) {
   const s = skinOf(ctx.skin, ctx.pal);
@@ -380,10 +403,18 @@ function Row({ p, ctx }: { p: Product; ctx: Ctx }) {
 /** Formule tarifaire : celle du milieu est mise en avant. */
 function PricingColumn({ p, ctx, highlight }: { p: Product; ctx: Ctx; highlight: boolean }) {
   const c = useCopy();
+  const neon = ctx.skin === "neon";
+  const glow = neon ? `0 0 0 1.5px ${ctx.pal.strong}, 0 0 ${highlight ? 32 : 14}px ${ctx.pal.strong}${highlight ? "88" : "44"}` : null;
   return (
     <div
-      className={`relative flex flex-col items-center gap-2 rounded-3xl bg-white p-5 text-center text-ink ${highlight ? "shadow-xl md:py-8" : "border border-slate-200"}`}
-      style={highlight ? { boxShadow: `0 0 0 2px ${ctx.pal.strong}, 0 12px 30px rgba(17,27,33,0.12)` } : undefined}
+      className={`relative flex flex-col items-center gap-2 rounded-3xl p-5 text-center ${neon ? "bg-slate-950 text-white" : "bg-white text-ink"} ${highlight ? "shadow-xl md:py-8" : neon ? "" : "border border-slate-200"}`}
+      style={
+        glow
+          ? { boxShadow: glow }
+          : highlight
+            ? { boxShadow: `0 0 0 2px ${ctx.pal.strong}, 0 12px 30px rgba(17,27,33,0.12)` }
+            : undefined
+      }
     >
       {highlight && (
         <span className="absolute -top-3 rounded-full px-3 py-1 text-[10.5px] font-extrabold text-white" style={{ background: ctx.pal.strong }}>
@@ -393,12 +424,12 @@ function PricingColumn({ p, ctx, highlight }: { p: Product; ctx: Ctx; highlight:
       <div className="h-14 w-14 overflow-hidden rounded-2xl">
         <ProductImage photos={photosOf(p)} name={p.name} compact onZoom={ctx.onZoom} />
       </div>
-      {p.category && <span className="text-[10.5px] font-bold uppercase tracking-wide text-ink-muted">{p.category}</span>}
+      {p.category && <span className={`text-[10.5px] font-bold uppercase tracking-wide ${neon ? "text-slate-400" : "text-ink-muted"}`}>{p.category}</span>}
       <h4 className="line-clamp-2 text-[15px] font-extrabold">{p.name}</h4>
-      <span className="text-[22px] font-black" style={{ color: ctx.pal.strong }}>
+      <span className="text-[22px] font-black" style={{ color: neon ? ctx.pal.soft : ctx.pal.strong }}>
         {formatMoney(p.price_cents, p.currency)}
       </span>
-      {p.unit && <span className="-mt-1 text-[12px] text-ink-muted">/ {p.unit}</span>}
+      {p.unit && <span className={`-mt-1 text-[12px] ${neon ? "text-slate-400" : "text-ink-muted"}`}>/ {p.unit}</span>}
       <Cta p={p} ctx={ctx} variant="solid" full />
     </div>
   );

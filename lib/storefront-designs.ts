@@ -21,6 +21,7 @@ export type DesignShape =
   | "alt4" // large + carré / carré + large
   | "capsule4" // 2 capsules à gauche + 2 cartes à droite
   | "masonry4" // hauteurs alternées, façon Instagram
+  | "arch4" // photos en arche sur fond pastel, ambiance spa
   | "feature4" // 1 bannière + 3 cartes
   | "columns3" // 3 colonnes égales
   | "pricing3" // 3 formules comparées, celle du milieu mise en avant
@@ -87,7 +88,7 @@ export const SECTOR_DESIGNS: Record<string, [DesignSpec, DesignSpec, DesignSpec]
   // Showroom · Grille alternée · Spec Sheet Pro
   automobile: [d("showroom3", "dark", "add"), d("alt4", "light", "add"), d("grid4", "metal", "add")],
   // Soins clean · Capsules · Clinique zen & spa
-  sante_bienetre: [d("grid4", "minimal", "appointment"), d("capsule4", "light", "appointment"), d("grid4", "pastel", "appointment")],
+  sante_bienetre: [d("grid4", "minimal", "appointment"), d("capsule4", "light", "appointment"), d("arch4", "pastel", "appointment")],
   // Book 3:4 · Tarif & réservation express · Glamour portfolio
   beaute_services: [d("portrait4", "card", "book"), d("list", "minimal", "book", 4), d("masonry4", "dark", "book")],
   // Catalogue académique · Fiche programme · Masterclass hub
@@ -97,9 +98,9 @@ export const SECTOR_DESIGNS: Record<string, [DesignSpec, DesignSpec, DesignSpec]
   // Dépôt chantier · Fiche unités · Quincaillerie pro
   construction: [d("grid4", "dark", "add"), d("list", "card", "add", 4), d("table", "card", "add")],
   // Tech néon · Portfolio minimal · SaaS hub
-  digital_tech: [d("grid4", "neon", "quote"), d("grid4", "minimal", "quote"), d("columns3", "neon", "quote")],
+  digital_tech: [d("grid4", "neon", "quote"), d("stack3", "minimal", "quote"), d("pricing3", "neon", "quote")],
   // Tarif volume · Inventaire dépôt · Super-dépôt
-  grossistes_distribution: [d("table", "minimal", "add"), d("grid4", "card", "add"), d("table", "vip", "quote")],
+  grossistes_distribution: [d("list", "minimal", "add", 4), d("grid4", "card", "add"), d("table", "vip", "quote")],
 };
 
 const INDEX: Record<LayoutKey, 0 | 1 | 2> = { design1: 0, design2: 1, design3: 2 };

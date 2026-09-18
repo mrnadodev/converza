@@ -33,7 +33,7 @@ export const DESIGN_COPY: Record<Language, DesignCopy> = {
     sante_bienetre: [
       e("Soins clean", "Présentation épurée de cabinet médical"),
       e("Capsules", "Cartes arrondies façon gélule"),
-      e("Clinique zen & spa", "Grille pastel avec prise de rendez-vous"),
+      e("Clinique zen & spa", "Photos en arche sur fond pastel, rendez-vous en 1 clic"),
     ],
     beaute_services: [
       e("Book 3:4", "Photos portrait, idéales coiffure et esthétique"),
@@ -57,11 +57,11 @@ export const DESIGN_COPY: Record<Language, DesignCopy> = {
     ],
     digital_tech: [
       e("Tech néon", "Grille sombre aux contours lumineux"),
-      e("Portfolio minimal", "Cartes blanches épurées pour agences"),
-      e("SaaS hub", "3 offres en colonnes néon"),
+      e("Portfolio minimal", "Projets en larges bandeaux, style agence"),
+      e("SaaS hub", "3 offres néon comparées, la plus demandée en avant"),
     ],
     grossistes_distribution: [
-      e("Tarif volume", "Tableau de prix clair pour les revendeurs"),
+      e("Tarif volume", "Liste de prix claire pour les revendeurs"),
       e("Inventaire dépôt", "Grille des produits disponibles"),
       e("Super-dépôt", "Tableau premium, devis de volume en 1 clic"),
     ],
@@ -90,7 +90,7 @@ export const DESIGN_COPY: Record<Language, DesignCopy> = {
     sante_bienetre: [
       e("Swen klin", "Prezantasyon pwòp tankou yon kabinè"),
       e("Kapsil", "Kat won tankou grenn medikaman"),
-      e("Klinik zen & spa", "Kadriyaj pastèl ak randevou"),
+      e("Klinik zen & spa", "Foto an ak sou fon pastèl, randevou an 1 klik"),
     ],
     beaute_services: [
       e("Book 3:4", "Foto pòtrè, bon pou kwafi ak estetik"),
@@ -114,11 +114,11 @@ export const DESIGN_COPY: Record<Language, DesignCopy> = {
     ],
     digital_tech: [
       e("Tech neyon", "Kadriyaj nwa ak kontou limen"),
-      e("Portfolio minimal", "Kat blan pwòp pou ajans"),
-      e("SaaS hub", "3 òf an kolòn neyon"),
+      e("Portfolio minimal", "Pwojè an gwo bandwòl, stil ajans"),
+      e("SaaS hub", "3 òf neyon konpare, sa moun plis mande an avan"),
     ],
     grossistes_distribution: [
-      e("Tarif volim", "Tablo pri klè pou revandè"),
+      e("Tarif volim", "Lis pri klè pou revandè"),
       e("Envantè depo", "Kadriyaj pwodui ki disponib"),
       e("Super-depo", "Tablo premium, devi volim an 1 klik"),
     ],
@@ -147,7 +147,7 @@ export const DESIGN_COPY: Record<Language, DesignCopy> = {
     sante_bienetre: [
       e("Clean care", "Clean, clinic-style presentation"),
       e("Capsules", "Rounded, pill-shaped cards"),
-      e("Zen clinic & spa", "Pastel grid with appointment booking"),
+      e("Zen clinic & spa", "Arched photos on pastel, 1-click appointments"),
     ],
     beaute_services: [
       e("3:4 book", "Portrait photos, ideal for hair and beauty"),
@@ -171,11 +171,11 @@ export const DESIGN_COPY: Record<Language, DesignCopy> = {
     ],
     digital_tech: [
       e("Neon tech", "Dark grid with glowing outlines"),
-      e("Minimal portfolio", "Clean white cards for agencies"),
-      e("SaaS hub", "3 offers in neon columns"),
+      e("Minimal portfolio", "Projects as wide banners, agency style"),
+      e("SaaS hub", "3 neon plans compared, most requested highlighted"),
     ],
     grossistes_distribution: [
-      e("Volume pricing", "Clear price table for resellers"),
+      e("Volume pricing", "Clear price list for resellers"),
       e("Depot inventory", "Grid of available products"),
       e("Super depot", "Premium table, 1-click volume quote"),
     ],
