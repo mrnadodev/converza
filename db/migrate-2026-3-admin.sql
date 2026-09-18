@@ -9,16 +9,18 @@
 -- 1. STATISTIQUES PAR MARCHAND — on ajoute la date de la dernière
 --    commande et le montant réellement encaissé, pour distinguer un
 --    marchand actif d'un compte ouvert puis abandonné.
+--    `create or replace view` n'accepte de nouvelles colonnes qu'en fin de
+--    liste : les cinq premières restent dans l'ordre de la migration 2.
 -- ------------------------------------------------------------
 create or replace view admin_business_stats as
 select
   b.id                                   as business_id,
   coalesce(o.orders_count, 0)::bigint    as orders_count,
   coalesce(o.gmv_cents, 0)::bigint       as gmv_cents,
-  coalesce(o.paid_cents, 0)::bigint      as paid_cents,
-  o.last_order_at                        as last_order_at,
   coalesce(p.products_count, 0)::bigint  as products_count,
-  coalesce(m.agents_count, 0)::bigint    as agents_count
+  coalesce(m.agents_count, 0)::bigint    as agents_count,
+  coalesce(o.paid_cents, 0)::bigint      as paid_cents,
+  o.last_order_at                        as last_order_at
 from businesses b
 left join (
   select t.business_id,
