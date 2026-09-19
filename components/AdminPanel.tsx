@@ -29,6 +29,7 @@ import { STOREFRONT_COPY } from "@/lib/i18n/storefront";
 import { csvCell } from "@/lib/reports";
 import { formatMoney } from "@/lib/money";
 import { waMeLink } from "@/lib/whatsapp";
+import { buildFunnel } from "@/lib/funnel";
 import { SECTOR_THEME, THEMES, THEME_KEYS, themeOf } from "@/lib/themes";
 import { INDUSTRY_SECTORS, verticalOf } from "@/lib/verticals";
 import { designFor, paletteFor } from "@/lib/storefront-designs";
@@ -198,6 +199,128 @@ export function AdminPanel({ data }: { data: AdminData }) {
 
 /* ---------------------------------- Vue d'ensemble --------------------------------- */
 
+/**
+ * Parcours des marchands, de l'inscription au premier paiement. La console
+ * disait combien de comptes existaient, jamais où ils s'arrêtaient.
+ */
+function FunnelCard({ data }: { data: AdminData }) {
+  const a = useDict(ADMIN_COPY);
+  const f = useMemo(
+    () =>
+      buildFunnel(
+        data.merchants.map((m) => ({
+          createdAt: m.created_at,
+          lastSignInAt: m.lastSignInAt,
+          products: m.products,
+          orders: m.orders,
+          paidCents: m.paidCents,
+          plan: m.plan,
+          planUntil: m.plan_until,
+          firstOrderAt: m.firstOrderAt,
+        })),
+      ),
+    [data.merchants],
+  );
+
+  if (f.total === 0) {
+    return (
+      <Card>
+        <CardTitle title={a.funnel.title} hint={a.funnel.hint} />
+        <p className="mt-2 text-sm text-ink-faint">{a.funnel.empty}</p>
+      </Card>
+    );
+  }
+
+  const worstLabel = f.worstStep ? a.funnel.steps[f.worstStep].label : null;
+  const delay =
+    data.firstOrderComplete && f.medianDaysToFirstOrder !== null
+      ? a.funnel.medianValue(f.medianDaysToFirstOrder)
+      : a.funnel.medianUnknown;
+
+  return (
+    <Card>
+      <CardTitle title={a.funnel.title} hint={a.funnel.hint} />
+
+      <ul className="mt-3 flex flex-col gap-2">
+        {f.steps.map((step, i) => {
+          const copy = a.funnel.steps[step.key];
+          const width = Math.max(step.pctOfTotal, 3);
+          const worst = step.key === f.worstStep;
+          return (
+            <li key={step.key} className="flex flex-col gap-1">
+              <div className="flex items-baseline justify-between gap-3">
+                <span className="text-[13px] font-bold text-ink">{copy.label}</span>
+                <span className="shrink-0 text-[12px] text-ink-muted">
+                  <span className="font-extrabold tabular-nums text-ink">{step.count}</span> · {a.funnel.ofTotal(step.pctOfTotal)}
+                </span>
+              </div>
+              <div className="h-2.5 w-full overflow-hidden rounded-full bg-[#EEF2F3]">
+                <div
+                  className={`h-full rounded-full ${worst ? "bg-[#C0392B]" : "bg-brand-green"}`}
+                  style={{ width: `${width}%`, opacity: worst ? 1 : 1 - i * 0.08 }}
+                />
+              </div>
+              <div className="flex items-center justify-between gap-3 text-[11.5px] text-ink-faint">
+                <span>{copy.help}</span>
+                {i > 0 && (
+                  <span className={step.lost > 0 ? "font-bold text-owed-text" : ""}>
+                    {step.lost > 0 ? `${a.funnel.lost(step.lost)} · ${a.funnel.ofPrevious(step.pctOfPrevious)}` : a.funnel.ofPrevious(step.pctOfPrevious)}
+                  </span>
+                )}
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+
+      {f.payingButStalled > 0 && (
+        <p className="mt-3 rounded-xl border border-amber-300 bg-owed-bg px-3 py-2 text-[12.5px] font-semibold text-owed-text">
+          {a.funnel.stalled(f.payingButStalled)}
+        </p>
+      )}
+
+      <div className="mt-4 flex flex-col gap-2 border-t border-line pt-3 sm:flex-row sm:items-center sm:justify-between">
+        <span className="text-[12.5px] font-semibold text-ink-soft">
+          {worstLabel ? a.funnel.worst(worstLabel) : a.funnel.allGood}
+        </span>
+        <span className="shrink-0 text-[12.5px] text-ink-muted">
+          {a.funnel.median} : <span className="font-extrabold text-ink">{delay}</span>
+        </span>
+      </div>
+
+      {f.cohorts.length > 0 && (
+        <div className="mt-4 border-t border-line pt-3">
+          <span className="text-[13px] font-bold text-ink-soft">{a.funnel.cohortsTitle}</span>
+          <div className="mt-2 overflow-x-auto">
+            <table className="w-full min-w-[380px] text-[12.5px]">
+              <thead>
+                <tr className="text-left text-ink-faint">
+                  <th className="pb-1 font-semibold">{a.funnel.cohortMonth}</th>
+                  <th className="pb-1 text-right font-semibold">{a.funnel.cohortSignups}</th>
+                  <th className="pb-1 text-right font-semibold">{a.funnel.cohortCatalog}</th>
+                  <th className="pb-1 text-right font-semibold">{a.funnel.cohortOrder}</th>
+                  <th className="pb-1 text-right font-semibold">{a.funnel.cohortPaying}</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-line">
+                {f.cohorts.map((c) => (
+                  <tr key={c.month}>
+                    <td className="py-1.5 font-bold">{c.month}</td>
+                    <td className="py-1.5 text-right tabular-nums">{c.signups}</td>
+                    <td className="py-1.5 text-right tabular-nums">{c.catalog}</td>
+                    <td className="py-1.5 text-right tabular-nums">{c.firstOrder}</td>
+                    <td className="py-1.5 text-right tabular-nums font-bold">{c.paying}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+    </Card>
+  );
+}
+
 function OverviewTab({ data, onRenew, pending }: { data: AdminData; onRenew: (id: string, months: number) => void; pending: boolean }) {
   const a = useDict(ADMIN_COPY);
   const { language } = useLanguage();
@@ -257,6 +380,8 @@ function OverviewTab({ data, onRenew, pending }: { data: AdminData; onRenew: (id
           </div>
         </Card>
       </section>
+
+      <FunnelCard data={data} />
 
       {(data.expiringSoon.length > 0 || data.expired.length > 0) && (
         <section className="grid grid-cols-1 gap-3 sm:grid-cols-2">

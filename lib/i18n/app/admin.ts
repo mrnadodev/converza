@@ -56,6 +56,27 @@ export interface AdminCopy {
     storefront: string;
     changePlan: string;
   };
+  funnel: {
+    title: string;
+    hint: string;
+    steps: Record<string, { label: string; help: string }>;
+    ofTotal: (pct: number) => string;
+    ofPrevious: (pct: number) => string;
+    lost: (n: number) => string;
+    worst: (label: string) => string;
+    allGood: string;
+    median: string;
+    medianValue: (days: number) => string;
+    medianUnknown: string;
+    stalled: (n: number) => string;
+    cohortsTitle: string;
+    cohortMonth: string;
+    cohortSignups: string;
+    cohortCatalog: string;
+    cohortOrder: string;
+    cohortPaying: string;
+    empty: string;
+  };
   billing: {
     legal: {
       title: string;
@@ -380,6 +401,34 @@ const fr: AdminCopy = {
     cockpit: "Fiche technique",
     storefront: "Voir la vitrine",
     changePlan: "Changer de plan",
+  },
+  funnel: {
+    title: "Où les marchands s'arrêtent",
+    hint: "Calculé sur les comptes existants, sans aucun traceur",
+    steps: {
+      signup: { label: "Compte créé", help: "Inscription terminée" },
+      signedIn: { label: "Revenu se connecter", help: "Au moins une connexion" },
+      catalog: { label: "Catalogue rempli", help: "Au moins un produit publié" },
+      firstOrder: { label: "Première commande", help: "Une commande reçue par la vitrine" },
+      cash: { label: "Argent encaissé", help: "Au moins un paiement enregistré" },
+      paying: { label: "Abonnement en cours", help: "Plan payant, échéance non dépassée" },
+    },
+    ofTotal: (p) => `${p} % des inscrits`,
+    ofPrevious: (p) => `${p} % de l'étape précédente`,
+    lost: (n) => `${n} perdu${n > 1 ? "s" : ""} ici`,
+    worst: (label) => `C'est à l'étape « ${label} » que tu perds le plus de monde.`,
+    allGood: "Aucune étape ne perd de marchand pour l'instant.",
+    median: "Délai jusqu'à la première commande",
+    medianValue: (d) => `${d} jour${d > 1 ? "s" : ""} en médiane`,
+    medianUnknown: "Pas encore mesurable",
+    stalled: (n) => `${n} abonné${n > 1 ? "s" : ""} payant${n > 1 ? "s" : ""} s'arrête${n > 1 ? "nt" : ""} plus tôt dans le parcours : boutique vide ou sans commande. À regarder en premier.`,
+    cohortsTitle: "Par mois d'inscription",
+    cohortMonth: "Mois",
+    cohortSignups: "Inscrits",
+    cohortCatalog: "Catalogue",
+    cohortOrder: "1re commande",
+    cohortPaying: "Abonnés",
+    empty: "Aucun marchand inscrit pour l'instant.",
   },
   billing: {
     legal: {
@@ -768,6 +817,34 @@ const ht: AdminCopy = {
     storefront: "Wè vitrin nan",
     changePlan: "Chanje plan",
   },
+  funnel: {
+    title: "Kote machann yo kanpe",
+    hint: "Kalkile sou kont ki egziste yo, san okenn tracker",
+    steps: {
+      signup: { label: "Kont kreye", help: "Enskripsyon fini" },
+      signedIn: { label: "Tounen konekte", help: "Omwen yon koneksyon" },
+      catalog: { label: "Katalòg ranpli", help: "Omwen yon pwodwi pibliye" },
+      firstOrder: { label: "Premye kòmand", help: "Yon kòmand rive nan vitrin lan" },
+      cash: { label: "Lajan antre", help: "Omwen yon peman anrejistre" },
+      paying: { label: "Abònman an kou", help: "Plan peyan, dat la poko pase" },
+    },
+    ofTotal: (p) => `${p} % nan enskri yo`,
+    ofPrevious: (p) => `${p} % nan etap anvan an`,
+    lost: (n) => `${n} pèdi isit`,
+    worst: (label) => `Se nan etap « ${label} » ou pèdi plis moun.`,
+    allGood: "Pa gen etap ki ap pèdi machann pou kounye a.",
+    median: "Konbyen tan jiska premye kòmand lan",
+    medianValue: (d) => `${d} jou an medyàn`,
+    medianUnknown: "Poko ka mezire",
+    stalled: (n) => `${n} abone k ap peye kanpe pi bonè nan chemen an : boutik vid oswa san kòmand. Gade sa anvan tout bagay.`,
+    cohortsTitle: "Pa mwa enskripsyon",
+    cohortMonth: "Mwa",
+    cohortSignups: "Enskri",
+    cohortCatalog: "Katalòg",
+    cohortOrder: "1ye kòmand",
+    cohortPaying: "Abone",
+    empty: "Pa gen machann enskri pou kounye a.",
+  },
   billing: {
     legal: {
       title: "Mansyon legal ak kontak",
@@ -1154,6 +1231,34 @@ const en: AdminCopy = {
     cockpit: "Account sheet",
     storefront: "View storefront",
     changePlan: "Change plan",
+  },
+  funnel: {
+    title: "Where merchants stop",
+    hint: "Computed from existing accounts, with no tracker",
+    steps: {
+      signup: { label: "Account created", help: "Sign-up completed" },
+      signedIn: { label: "Came back to sign in", help: "At least one sign-in" },
+      catalog: { label: "Catalogue filled", help: "At least one product published" },
+      firstOrder: { label: "First order", help: "An order received from the storefront" },
+      cash: { label: "Money collected", help: "At least one recorded payment" },
+      paying: { label: "Active subscription", help: "Paid plan, not past its date" },
+    },
+    ofTotal: (p) => `${p}% of sign-ups`,
+    ofPrevious: (p) => `${p}% of the previous step`,
+    lost: (n) => `${n} lost here`,
+    worst: (label) => `You lose the most merchants at the "${label}" step.`,
+    allGood: "No step is losing merchants right now.",
+    median: "Time to first order",
+    medianValue: (d) => `${d} day${d > 1 ? "s" : ""} median`,
+    medianUnknown: "Not measurable yet",
+    stalled: (n) => `${n} paying subscriber${n > 1 ? "s" : ""} stopped earlier in the journey: empty shop or no orders. Look here first.`,
+    cohortsTitle: "By sign-up month",
+    cohortMonth: "Month",
+    cohortSignups: "Sign-ups",
+    cohortCatalog: "Catalogue",
+    cohortOrder: "1st order",
+    cohortPaying: "Subscribers",
+    empty: "No merchant has signed up yet.",
   },
   billing: {
     legal: {

@@ -11,6 +11,9 @@ const AUDIT_LIMIT = 50;
 const EXPIRING_SOON_DAYS = 7;
 const PHONE_REQUESTS_LIMIT = 40;
 
+/** Plafond de lecture des commandes pour dater la première vente de chaque boutique. */
+const FIRST_ORDER_SCAN = 20_000;
+
 export interface AdminMerchant {
   id: string;
   name: string;
@@ -46,6 +49,8 @@ export interface AdminMerchant {
   lastSignInAt: string | null;
   /** Commandes reçues sur les 7 derniers jours. */
   orders7d: number;
+  /** Date de la toute première commande : délai entre inscription et première vente. */
+  firstOrderAt: string | null;
   suspendedAt: string | null;
   suspendedReason: string | null;
   /** Diagnostic (lib/merchant-health). */
@@ -76,6 +81,29 @@ export interface AdminPhoneRequest {
   proofUrls: string[];
 }
 
+
+/** Colonnes du marchand, hors suspension (migration 7). */
+const BUSINESS_COLUMNS =
+  "id,name,slug,business_type,plan,plan_until,created_at,phone_e164,category,address,logo_url,cover_url,hours,theme,layout,default_currency,social_instagram,social_facebook,social_tiktok,delivery_zones,moncash_number,natcash_number,bank_accounts,zelle_info,usdt_trc20_address";
+
+/**
+ * Lit les marchands, avec ou sans les colonnes de suspension.
+ *
+ * Demander `suspended_at` à une base où la migration 7 n'a pas encore été
+ * jouée fait échouer toute la requête : la console affichait alors zéro
+ * marchand, comme si la plateforme était vide. On retente sans ces colonnes
+ * plutôt que de perdre la liste.
+ */
+async function readBusinesses(admin: NonNullable<ReturnType<typeof createAdminClient>>) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const withSupport = await admin.from("businesses").select(`${BUSINESS_COLUMNS},suspended_at,suspended_reason`);
+  if (!withSupport.error) return { rows: (withSupport.data ?? []) as any[], suspensionColumns: true };
+
+  const plain = await admin.from("businesses").select(BUSINESS_COLUMNS);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return { rows: (plain.data ?? []) as any[], suspensionColumns: false };
+}
+
 export async function getAdminData() {
   const admin = createAdminClient();
   if (!admin) return null;
@@ -91,11 +119,7 @@ export async function getAdminData() {
   // Les compteurs par marchand sont agrégés par Postgres (vue
   // admin_business_stats) au lieu d'être recalculés ici.
   const [bizRes, payRes, statsRes, membersRes] = await Promise.all([
-    admin
-      .from("businesses")
-      .select(
-        "id,name,slug,business_type,plan,plan_until,created_at,phone_e164,category,address,logo_url,cover_url,hours,theme,layout,default_currency,social_instagram,social_facebook,social_tiktok,delivery_zones,moncash_number,natcash_number,bank_accounts,zelle_info,usdt_trc20_address,suspended_at,suspended_reason",
-      ),
+    readBusinesses(admin),
     admin
       .from("subscription_payments")
       .select("id,plan,amount_cents,pay_method,pay_ref,status,created_at,business_id,businesses(name,slug)")
@@ -105,7 +129,7 @@ export async function getAdminData() {
     admin.from("members").select("business_id,user_id,full_name,role").eq("role", "owner"),
   ]);
 
-  const businesses = bizRes.data ?? [];
+  const businesses = bizRes.rows;
   const payments = payRes.data ?? [];
 
   const ordCount = new Map<string, number>();
@@ -127,13 +151,24 @@ export async function getAdminData() {
 
   // Signaux d'activité récents, pour repérer un marchand qui décroche.
   const weekAgo = new Date(now - 7 * 864e5).toISOString();
-  const [recentOrdersRes, trackedRes, costsRes, errorsRes, dbVersionRes] = await Promise.all([
+  const [recentOrdersRes, trackedRes, costsRes, errorsRes, dbVersionRes, firstOrderRes] = await Promise.all([
     admin.from("orders").select("business_id").gte("created_at", weekAgo).limit(5000),
     admin.from("products").select("business_id,stock_qty").not("stock_qty", "is", null).limit(20000),
     admin.from("product_costs").select("business_id").limit(20000),
     admin.from("app_errors").select("id,scope,message,business_id,created_at").order("created_at", { ascending: false }).limit(50),
     admin.from("platform_settings").select("value").eq("key", "db_version").maybeSingle(),
+    // Les plus anciennes d'abord : la première commande de chaque boutique est
+    // donc dans le lot, tant que la plateforme reste sous ce plafond.
+    admin.from("orders").select("business_id,created_at").order("created_at", { ascending: true }).limit(FIRST_ORDER_SCAN),
   ]);
+  const firstOrder = new Map<string, string>();
+  for (const row of firstOrderRes.data ?? []) {
+    const id = row.business_id as string;
+    if (id && !firstOrder.has(id)) firstOrder.set(id, row.created_at as string);
+  }
+  // Plafond atteint : les inscrits récents pourraient manquer à l'appel, on ne
+  // publie alors pas de délai plutôt que d'en publier un faux.
+  const firstOrderComplete = (firstOrderRes.data?.length ?? 0) < FIRST_ORDER_SCAN;
   // Repère posé par les migrations : une vue ne se reconnaît pas depuis l'app.
   const dbVersion = Number((dbVersionRes.data?.value as { migration?: number } | null)?.migration ?? 0);
   const countBy = (rows: { business_id: string | null }[] | null | undefined) => {
@@ -252,6 +287,7 @@ export async function getAdminData() {
       ownerUserId: ownerUserByBusiness.get(b.id) ?? null,
       lastSignInAt: lastSignInByBusiness.get(b.id) ?? null,
       orders7d: orders7d.get(b.id) ?? 0,
+      firstOrderAt: firstOrder.get(b.id) ?? null,
       suspendedAt: b.suspended_at ?? null,
       suspendedReason: b.suspended_reason ?? null,
       issues: merchantIssues(
@@ -381,6 +417,7 @@ export async function getAdminData() {
     })),
     phoneRequests,
     checks,
+    firstOrderComplete,
     platformPlans,
     platformPaymentInfo,
     legalInfo,
