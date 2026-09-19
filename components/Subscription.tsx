@@ -9,7 +9,7 @@ import { COMMON_COPY } from "@/lib/i18n/app/common";
 import { TEAM_COPY } from "@/lib/i18n/app/team";
 import { formatMoney } from "@/lib/money";
 import { submitPayment } from "@/app/abonman/actions";
-import type { Plan, PlatformPaymentInfo } from "@/lib/plans";
+import { effectivePlan, type Plan, type PlatformPaymentInfo } from "@/lib/plans";
 import type { UserSession } from "@/lib/rbac";
 import type { Business } from "@/lib/types";
 
@@ -33,9 +33,21 @@ export function Subscription({
 }) {
   const s = useDict(TEAM_COPY).subscription;
   const c = useDict(COMMON_COPY);
-  const current = business.plan ?? "gratis";
+  // Plan réellement dû : un abonnement échu n'est plus « actuel ».
+  const current = effectivePlan(business.plan, business.plan_until);
+  // Seuls les moyens de paiement que CONVERZA a renseignés sont proposés :
+  // choisir un virement sans compte bancaire menait à une impasse.
+  const methods = PAY_METHODS.filter((m) =>
+    m.key === "moncash"
+      ? Boolean(paymentInfo.moncash?.trim())
+      : m.key === "natcash"
+        ? Boolean(paymentInfo.natcash?.trim())
+        : m.key === "bank"
+          ? Boolean(paymentInfo.bank?.trim()) || (paymentInfo.bank_details?.length ?? 0) > 0
+          : true,
+  );
   const [chosen, setChosen] = useState<Plan | null>(null);
-  const [method, setMethod] = useState("moncash");
+  const [method, setMethod] = useState(() => methods[0]?.key ?? "lot");
   const [ref, setRef] = useState("");
   const [pending, start] = useTransition();
   const [done, setDone] = useState(false);
@@ -98,7 +110,12 @@ export function Subscription({
                   </li>
                 ))}
               </ul>
-              {!isCurrent && p.priceGdes > 0 && (
+              {isCurrent && p.priceGdes > 0 && business.plan_until && (
+                <p className="mt-3 text-[12px] text-ink-muted">
+                  {s.until(new Date(business.plan_until).toLocaleDateString("fr-HT", { day: "2-digit", month: "long", year: "numeric" }))}
+                </p>
+              )}
+              {p.priceGdes > 0 && (
                 <button
                   onClick={() => {
                     setChosen(p);
@@ -107,7 +124,7 @@ export function Subscription({
                   }}
                   className="mt-3 flex h-11 w-full cursor-pointer items-center justify-center rounded-xl bg-brand-green text-sm font-bold text-white active:scale-[0.99]"
                 >
-                  {s.choose(p.name)}
+                  {isCurrent ? s.renew(p.name) : s.choose(p.name)}
                 </button>
               )}
             </section>
@@ -144,7 +161,7 @@ export function Subscription({
                 <label className="mt-4 flex flex-col gap-1.5">
                   <span className="text-[13px] font-semibold text-ink-soft">{s.method}</span>
                   <select value={method} onChange={(e) => setMethod(e.target.value)} className={cls}>
-                    {PAY_METHODS.map((m) => (
+                    {methods.map((m) => (
                       <option key={m.key} value={m.key}>
                         {m.label}
                       </option>

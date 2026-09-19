@@ -7,6 +7,7 @@ import { isAdminEmail } from "@/lib/admin";
 
 import { logAdminAction } from "@/lib/audit-logger";
 import { logAppError } from "@/lib/app-errors";
+import { nextPlanUntil } from "@/lib/plans";
 
 async function requireAdmin() {
   const sb = createClient();
@@ -23,8 +24,8 @@ export async function activatePlan(paymentId: string, businessId: string, plan: 
   const admin = createAdminClient();
   if (!admin) return { ok: false, error: "SUPABASE_SERVICE_ROLE_KEY manke" };
 
-  const until = new Date();
-  until.setMonth(until.getMonth() + 1);
+  const { data: currentBiz } = await admin.from("businesses").select("plan, plan_until").eq("id", businessId).maybeSingle();
+  const until = nextPlanUntil(currentBiz?.plan, currentBiz?.plan_until, plan);
 
   const r1 = await admin.from("businesses").update({ plan, plan_until: until.toISOString() }).eq("id", businessId);
   const r2 = await admin.from("subscription_payments").update({ status: "confirmed" }).eq("id", paymentId);

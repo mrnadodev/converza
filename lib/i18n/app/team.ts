@@ -32,6 +32,8 @@ export interface TeamCopy {
     free: string;
     perMonth: string;
     choose: (plan: string) => string;
+    renew: (plan: string) => string;
+    until: (date: string) => string;
     manualNote: string;
     payTitle: (plan: string) => string;
     method: string;
@@ -81,6 +83,8 @@ const fr: TeamCopy = {
     free: "Gratuit",
     perMonth: "/ mois",
     choose: (plan) => `Choisir ${plan}`,
+    renew: (plan) => `Renouveler ${plan} pour un mois`,
+    until: (date) => `Payé jusqu'au ${date}. Un renouvellement s'ajoute à cette date.`,
     manualNote: "Les paiements sont vérifiés à la main : le plan est activé après confirmation.",
     payTitle: (plan) => `Payer le plan ${plan}`,
     method: "Moyen de paiement",
@@ -130,6 +134,8 @@ const ht: TeamCopy = {
     free: "Gratis",
     perMonth: "/ mwa",
     choose: (plan) => `Chwazi ${plan}`,
+    renew: (plan) => `Renouvle ${plan} pou yon mwa`,
+    until: (date) => `Peye jiska ${date}. Yon renouvèlman ajoute sou dat sa a.`,
     manualNote: "Pèman yo verifye alamen : plan an aktive apre konfimasyon.",
     payTitle: (plan) => `Peye plan ${plan}`,
     method: "Mwayen pèman",
@@ -179,6 +185,8 @@ const en: TeamCopy = {
     free: "Free",
     perMonth: "/ month",
     choose: (plan) => `Choose ${plan}`,
+    renew: (plan) => `Renew ${plan} for one month`,
+    until: (date) => `Paid until ${date}. A renewal is added on top of that date.`,
     manualNote: "Payments are checked by hand: the plan is activated after confirmation.",
     payTitle: (plan) => `Pay for the ${plan} plan`,
     method: "Payment method",

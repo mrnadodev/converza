@@ -138,6 +138,32 @@ export function effectivePlan(
   return end + PLAN_GRACE_DAYS * 86_400_000 > now.getTime() ? key : "gratis";
 }
 
+/**
+ * Nouvelle date de fin après un paiement.
+ *
+ * Un renouvellement du même plan, payé avant l'échéance, s'ajoute à la fin en
+ * cours : le marchand qui paie en avance ne perd aucun jour déjà payé. Un
+ * changement de plan, ou un plan déjà échu, repart d'aujourd'hui.
+ */
+export function nextPlanUntil(
+  currentPlan: string | null | undefined,
+  currentUntil: string | Date | null | undefined,
+  newPlan: string,
+  now: Date = new Date(),
+  months = 1,
+): Date {
+  const end = currentUntil ? new Date(currentUntil) : null;
+  const sameAndActive =
+    (currentPlan ?? "gratis").toLowerCase() === newPlan.toLowerCase() &&
+    end !== null &&
+    Number.isFinite(end.getTime()) &&
+    end.getTime() > now.getTime();
+  const until = new Date(sameAndActive ? (end as Date) : now);
+  // En UTC : le résultat ne dépend pas du fuseau du serveur ni de l'heure d'été.
+  until.setUTCMonth(until.getUTCMonth() + months);
+  return until;
+}
+
 export function memberSeatsFor(plan: string | null | undefined): number | null {
   switch ((plan ?? "gratis").toLowerCase()) {
     case "premium":
