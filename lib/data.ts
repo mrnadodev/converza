@@ -6,6 +6,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { DEBT_STATUSES } from "@/lib/dunning";
 import { pickShowcase, type ShowcaseMerchant } from "@/lib/showcase";
+import { createPublicClient } from "@/lib/supabase/public";
 import {
   demoBusiness,
   demoCustomers,
@@ -528,13 +529,13 @@ export async function getCustomers(): Promise<Customer[]> {
 
 // --- Boutiques présentées sur la page d'accueil ---
 /**
- * Lit les boutiques publiques et leur nombre de produits en ligne, avec la
- * même session anonyme qu'un visiteur : la page d'accueil ne montre rien que
- * les vitrines ne montrent déjà. Le choix se fait dans lib/showcase.ts.
+ * Lit les boutiques publiques et leur nombre de produits en ligne avec la clé
+ * publique, sans session : la page d'accueil ne montre rien que les vitrines ne
+ * montrent déjà, et elle reste en cache. Le choix se fait dans lib/showcase.ts.
  */
 export async function getShowcaseMerchants(): Promise<ShowcaseMerchant[]> {
-  if (!hasSupabase()) return [];
-  const sb = createClient();
+  const sb = createPublicClient();
+  if (!sb) return [];
   const { data: businesses, error } = await sb
     .from("public_businesses")
     .select("id, name, slug, logo_url, business_type, created_at")
