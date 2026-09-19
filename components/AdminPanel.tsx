@@ -321,6 +321,17 @@ function FunnelCard({ data }: { data: AdminData }) {
   );
 }
 
+
+/**
+ * Ce qui manque à ce marchand pour vendre, dans l'ordre où il doit avancer.
+ * Sert au message de relance : « il reste à publier votre premier produit ».
+ */
+const NUDGE_ORDER = ["noProducts", "noPayMethod", "noCover", "noDelivery", "noOrders"];
+function nudgeStepOf(m: AdminData["merchants"][number]): string | null {
+  const codes = new Set(m.issues.map((i) => i.code as string));
+  return NUDGE_ORDER.find((code) => codes.has(code)) ?? null;
+}
+
 function OverviewTab({ data, onRenew, pending }: { data: AdminData; onRenew: (id: string, months: number) => void; pending: boolean }) {
   const a = useDict(ADMIN_COPY);
   const { language } = useLanguage();
@@ -658,6 +669,19 @@ function MerchantsTab({
                 >
                   {a.support.open}
                 </a>
+                {m.phone_e164 && nudgeStepOf(m) && (
+                  <a
+                    href={waMeLink(
+                      m.phone_e164,
+                      a.support.nudgeMessage({ shop: m.name, step: a.support.nudgeSteps[nudgeStepOf(m) as string] ?? "" }),
+                    )}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="h-8 rounded-lg bg-owed-bg px-3 text-[12px] font-extrabold leading-8 text-owed-text active:scale-95"
+                  >
+                    {a.support.nudge}
+                  </a>
+                )}
                 {m.phone_e164 && m.plan !== "gratis" && !isActive(m) && (
                   <a
                     href={waMeLink(

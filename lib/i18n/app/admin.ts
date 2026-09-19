@@ -234,6 +234,10 @@ export interface AdminCopy {
     transferConfirm: (name: string) => string;
     remind: string;
     remindMessage: (p: { shop: string; plan: string; date: string }) => string;
+    /** Relance d'un marchand bloqué au démarrage, pas d'un abonnement échu. */
+    nudge: string;
+    nudgeMessage: (p: { shop: string; step: string }) => string;
+    nudgeSteps: Record<string, string>;
     lastSignIn: (date: string) => string;
     neverSignedIn: string;
     orders7d: (n: number) => string;
@@ -610,6 +614,16 @@ const fr: AdminCopy = {
     remind: "Relancer",
     remindMessage: ({ shop, plan, date }) =>
       `Bonjour ${shop}, votre abonnement ${plan} chez CONVERZA se termine le ${date}. Renouvelez-le pour garder votre vitrine et vos outils.`,
+    nudge: "Aider à démarrer",
+    nudgeMessage: ({ shop, step }) =>
+      `Bonjour ${shop} ! Ici CONVERZA. Votre vitrine est presque prête : il reste ${step}. Voulez-vous qu'on le fasse ensemble maintenant ? Ça prend cinq minutes.`,
+    nudgeSteps: {
+      noProducts: "à publier votre premier produit",
+      noPayMethod: "à indiquer comment vous être payé",
+      noCover: "à ajouter une photo de votre commerce",
+      noDelivery: "à préciser vos zones de livraison",
+      noOrders: "à partager le lien de votre vitrine",
+    },
     lastSignIn: (date) => `Dernière connexion : ${date}`,
     neverSignedIn: "Jamais connecté",
     orders7d: (n) => (n <= 1 ? `${n} commande (7 j)` : `${n} commandes (7 j)`),
@@ -1025,6 +1039,16 @@ const ht: AdminCopy = {
     remind: "Raple",
     remindMessage: ({ shop, plan, date }) =>
       `Bonjou ${shop}, abònman ${plan} ou a nan CONVERZA ap fini ${date}. Renouvle l pou w kenbe vitrin ou ak zouti ou yo.`,
+    nudge: "Ede l kòmanse",
+    nudgeMessage: ({ shop, step }) =>
+      `Bonjou ${shop} ! Se CONVERZA. Vitrin ou prèske pare : rete ${step}. Ou vle nou fè l ansanm kounye a ? Se senk minit.`,
+    nudgeSteps: {
+      noProducts: "pou w pibliye premye pwodwi w",
+      noPayMethod: "pou w di kijan pou yo peye w",
+      noCover: "pou w mete yon foto komès ou",
+      noDelivery: "pou w di ki zòn ou ap livre",
+      noOrders: "pou w pataje lyen vitrin ou",
+    },
     lastSignIn: (date) => `Dènye koneksyon : ${date}`,
     neverSignedIn: "Pa janm konekte",
     orders7d: (n) => `${n} kòmand (7 jou)`,
@@ -1440,6 +1464,16 @@ const en: AdminCopy = {
     remind: "Remind",
     remindMessage: ({ shop, plan, date }) =>
       `Hello ${shop}, your ${plan} subscription with CONVERZA ends on ${date}. Renew it to keep your storefront and tools.`,
+    nudge: "Help them start",
+    nudgeMessage: ({ shop, step }) =>
+      `Hello ${shop}! This is CONVERZA. Your storefront is nearly ready: what is left is ${step}. Shall we do it together now? It takes five minutes.`,
+    nudgeSteps: {
+      noProducts: "publishing your first product",
+      noPayMethod: "telling customers how to pay you",
+      noCover: "adding a photo of your business",
+      noDelivery: "setting your delivery zones",
+      noOrders: "sharing your storefront link",
+    },
     lastSignIn: (date) => `Last sign-in: ${date}`,
     neverSignedIn: "Never signed in",
     orders7d: (n) => (n === 1 ? "1 order (7 d)" : `${n} orders (7 d)`),

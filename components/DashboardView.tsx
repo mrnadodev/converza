@@ -11,6 +11,7 @@ import { COMMON_COPY } from "@/lib/i18n/app/common";
 import { DASHBOARD_COPY } from "@/lib/i18n/app/dashboard";
 import { formatMoney } from "@/lib/money";
 import { analyzeStockRisk } from "@/lib/stock_ai";
+import { canSell, setupProgress, setupSteps } from "@/lib/setup-steps";
 import type { DashboardOrder, SourceRow } from "@/lib/data";
 import type { RolePermissions, UserSession } from "@/lib/rbac";
 import type { Business, OrderStatus, Product } from "@/lib/types";
@@ -108,7 +109,7 @@ export function DashboardView(props: DashboardViewProps) {
               onPoster={() => setPosterOpen(true)}
             />
 
-            {!hasOrders && <FirstSteps business={business} productCount={products.length} />}
+            <FirstSteps business={business} productCount={products.length} orderCount={funnel.orders} />
 
             {stockAlerts.length > 0 && <StockAlerts alerts={stockAlerts} />}
 
@@ -188,18 +189,28 @@ function StoreActions({ slug, canMakePoster, onPoster }: { slug: string; canMake
   );
 }
 
-function FirstSteps({ business, productCount }: { business: Business; productCount: number }) {
+function FirstSteps({ business, productCount, orderCount }: { business: Business; productCount: number; orderCount: number }) {
   const d = useDict(DASHBOARD_COPY);
   const { share, copied } = useShareStore(business.slug);
-  const hasPayments = Boolean(
-    business.moncash_number || business.natcash_number || business.bank_accounts || business.zelle_info || business.usdt_trc20_address,
-  );
-  const steps = [
-    { done: productCount > 0, copy: d.firstSteps.products, href: "/katalog" },
-    { done: hasPayments, copy: d.firstSteps.payments, href: "/reglaj" },
-    { done: false, copy: d.firstSteps.share, onClick: share },
-  ];
-  const doneCount = steps.filter((s) => s.done).length;
+  const computed = setupSteps({
+    activeProducts: productCount,
+    coverUrl: business.cover_url,
+    logoUrl: business.logo_url,
+    hasPayMethod: Boolean(
+      business.moncash_number || business.natcash_number || business.bank_accounts || business.zelle_info || business.usdt_trc20_address,
+    ),
+    deliveryZones: business.delivery_zones?.length ?? 0,
+    orders: orderCount,
+  });
+  const { done: doneCount, next } = setupProgress(computed);
+  // Tout est fait : la carte n'a plus rien à dire, elle disparaît.
+  if (next === null) return null;
+  const steps = computed.map((s) => ({
+    done: s.done,
+    copy: d.firstSteps[s.key],
+    href: s.key === "share" ? undefined : s.href,
+    onClick: s.key === "share" ? share : undefined,
+  }));
 
   return (
     <section className="flex flex-col gap-4 rounded-2xl border border-brand/20 bg-white p-5 shadow-[0_2px_10px_rgba(17,27,33,0.05)] md:col-span-2">
@@ -212,6 +223,9 @@ function FirstSteps({ business, productCount }: { business: Business; productCou
           {d.firstSteps.progress(doneCount, steps.length)}
         </span>
       </div>
+      {!canSell(computed) && (
+        <p className="rounded-xl bg-owed-bg px-3 py-2 text-[12.5px] font-semibold text-owed-text">{d.firstSteps.blocked}</p>
+      )}
       <ol className="flex flex-col gap-2.5">
         {steps.map((s, i) => (
           <li key={i} className={`flex items-center gap-3 rounded-xl border p-3 ${s.done ? "border-transparent bg-[#F3F8F6]" : "border-line"}`}>
@@ -237,13 +251,17 @@ function FirstSteps({ business, productCount }: { business: Business; productCou
             )}
           </li>
         ))}
-        <li className="flex items-center gap-3 rounded-xl border border-dashed border-line p-3">
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#EEF2F3] text-sm font-bold text-ink-muted">4</span>
-          <div className="flex flex-col">
-            <span className="text-sm font-bold text-ink">{d.firstSteps.firstOrder.title}</span>
-            <span className="text-xs text-ink-muted">{d.firstSteps.firstOrder.desc}</span>
-          </div>
-        </li>
+        {orderCount === 0 && (
+          <li className="flex items-center gap-3 rounded-xl border border-dashed border-line p-3">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#EEF2F3] text-sm font-bold text-ink-muted">
+              {steps.length + 1}
+            </span>
+            <div className="flex flex-col">
+              <span className="text-sm font-bold text-ink">{d.firstSteps.firstOrder.title}</span>
+              <span className="text-xs text-ink-muted">{d.firstSteps.firstOrder.desc}</span>
+            </div>
+          </li>
+        )}
       </ol>
     </section>
   );

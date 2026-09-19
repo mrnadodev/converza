@@ -27,9 +27,14 @@ export interface DashboardCopy {
     progress: (done: number, total: number) => string;
     done: string;
     products: { title: string; desc: string; cta: string };
+    image: { title: string; desc: string; cta: string };
     payments: { title: string; desc: string; cta: string };
+    delivery: { title: string; desc: string; cta: string };
     share: { title: string; desc: string; cta: string };
     firstOrder: { title: string; desc: string };
+    /** Affiche tant que la vitrine ne peut pas encaisser une commande. */
+    blocked: string;
+    shareMessage: (shop: string, url: string) => string;
   };
   stockAlerts: {
     title: (n: number) => string;
@@ -73,7 +78,7 @@ const fr: DashboardCopy = {
   },
   firstSteps: {
     title: "Premiers pas",
-    subtitle: "Trois étapes pour recevoir votre première commande.",
+    subtitle: "Cinq étapes pour recevoir votre première commande.",
     progress: (done, total) => `${done} sur ${total}`,
     done: "Fait",
     products: {
@@ -81,9 +86,19 @@ const fr: DashboardCopy = {
       desc: "Nom, prix et photo : c'est ce que vos clients verront.",
       cta: "Ouvrir le catalogue",
     },
+    image: {
+      title: "Ajoutez une photo de votre commerce",
+      desc: "Logo ou bannière : c'est la première chose que voit un client.",
+      cta: "Ouvrir les paramètres",
+    },
     payments: {
       title: "Indiquez comment être payé",
       desc: "MonCash, NatCash, virement… affichés au client au moment de payer.",
+      cta: "Ouvrir les paramètres",
+    },
+    delivery: {
+      title: "Dites où vous livrez",
+      desc: "Une zone et son tarif suffisent pour commencer.",
       cta: "Ouvrir les paramètres",
     },
     share: {
@@ -95,6 +110,8 @@ const fr: DashboardCopy = {
       title: "Recevez votre première commande",
       desc: "Elle apparaîtra ici et dans l'onglet Commandes.",
     },
+    blocked: "Votre vitrine ne peut pas encore prendre de commande.",
+    shareMessage: (shop, url) => `Bonjour ! Voici la boutique ${shop} : ${url} — commandez directement sur WhatsApp.`,
   },
   stockAlerts: {
     title: (n) => (n === 1 ? "1 produit à réapprovisionner" : `${n} produits à réapprovisionner`),
@@ -157,7 +174,7 @@ const ht: DashboardCopy = {
   },
   firstSteps: {
     title: "Premye etap yo",
-    subtitle: "Twa etap pou w resevwa premye kòmand ou.",
+    subtitle: "Senk etap pou w resevwa premye kòmand ou.",
     progress: (done, total) => `${done} sou ${total}`,
     done: "Fini",
     products: {
@@ -165,9 +182,19 @@ const ht: DashboardCopy = {
       desc: "Non, pri ak foto : se sa kliyan ou yo pral wè.",
       cta: "Ouvri katalòg la",
     },
+    image: {
+      title: "Mete yon foto komès ou",
+      desc: "Logo oswa banyè : se premye bagay yon kliyan wè.",
+      cta: "Ouvri reglaj yo",
+    },
     payments: {
       title: "Di kijan pou yo peye w",
       desc: "MonCash, NatCash, vèsman… kliyan an wè yo lè l ap peye.",
+      cta: "Ouvri reglaj yo",
+    },
+    delivery: {
+      title: "Di kote w ap livre",
+      desc: "Yon zòn ak pri l ase pou kòmanse.",
       cta: "Ouvri reglaj yo",
     },
     share: {
@@ -179,6 +206,8 @@ const ht: DashboardCopy = {
       title: "Resevwa premye kòmand ou",
       desc: "L ap parèt isit la ak nan paj Kòmand yo.",
     },
+    blocked: "Vitrin ou poko ka pran yon kòmand.",
+    shareMessage: (shop, url) => `Bonjou ! Men boutik ${shop} : ${url} — kòmande dirèk sou WhatsApp.`,
   },
   stockAlerts: {
     title: (n) => (n === 1 ? "1 pwodwi pou reapwovizyone" : `${n} pwodwi pou reapwovizyone`),
@@ -241,7 +270,7 @@ const en: DashboardCopy = {
   },
   firstSteps: {
     title: "Getting started",
-    subtitle: "Three steps to your first order.",
+    subtitle: "Five steps to your first order.",
     progress: (done, total) => `${done} of ${total}`,
     done: "Done",
     products: {
@@ -249,9 +278,19 @@ const en: DashboardCopy = {
       desc: "Name, price and photo: this is what your customers will see.",
       cta: "Open catalog",
     },
+    image: {
+      title: "Add a photo of your business",
+      desc: "Logo or banner: it is the first thing a customer sees.",
+      cta: "Open settings",
+    },
     payments: {
       title: "Tell customers how to pay",
       desc: "MonCash, NatCash, bank transfer… shown to the customer at checkout.",
+      cta: "Open settings",
+    },
+    delivery: {
+      title: "Say where you deliver",
+      desc: "One zone and its fee is enough to start.",
       cta: "Open settings",
     },
     share: {
@@ -263,6 +302,8 @@ const en: DashboardCopy = {
       title: "Receive your first order",
       desc: "It will show up here and in the Orders tab.",
     },
+    blocked: "Your storefront cannot take an order yet.",
+    shareMessage: (shop, url) => `Hello! Here is ${shop} : ${url} — order straight on WhatsApp.`,
   },
   stockAlerts: {
     title: (n) => (n === 1 ? "1 product to restock" : `${n} products to restock`),
