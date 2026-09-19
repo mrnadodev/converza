@@ -4,6 +4,13 @@ import type { KesError } from "@/app/kes/actions";
 // Écran « Kès » : caisse, dépenses, bénéfice, argent dehors.
 
 export interface KesCopy {
+  ledger: {
+    title: string;
+    hint: string;
+    cta: string;
+    columns: string;
+    missing: string;
+  };
   title: string;
   subtitle: string;
   periods: { day: string; week: string; month: string };
@@ -70,6 +77,13 @@ const methodsFr = {
 
 export const KES_COPY: Record<Language, KesCopy> = {
   fr: {
+  ledger: {
+    title: "Livre journal",
+    hint: "Le fichier à remettre à votre comptable : une ligne par opération de la période.",
+    cta: "Télécharger pour le comptable",
+    columns: "Date, journal, référence, tiers, entrée, sortie, moyen de paiement.",
+    missing: "Certains journaux ne sont pas encore disponibles sur cette base : le fichier contient ce qui existe.",
+  },
     title: "Kès",
     subtitle: "Ce qui rentre, ce qui sort, ce qui vous reste.",
     periods: { day: "Aujourd'hui", week: "Cette semaine", month: "Ce mois-ci" },
@@ -134,6 +148,13 @@ export const KES_COPY: Record<Language, KesCopy> = {
     },
   },
   ht: {
+  ledger: {
+    title: "Jounal la",
+    hint: "Fichye pou w bay kontab ou : yon liy pou chak operasyon nan peryòd la.",
+    cta: "Telechaje pou kontab la",
+    columns: "Dat, jounal, referans, moun, antre, soti, mwayen peman.",
+    missing: "Gen jounal ki poko disponib nan baz sa a : fichye a gen sa ki egziste.",
+  },
     title: "Kès",
     subtitle: "Sa k antre, sa k soti, sa k rete pou ou.",
     periods: { day: "Jodi a", week: "Semèn sa a", month: "Mwa sa a" },
@@ -198,6 +219,13 @@ export const KES_COPY: Record<Language, KesCopy> = {
     },
   },
   en: {
+  ledger: {
+    title: "Day book",
+    hint: "The file to hand your accountant: one line per operation in the period.",
+    cta: "Download for the accountant",
+    columns: "Date, journal, reference, party, in, out, payment method.",
+    missing: "Some journals are not available on this database yet: the file contains what exists.",
+  },
     title: "Cash",
     subtitle: "What comes in, what goes out, what you keep.",
     periods: { day: "Today", week: "This week", month: "This month" },

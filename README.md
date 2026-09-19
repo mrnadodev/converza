@@ -135,6 +135,22 @@ sont pas repris — crée-les depuis `/enskri`.
 
 Ensuite, toute nouvelle migration se joue d'abord là, puis en production.
 
+## Export comptable
+
+Écran **Kès → Livre journal** : un fichier CSV des opérations de la période
+choisie, une ligne par mouvement — vente, encaissement, dépense, achat — avec
+date, référence, tiers, entrée, sortie, moyen de paiement et devise.
+
+La vente et son encaissement sont deux lignes distinctes : la première dit ce
+qui a été vendu, la seconde ce qui est réellement rentré. Pour un achat, seule
+la part payée apparaît en sortie de caisse ; le reste est une dette
+fournisseur, qui n'appartient pas au journal.
+
+Le fichier s'ouvre dans Excel, LibreOffice ou Google Sheets (point-virgule,
+UTF-8 avec BOM, dates ISO). Il est réservé aux membres autorisés à voir les
+chiffres du commerce, vérifié côté serveur sur l'adhésion en base et non sur un
+cookie.
+
 ## Pages légales et pièces d'identité
 
 Deux pages publiques, en français, créole et anglais :
