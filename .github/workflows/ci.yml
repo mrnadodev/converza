@@ -1,0 +1,39 @@
+# Contrôles automatiques à chaque poussée : types, tests, build de production.
+#
+# Jusqu'ici ces trois commandes ne tournaient que sur le poste du développeur.
+# C'est exactement comme cela qu'une migration a cassé toutes les commandes
+# confirmées en production : personne ne l'avait rejouée avant le déploiement.
+#
+# Le build tourne sans les clés Supabase : l'application démarre en mode démo,
+# ce qui suffit à vérifier qu'elle compile. Aucun secret n'est nécessaire ici,
+# et aucun ne doit être ajouté : ce dépôt n'a pas besoin d'accéder à la base.
+
+name: Contrôles
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verifier:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Installer les dépendances
+        run: npm ci
+
+      - name: Types
+        run: npx tsc --noEmit
+
+      - name: Tests
+        run: npm test
+
+      - name: Build de production
+        run: npm run build

@@ -84,14 +84,77 @@ Les migrations 1 et 2 apportent :
 | `INVITE_SECRET` | Signature des liens d'invitation d'agent. |
 | `NEXT_PUBLIC_SITE_URL` | Domaine public utilisé dans les liens de vitrine et les messages WhatsApp. |
 
+## Sauvegardes
+
+Tout le commerce des marchands tient dans une seule base Postgres. Deux
+protections, qui ne se remplacent pas.
+
+### 1. La sauvegarde continue de Supabase (indispensable)
+
+À activer dans le tableau de bord Supabase (*Database → Backups*). C'est la
+seule protection qui permette de revenir à l'état exact d'avant une fausse
+manipulation SQL, et la seule qui reprenne les comptes d'authentification, les
+politiques de sécurité et les déclencheurs. Aucun script ne peut la remplacer.
+
+### 2. L'export de l'application (complément)
+
+```bash
+npm run backup                    # → backups/<date>/
+npm run backup -- --with-files    # + les images et les pièces jointes
+npm run backup -- --out D:/sauve  # ailleurs qu'en local
+```
+
+Chaque table devient un fichier JSON, avec un `manifeste.json` qui compte les
+lignes et inventorie les fichiers stockés. Utile pour retrouver une ligne
+supprimée, récupérer le catalogue d'un marchand, ou remplir une préproduction.
+
+Le dossier `backups/` est exclu du dépôt : **il contient les données des
+marchands, y compris des pièces d'identité.** Ne le mets pas dans un partage
+public, et supprime les exports dont tu n'as plus besoin.
+
+## Base de préproduction
+
+Aujourd'hui chaque migration part directement en production. Un second projet
+Supabase, gratuit, supprime ce risque :
+
+1. crée un nouveau projet Supabase (par exemple `converza-preprod`) ;
+2. exécute-y `db/schema.sql` puis les huit migrations, dans l'ordre ;
+3. écris ses clés dans `.env.preprod` (exclu du dépôt) ;
+4. remplis-la avec une sauvegarde :
+
+```bash
+node scripts/restore.mjs backups/<date> --env .env.preprod        # simulation
+node scripts/restore.mjs backups/<date> --env .env.preprod --yes  # écriture
+```
+
+Le script **refuse d'écrire dans la base de `.env.local`**, il simule par
+défaut, et il ignore une table qui contient déjà des lignes. Les encaissements
+et les mouvements de stock ne sont pas réécrits : la base les recalcule à partir
+des commandes, les réécrire doublerait les lignes. Les comptes de connexion ne
+sont pas repris — crée-les depuis `/enskri`.
+
+Ensuite, toute nouvelle migration se joue d'abord là, puis en production.
+
+## Contrôles automatiques
+
+`.github/workflows/ci.yml` rejoue à chaque poussée ce qui ne tournait jusqu'ici
+que sur un poste : `tsc`, les tests et le build de production. Aucun secret
+n'est nécessaire — le build passe en mode démo sans clés Supabase.
+
 ## Tests
 
 ```bash
 npm test
 ```
 
-Couvre les helpers critiques : génération de liens `wa.me` (`lib/whatsapp.ts`)
-et calculs d'argent en centimes (`lib/money.ts`).
+Couvre ce qui se paie cher à casser : calculs d'argent en centimes, liens
+`wa.me`, permissions des agents, plan réellement dû à l'échéance, périodes de
+caisse, diagnostic des comptes marchands, ordre de réécriture des sauvegardes, et
+la présence de chaque texte dans les trois langues.
+
+Les migrations SQL, elles, se vérifient sur un Postgres local (PGlite) : chaque
+fichier est rejoué deux fois, et les droits sont contrôlés en se faisant passer
+pour un compte connecté.
 
 ## Structure
 

@@ -14,6 +14,13 @@ next-env.d.ts
 # env
 .env
 .env*.local
+# base de préproduction : ses clés ne sont pas celles de .env.local
+.env.preprod
+.env.preprod.*
+
+# sauvegardes : elles contiennent les données des marchands (et des pièces
+# d'identité). Elles ne doivent jamais partir dans le dépôt.
+/backups/
 
 # misc
 .DS_Store
