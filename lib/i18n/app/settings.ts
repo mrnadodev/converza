@@ -28,6 +28,7 @@ export interface SettingsCopy {
     language: string;
     languageHint: string;
     social: string;
+    showcase: { title: string; label: string; hint: string };
   };
   payments: {
     title: string;
@@ -120,6 +121,11 @@ const fr: SettingsCopy = {
     language: "Langue de l'application",
     languageHint: "Vos écrans et les messages envoyés aux clients suivent cette langue.",
     social: "Réseaux sociaux",
+    showcase: {
+      title: "Page d'accueil de CONVERZA",
+      label: "Présenter ma boutique parmi celles qui vendent",
+      hint: "Votre nom, votre logo et un lien vers votre vitrine, sur la page que voient les futurs commerçants. Rien d'autre que ce que votre vitrine montre déjà.",
+    },
   },
   payments: {
     title: "Comment vos clients vous paient",
@@ -250,6 +256,11 @@ const ht: SettingsCopy = {
     language: "Lang aplikasyon an",
     languageHint: "Ekran ou yo ak mesaj ou voye bay kliyan yo swiv lang sa a.",
     social: "Rezo sosyal",
+    showcase: {
+      title: "Paj akèy CONVERZA",
+      label: "Montre boutik mwen pami sa k ap vann yo",
+      hint: "Non w, logo w ak yon lyen sou vitrin ou, sou paj futur machann yo wè a. Anyen pase sa vitrin ou deja montre.",
+    },
   },
   payments: {
     title: "Kijan kliyan yo peye w",
@@ -380,6 +391,11 @@ const en: SettingsCopy = {
     language: "App language",
     languageHint: "Your screens and the messages sent to customers follow this language.",
     social: "Social networks",
+    showcase: {
+      title: "CONVERZA home page",
+      label: "Feature my shop among those already selling",
+      hint: "Your name, your logo and a link to your storefront, on the page future merchants see. Nothing beyond what your storefront already shows.",
+    },
   },
   payments: {
     title: "How customers pay you",

@@ -64,6 +64,7 @@ const fr: LegalCopy = {
           "Le commerçant est responsable de ses produits, de ses prix, de ses photos et de ses promesses de livraison.",
           "Sont interdits : les produits illégaux, la contrefaçon, les armes, les médicaments vendus sans autorisation, le contenu sexuel, et la publication des données d'une autre personne sans son accord.",
           "CONVERZA peut suspendre une boutique qui enfreint ces règles, ou qui sert manifestement à tromper des acheteurs. Le compte suspendu garde ses données et son propriétaire peut demander une explication.",
+          "CONVERZA peut présenter le nom, le logo et le lien de la vitrine d'une boutique qui vend sur sa page d'accueil. Le commerçant peut le refuser à tout moment dans Paramètres → Boutique ; son choix est appliqué dans les minutes qui suivent.",
         ],
       },
       {
@@ -129,6 +130,7 @@ const fr: LegalCopy = {
           "Est public, parce que c'est le but de la vitrine : le nom de la boutique, sa catégorie, son adresse, ses horaires, ses photos, ses produits, ses prix, ses zones de livraison et son numéro WhatsApp.",
           "N'est jamais public : les comptes MonCash, NatCash, bancaires ou USDT du commerçant, ses prix d'achat et ses marges, sa liste de clients, ses commandes, ses dépenses, et les pièces d'un changement de numéro.",
           "Une boutique suspendue disparaît de la vitrine publique.",
+          "Le nom et le logo d'une boutique qui vend peuvent apparaître sur la page d'accueil de CONVERZA, avec un lien vers sa vitrine, sauf si le commerçant l'a refusé dans ses réglages.",
         ],
       },
       {
@@ -233,6 +235,7 @@ const ht: LegalCopy = {
           "Machann lan responsab pwodwi l, pri l, foto l ak pwomès livrezon l.",
           "Entèdi : pwodwi ilegal, kontrefason, zam, medikaman san otorizasyon, kontni seksyèl, ak pibliye done yon lòt moun san akò l.",
           "CONVERZA ka sispann yon boutik ki kraze règ sa yo, oswa ki klèman ap twonpe achtè. Kont ki sispann kenbe done l epi patwon l ka mande yon eksplikasyon.",
+          "CONVERZA ka montre non, logo ak lyen vitrin yon boutik k ap vann sou paj akèy li. Machann lan ka refize sa nenpòt lè nan Reglaj → Boutik ; chwa l aplike nan kèk minit.",
         ],
       },
       {
@@ -296,6 +299,7 @@ const ht: LegalCopy = {
           "Piblik, paske se sa vitrin lan la pou : non boutik la, kategori l, adrès li, lè l louvri, foto l, pwodwi l, pri l, zòn livrezon l ak nimewo WhatsApp li.",
           "Pa janm piblik : kont MonCash, NatCash, bankè oswa USDT machann lan, pri acha l ak maj li, lis kliyan l, kòmand li, depans li, ak pyès yon chanjman nimewo.",
           "Yon boutik ki sispann disparèt nan vitrin piblik la.",
+          "Non ak logo yon boutik k ap vann ka parèt sou paj akèy CONVERZA, ak yon lyen sou vitrin li, sof si machann lan refize sa nan reglaj li.",
         ],
       },
       {
@@ -400,6 +404,7 @@ const en: LegalCopy = {
           "The merchant is responsible for their products, prices, photos and delivery promises.",
           "Forbidden: illegal goods, counterfeits, weapons, medicines sold without authorisation, sexual content, and publishing another person's data without their consent.",
           "CONVERZA may suspend a shop that breaks these rules, or that plainly exists to mislead buyers. A suspended account keeps its data and its owner may ask for an explanation.",
+          "CONVERZA may feature the name, logo and storefront link of a shop that is selling on its home page. The merchant can refuse this at any time in Settings → Store; the choice takes effect within minutes.",
         ],
       },
       {
@@ -465,6 +470,7 @@ const en: LegalCopy = {
           "Public, because that is what a storefront is for: the shop name, category, address, opening hours, photos, products, prices, delivery zones and WhatsApp number.",
           "Never public: the merchant's MonCash, NatCash, bank or USDT accounts, their purchase costs and margins, their customer list, their orders, their expenses, and the documents of a number-change request.",
           "A suspended shop disappears from the public storefront.",
+          "The name and logo of a shop that is selling may appear on the CONVERZA home page, with a link to its storefront, unless the merchant has refused this in their settings.",
         ],
       },
       {

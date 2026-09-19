@@ -70,6 +70,8 @@ export function SettingsForm({ business, designs }: { business: Business; design
     zelle_qr_url: business.zelle_qr_url ?? null,
     usdt_qr_url: business.usdt_qr_url ?? null,
     delivery_zones: business.delivery_zones ?? [],
+    // Pas de colonne (migration 9 pas encore jouée) : la boutique n'a pas refusé.
+    showcase_opt_out: business.showcase_opt_out === true,
   });
   const [bankItems, setBankItems] = useState<BankAccountItem[]>(() => parseBankAccounts(business.bank_accounts ?? ""));
   const [newZoneName, setNewZoneName] = useState("");
@@ -233,6 +235,21 @@ export function SettingsForm({ business, designs }: { business: Business; design
               <Field label="TikTok">
                 <input value={f.social_tiktok} onChange={(e) => set({ social_tiktok: e.target.value })} className={cls} placeholder="https://tiktok.com/@…" />
               </Field>
+            </Card>
+
+            <Card title={s.store.showcase.title}>
+              <label className="flex cursor-pointer items-start gap-3">
+                <input
+                  type="checkbox"
+                  checked={!f.showcase_opt_out}
+                  onChange={(e) => set({ showcase_opt_out: !e.target.checked })}
+                  className="mt-0.5 h-5 w-5 shrink-0 accent-[#008069]"
+                />
+                <span className="flex flex-col gap-0.5">
+                  <span className="text-[13.5px] font-bold text-ink">{s.store.showcase.label}</span>
+                  <span className="text-[12px] leading-snug text-ink-muted">{s.store.showcase.hint}</span>
+                </span>
+              </label>
             </Card>
           </>
         )}

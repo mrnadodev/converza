@@ -38,6 +38,8 @@ export interface BusinessInput {
   zelle_qr_url?: string | null;
   usdt_qr_url?: string | null;
   delivery_zones: DeliveryZone[];
+  /** Refus d'apparaître sur la page d'accueil de CONVERZA (migration 9). */
+  showcase_opt_out?: boolean;
 }
 
 function parseUsdRate(raw: string | number | null | undefined): number | null {
@@ -146,6 +148,18 @@ export async function updateBusiness(input: BusinessInput) {
       delivery_zones: payload.delivery_zones,
     };
     await sb.from("businesses").update(basePayload).eq("id", member.business_id);
+  }
+
+  if (typeof input.showcase_opt_out === "boolean") {
+    const { error: showcaseError } = await sb
+      .from("businesses")
+      .update({ showcase_opt_out: input.showcase_opt_out })
+      .eq("id", member.business_id);
+    // Colonne absente : la migration 9 n'est pas passée, le choix attendra.
+    if (showcaseError && !/showcase_opt_out|column|schema cache/i.test(showcaseError.message)) {
+      console.warn("showcase_opt_out:", showcaseError.message);
+    }
+    revalidatePath("/accueil");
   }
 
   revalidatePath("/reglaj");

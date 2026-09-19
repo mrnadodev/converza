@@ -536,12 +536,13 @@ export async function getCustomers(): Promise<Customer[]> {
 export async function getShowcaseMerchants(): Promise<ShowcaseMerchant[]> {
   const sb = createPublicClient();
   if (!sb) return [];
-  const { data: businesses, error } = await sb
-    .from("public_businesses")
-    .select("id, name, slug, logo_url, business_type, created_at")
-    .order("created_at", { ascending: true })
-    .limit(200);
-  if (error || !businesses?.length) return [];
+  type Row = { id: string; name: string | null; slug: string | null; logo_url: string | null; business_type: string | null; created_at: string | null; showcase_opt_out?: boolean };
+  const columns = "id, name, slug, logo_url, business_type, created_at";
+  const read = (cols: string) => sb.from("public_businesses").select(cols).order("created_at", { ascending: true }).limit(200);
+  let res = await read(`${columns}, showcase_opt_out`);
+  if (res.error) res = await read(columns);
+  const businesses = (res.data ?? []) as unknown as Row[];
+  if (res.error || !businesses.length) return [];
 
   const { data: products } = await sb
     .from("products")
@@ -563,6 +564,7 @@ export async function getShowcaseMerchants(): Promise<ShowcaseMerchant[]> {
       sector: b.business_type ?? null,
       activeProducts: counts.get(b.id) ?? 0,
       createdAt: b.created_at ?? "",
+      optedOut: b.showcase_opt_out === true,
     })),
   );
 }

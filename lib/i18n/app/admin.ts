@@ -301,6 +301,7 @@ export interface AdminCopy {
       phoneChanges: { label: string; desc: string };
       support: { label: string; desc: string };
       subscription: { label: string; desc: string };
+      showcase: { label: string; desc: string };
     };
     ok: string;
     missing: string;
@@ -724,6 +725,7 @@ const fr: AdminCopy = {
       phoneChanges: { label: "Changements de numéro", desc: "Table, bucket privé et verrou du numéro (migration 4)" },
       support: { label: "Support et suspension", desc: "Suspension de compte et journal d'erreurs (migration 7)" },
       subscription: { label: "Abonnement dû", desc: "La vitrine retombe en Gratis à l'échéance (migration 8)" },
+      showcase: { label: "Page d'accueil", desc: "Un marchand peut refuser d'y être présenté (migration 9)" },
     },
     ok: "En place",
     missing: "Manquant",
@@ -1178,6 +1180,7 @@ const ht: AdminCopy = {
       phoneChanges: { label: "Chanjman nimewo", desc: "Tab, bucket prive ak kadna nimewo a (migrasyon 4)" },
       support: { label: "Sipò ak sispansyon", desc: "Sispansyon kont ak jounal erè (migrasyon 7)" },
       subscription: { label: "Abònman ki dwe", desc: "Vitrin lan tounen Gratis lè dat la pase (migrasyon 8)" },
+      showcase: { label: "Paj akèy", desc: "Yon machann ka refize parèt sou li (migrasyon 9)" },
     },
     ok: "An plas",
     missing: "Manke",
@@ -1632,6 +1635,7 @@ const en: AdminCopy = {
       phoneChanges: { label: "Number changes", desc: "Table, private bucket and number lock (migration 4)" },
       support: { label: "Support and suspension", desc: "Account suspension and error log (migration 7)" },
       subscription: { label: "Plan actually due", desc: "Storefront falls back to Free at expiry (migration 8)" },
+      showcase: { label: "Home page", desc: "A merchant can refuse to be featured (migration 9)" },
     },
     ok: "In place",
     missing: "Missing",

@@ -1754,8 +1754,9 @@ function SecurityTab({ data }: { data: AdminData }) {
     { ok: checks.phoneChanges, label: a.security.checks.phoneChanges.label, desc: a.security.checks.phoneChanges.desc },
     { ok: checks.support, label: a.security.checks.support.label, desc: a.security.checks.support.desc },
     { ok: checks.subscription, label: a.security.checks.subscription.label, desc: a.security.checks.subscription.desc },
+    { ok: checks.showcase, label: a.security.checks.showcase.label, desc: a.security.checks.showcase.desc },
   ];
-  const needsMigration = !checks.extendedStats || !checks.auditTable || !checks.phoneChanges || !checks.support || !checks.subscription;
+  const needsMigration = !checks.extendedStats || !checks.auditTable || !checks.phoneChanges || !checks.support || !checks.subscription || !checks.showcase;
 
   return (
     <div className="flex flex-col gap-4 px-4 pt-5 md:px-6">

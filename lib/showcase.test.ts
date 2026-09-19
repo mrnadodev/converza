@@ -57,3 +57,17 @@ describe("initiales d'une boutique sans logo", () => {
     expect(initialsOf("  ")).toBe("?");
   });
 });
+
+describe("refus d'apparaître sur la page d'accueil", () => {
+  it("ne présente jamais une boutique qui a refusé", () => {
+    const picked = pickShowcase([
+      shop({ slug: "refus", logoUrl: "a.png", activeProducts: 50, optedOut: true }),
+      shop({ slug: "accord" }),
+    ]);
+    expect(picked.map((m) => m.slug)).toEqual(["accord"]);
+  });
+
+  it("considère qu'une boutique accepte tant qu'elle n'a rien dit", () => {
+    expect(pickShowcase([shop({ optedOut: undefined })])).toHaveLength(1);
+  });
+});

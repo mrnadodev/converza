@@ -386,6 +386,7 @@ export async function getAdminData() {
     phoneChanges: !phoneRes.error,
     support: !errorsRes.error,
     subscription: dbVersion >= 8,
+    showcase: dbVersion >= 9,
   };
 
   return {

@@ -47,6 +47,7 @@ fichier** dans l'éditeur SQL.
 | 6 | `db/migrate-2026-6-gestion.sql` | Prix d'achat, encaissements, dépenses, fournisseurs, livraison |
 | 7 | `db/migrate-2026-7-support.sql` | Suspension de compte, journal des erreurs techniques |
 | 8 | `db/migrate-2026-8-abonnement.sql` | La vitrine retombe en Gratis à l'échéance (3 jours de tolérance) |
+| 9 | `db/migrate-2026-9-vitrine-accueil.sql` | Un marchand peut refuser d'être présenté sur la page d'accueil |
 
 La console `/admin` → **Sécurité** indique en permanence quelles migrations
 manquent sur la base connectée.

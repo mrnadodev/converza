@@ -20,11 +20,13 @@ export interface ShowcaseMerchant {
 export interface ShowcaseCandidate extends ShowcaseMerchant {
   activeProducts: number;
   createdAt: string;
+  /** Le commerçant a refusé d'apparaître sur la page d'accueil (Réglages). */
+  optedOut?: boolean;
 }
 
 export function pickShowcase(candidates: ShowcaseCandidate[], limit = SHOWCASE_LIMIT): ShowcaseMerchant[] {
   return candidates
-    .filter((c) => c.activeProducts > 0 && c.name.trim() && c.slug.trim())
+    .filter((c) => !c.optedOut && c.activeProducts > 0 && c.name.trim() && c.slug.trim())
     .sort((a, b) => {
       const logo = Number(Boolean(b.logoUrl)) - Number(Boolean(a.logoUrl));
       if (logo !== 0) return logo;
