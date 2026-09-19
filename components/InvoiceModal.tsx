@@ -33,7 +33,7 @@ export interface InvoiceModalProps {
   zelleQrUrl?: string | null;
   usdtQrUrl?: string | null;
   initialPayMethod?: PayMethod;
-  type: "devis" | "facture";
+  type: "invoice" | "receipt";
   onClose: () => void;
 }
 
@@ -100,14 +100,16 @@ export function InvoiceModal({
   onClose,
 }: InvoiceModalProps) {
   const v = useDict(INVOICE_COPY);
-  const [docType, setDocType] = useState<"devis" | "facture">(type);
+  const [docType, setDocType] = useState<"invoice" | "receipt">(type);
   const [payMethod, setPayMethod] = useState<PayMethod>(initialPayMethod ?? card.pay_method ?? "moncash");
   const [displayCurrency, setDisplayCurrency] = useState<"HTG" | "USD" | "BOTH">("HTG");
   const [printMode, setPrintMode] = useState<"thermal_80mm" | "thermal_58mm" | "letter">("thermal_80mm");
   const [isGenerating, setIsGenerating] = useState(false);
 
-  const isInvoice = docType === "devis";
+  // « invoice » = facture à payer, « receipt » = reçu après paiement.
+  const isInvoice = docType === "invoice";
   const isThermal = printMode.startsWith("thermal");
+  const is58 = printMode === "thermal_58mm";
   // Sans taux saisi par le marchand, on ne convertit rien : un taux inventé
   // afficherait un prix en dollars que le client ne paiera jamais.
   const rate = usdExchangeRate && usdExchangeRate > 0 ? usdExchangeRate : null;
@@ -120,6 +122,10 @@ export function InvoiceModal({
   const lines = invoiceLines(card, deliveryFeeCents);
   const subtotalCents = lines.reduce((acc, it) => acc + it.totalCents, 0) || Math.max(0, card.totalCents - deliveryFeeCents);
   const securityCode = getOrderSecurityCode(card.ref, card.securityCode);
+  const owedCents = Math.max(card.owedCents ?? 0, 0);
+  const paidCents = Math.max(card.totalCents - owedCents, 0);
+  const fullyPaid = owedCents === 0;
+  const partiallyPaid = !fullyPaid && paidCents > 0;
   const payLabel = v.payMethods[payMethod] ?? v.payMethods.lot;
 
   const money = (cents: number) => {
@@ -199,16 +205,16 @@ export function InvoiceModal({
       <div className="flex w-full max-w-xl flex-col overflow-hidden rounded-3xl bg-white p-3.5 shadow-2xl sm:p-5">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line pb-3">
           <div className="flex items-center gap-1 rounded-2xl bg-gray-100 p-1">
-            {(["devis", "facture"] as const).map((key) => (
+            {(["invoice", "receipt"] as const).map((key) => (
               <button
                 key={key}
                 onClick={() => setDocType(key)}
                 aria-pressed={docType === key}
                 className={`cursor-pointer rounded-xl px-3 py-1.5 text-xs font-bold transition-colors ${
-                  docType === key ? (key === "devis" ? "bg-brand text-white" : "bg-brand-green text-white") : "text-ink-muted"
+                  docType === key ? (key === "invoice" ? "bg-brand text-white" : "bg-brand-green text-white") : "text-ink-muted"
                 }`}
               >
-                {key === "devis" ? v.tabs.invoice : v.tabs.receipt}
+                {key === "invoice" ? v.tabs.invoice : v.tabs.receipt}
               </button>
             ))}
           </div>
@@ -313,7 +319,7 @@ export function InvoiceModal({
             id="printable-invoice"
             className={`relative flex flex-col overflow-hidden rounded-2xl border border-line bg-white ${
               printMode === "thermal_58mm"
-                ? "mx-auto max-w-[260px] gap-3 p-2.5 text-[10.5px]"
+                ? "mx-auto max-w-[240px] gap-2 p-2 text-[9px]"
                 : printMode === "thermal_80mm"
                 ? "mx-auto max-w-[340px] gap-4 p-3.5 text-xs"
                 : "w-full gap-5 p-5"
@@ -323,7 +329,7 @@ export function InvoiceModal({
               <span className="whitespace-nowrap rotate-[-22deg] text-4xl font-black uppercase tracking-widest text-ink sm:text-7xl">{businessName}</span>
             </div>
 
-            <div className={`relative z-10 flex flex-col ${isThermal ? "gap-3" : "gap-5"}`}>
+            <div className={`relative z-10 flex flex-col ${is58 ? "gap-2" : isThermal ? "gap-3" : "gap-5"}`}>
               <div className="flex items-start justify-between gap-2">
                 <div className="flex min-w-0 items-center gap-2.5">
                   <div
@@ -342,9 +348,9 @@ export function InvoiceModal({
                     <span className={`truncate font-extrabold tracking-tight text-brand ${printMode === "thermal_58mm" ? "text-xs" : printMode === "thermal_80mm" ? "text-sm" : "text-xl"}`}>
                       {businessName}
                     </span>
-                    {businessAddress && <span className={`leading-tight text-ink-muted ${isThermal ? "text-[10px]" : "text-[12px]"}`}>{businessAddress}</span>}
+                    {businessAddress && <span className={`leading-tight text-ink-muted ${is58 ? "text-[8.5px]" : isThermal ? "text-[10px]" : "text-[12px]"}`}>{businessAddress}</span>}
                     {businessPhone && (
-                      <span className={`leading-tight text-ink-muted ${isThermal ? "text-[10px]" : "text-[12px]"}`}>
+                      <span className={`leading-tight text-ink-muted ${is58 ? "text-[8.5px]" : isThermal ? "text-[10px]" : "text-[12px]"}`}>
                         {v.doc.phone} {businessPhone}
                       </span>
                     )}
@@ -354,41 +360,43 @@ export function InvoiceModal({
                 <div className="flex shrink-0 flex-col items-end gap-0.5">
                   <span
                     className={`rounded-lg font-extrabold uppercase tracking-wider ${isInvoice ? "bg-amber-100 text-amber-900" : "bg-[#E7F7F1] text-brand"} ${
-                      isThermal ? "px-2 py-0.5 text-[9.5px]" : "px-3 py-1 text-xs"
+                      is58 ? "px-1.5 py-0.5 text-[8px]" : isThermal ? "px-2 py-0.5 text-[9.5px]" : "px-3 py-1 text-xs"
                     }`}
                   >
                     {isInvoice ? v.doc.invoiceBadge : v.doc.receiptBadge}
                   </span>
-                  <span className={`font-bold text-ink ${isThermal ? "text-[10.5px]" : "text-xs"}`}>
+                  <span className={`font-bold text-ink ${is58 ? "text-[9px]" : isThermal ? "text-[10.5px]" : "text-xs"}`}>
                     {v.doc.number} #{card.ref}
                   </span>
-                  <span className={`text-ink-faint ${isThermal ? "text-[9.5px]" : "text-[11px]"}`}>{dateStr}</span>
+                  <span className={`text-ink-faint ${is58 ? "text-[8px]" : isThermal ? "text-[9.5px]" : "text-[11px]"}`}>{dateStr}</span>
                 </div>
               </div>
 
               <div className="h-px bg-line" />
 
-              <div className={`flex justify-between gap-2 rounded-xl bg-[#F7F8F9] ${isThermal ? "p-2.5 text-[10.5px]" : "p-3.5 text-xs"}`}>
+              <div className={`flex justify-between gap-2 rounded-xl bg-[#F7F8F9] ${is58 ? "p-2 text-[9px]" : isThermal ? "p-2.5 text-[10.5px]" : "p-3.5 text-xs"}`}>
                 <div className="flex min-w-0 flex-col">
                   <span className="text-[9.5px] font-bold uppercase tracking-wider text-ink-faint">{v.doc.customer}</span>
-                  <span className={`truncate font-extrabold text-ink ${isThermal ? "text-xs" : "text-sm"}`}>{card.customerName}</span>
+                  <span className={`truncate font-extrabold text-ink ${is58 ? "text-[9.5px]" : isThermal ? "text-xs" : "text-sm"}`}>{card.customerName}</span>
                   <span className="text-ink-muted">{card.phone_e164}</span>
                 </div>
                 <div className="flex shrink-0 flex-col items-end justify-center">
                   <span className="text-[9.5px] font-bold uppercase tracking-wider text-ink-faint">{v.doc.paymentStatus}</span>
-                  <span className={`font-extrabold ${isInvoice ? "text-amber-800" : "text-brand"}`}>{isInvoice ? v.doc.unpaid : v.doc.paid}</span>
+                  <span className={`font-extrabold ${fullyPaid ? "text-brand" : partiallyPaid ? "text-owed-text" : "text-amber-800"}`}>
+                    {fullyPaid ? v.doc.paid : partiallyPaid ? v.doc.partial : v.doc.unpaid}
+                  </span>
                   {showRate && rate && <span className="text-[9.5px] font-semibold text-ink-faint">{v.doc.rate(String(rate))}</span>}
                 </div>
               </div>
 
-              <div className={`flex items-center justify-between gap-2 rounded-xl border border-emerald-200/80 bg-emerald-50/90 ${isThermal ? "p-2 text-[10.5px]" : "p-3 text-xs"}`}>
+              <div className={`flex items-center justify-between gap-2 rounded-xl border border-emerald-200/80 bg-emerald-50/90 ${is58 ? "p-1.5 text-[9px]" : isThermal ? "p-2 text-[10.5px]" : "p-3 text-xs"}`}>
                 <div className="flex min-w-0 flex-col">
                   <span className="text-[10.5px] font-extrabold text-emerald-950">{v.doc.securityCode}</span>
                   <span className="text-[9.5px] font-medium leading-tight text-emerald-800">{v.doc.securityHint}</span>
                 </div>
                 <span
                   className={`shrink-0 rounded-lg border border-emerald-300 bg-white font-mono font-black tracking-widest text-emerald-950 ${
-                    isThermal ? "px-2 py-0.5 text-xs" : "px-3 py-1 text-base"
+                    is58 ? "px-1.5 py-0.5 text-[10px]" : isThermal ? "px-2 py-0.5 text-xs" : "px-3 py-1 text-base"
                   }`}
                 >
                   {securityCode}
@@ -396,25 +404,29 @@ export function InvoiceModal({
               </div>
 
               <div className="flex flex-col overflow-hidden rounded-xl border border-line">
-                <div className={`grid grid-cols-12 bg-[#E7F7F1] font-bold uppercase tracking-wider text-brand ${isThermal ? "px-2 py-1.5 text-[9.5px]" : "px-3.5 py-2 text-[11px]"}`}>
-                  <span className="col-span-5 truncate">{v.doc.product}</span>
+                <div
+                  className={`grid grid-cols-12 bg-[#E7F7F1] font-bold uppercase text-brand ${
+                    is58 ? "px-1.5 py-1 text-[8px] tracking-normal" : isThermal ? "px-2 py-1.5 text-[9.5px] tracking-normal" : "px-3.5 py-2 text-[11px] tracking-wider"
+                  }`}
+                >
+                  <span className={is58 ? "col-span-7 truncate" : "col-span-5 truncate"}>{v.doc.product}</span>
                   <span className="col-span-2 text-center">{v.doc.qty}</span>
-                  <span className="col-span-2 truncate text-right">{v.doc.unitPrice}</span>
+                  {!is58 && <span className="col-span-2 truncate text-right">{v.doc.unitPrice}</span>}
                   <span className="col-span-3 text-right">{v.doc.total}</span>
                 </div>
                 <div className="divide-y divide-line bg-white">
                   {lines.map((it, idx) => (
-                    <div key={idx} className={`grid grid-cols-12 items-center ${isThermal ? "px-2 py-1.5 text-[10.5px]" : "px-3.5 py-2.5 text-xs"}`}>
-                      <span className="col-span-5 break-words font-semibold leading-tight text-ink">{it.name}</span>
+                    <div key={idx} className={`grid grid-cols-12 items-center ${is58 ? "px-1.5 py-1 text-[9px]" : isThermal ? "px-2 py-1.5 text-[10.5px]" : "px-3.5 py-2.5 text-xs"}`}>
+                      <span className={`break-words font-semibold leading-tight text-ink ${is58 ? "col-span-7" : "col-span-5"}`}>{it.name}</span>
                       <span className="col-span-2 text-center font-bold text-ink-soft">×{it.qty}</span>
-                      <span className="col-span-2 text-right text-[10px] text-ink-muted sm:text-xs">{money(it.unitPriceCents)}</span>
-                      <span className="col-span-3 text-right font-extrabold text-ink">{money(it.totalCents)}</span>
+                      {!is58 && <span className="col-span-2 text-right text-[10px] text-ink-muted sm:text-xs">{money(it.unitPriceCents)}</span>}
+                      <span className="col-span-3 whitespace-nowrap text-right font-extrabold text-ink">{money(it.totalCents)}</span>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div className={`flex w-full flex-col gap-1 self-end pt-1 ${isThermal ? "max-w-[200px] text-[10.5px]" : "max-w-[260px] text-xs"}`}>
+              <div className={`flex w-full flex-col gap-1 self-end pt-1 ${is58 ? "max-w-[170px] text-[9px]" : isThermal ? "max-w-[200px] text-[10.5px]" : "max-w-[260px] text-xs"}`}>
                 <div className="flex justify-between font-medium text-ink-muted">
                   <span>{v.doc.subtotal}</span>
                   <span className="font-bold text-ink">{money(subtotalCents)}</span>
@@ -428,7 +440,7 @@ export function InvoiceModal({
               </div>
 
               {isInvoice ? (
-                <div className={`flex flex-col gap-1.5 rounded-xl border border-line bg-[#F7F8F9] ${isThermal ? "p-2 text-[10px]" : "p-3.5 text-xs"}`}>
+                <div className={`flex flex-col gap-1.5 rounded-xl border border-line bg-[#F7F8F9] ${is58 ? "p-1.5 text-[8.5px]" : isThermal ? "p-2 text-[10px]" : "p-3.5 text-xs"}`}>
                   <span className="text-[9.5px] font-extrabold uppercase tracking-wider text-ink-muted">{v.doc.paymentMeans(payLabel)}</span>
 
                   {/* On n'affiche un moyen que si le marchand l'a réellement
@@ -490,20 +502,29 @@ export function InvoiceModal({
                 <div className="rounded-lg bg-[#E7F7F1] px-3 py-1.5 text-[10.5px] font-bold text-brand">{v.doc.receiptFor(payLabel)}</div>
               )}
 
-              <div className={`relative flex items-center justify-between gap-2 border-t border-line ${isThermal ? "min-h-[60px] pt-2" : "min-h-[90px] pt-3"}`}>
-                <span className={`shrink-0 font-extrabold uppercase text-ink-muted ${isThermal ? "text-[10px]" : "text-xs"}`}>
-                  {isInvoice ? v.doc.totalDue : v.doc.totalPaid}
+              <div className={`relative flex items-center justify-between gap-2 border-t border-line ${is58 ? "min-h-[46px] pt-1.5" : isThermal ? "min-h-[60px] pt-2" : "min-h-[90px] pt-3"}`}>
+                <span className={`shrink-0 font-extrabold uppercase text-ink-muted ${is58 ? "text-[8.5px]" : isThermal ? "text-[10px]" : "text-xs"}`}>
+                  {isInvoice ? v.doc.totalDue : partiallyPaid ? v.doc.deposit : v.doc.totalPaid}
                 </span>
 
-                {!isInvoice && <PaidStamp businessName={businessName} slogan={businessSlogan} label={v.doc.stamp} isThermal={isThermal} />}
+                {!isInvoice && fullyPaid && (
+                  <PaidStamp businessName={businessName} slogan={businessSlogan} label={v.doc.stamp} isThermal={isThermal} compact={is58} />
+                )}
 
-                <span
-                  className={`shrink-0 whitespace-nowrap font-black tracking-tight text-[#0B6638] ${
-                    printMode === "thermal_58mm" ? "text-base sm:text-lg" : printMode === "thermal_80mm" ? "text-lg sm:text-xl" : "text-2xl sm:text-3xl"
-                  }`}
-                >
-                  {money(card.totalCents)}
-                </span>
+                <div className="flex shrink-0 flex-col items-end">
+                  <span
+                    className={`whitespace-nowrap font-black tracking-tight text-[#0B6638] ${
+                      printMode === "thermal_58mm" ? "text-base sm:text-lg" : printMode === "thermal_80mm" ? "text-lg sm:text-xl" : "text-2xl sm:text-3xl"
+                    }`}
+                  >
+                    {money(isInvoice ? card.totalCents : partiallyPaid ? paidCents : card.totalCents)}
+                  </span>
+                  {owedCents > 0 && (
+                    <span className={`whitespace-nowrap font-extrabold text-owed-text ${is58 ? "text-[9px]" : isThermal ? "text-[10.5px]" : "text-sm"}`}>
+                      {v.doc.remaining} : {money(owedCents)}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -567,15 +588,18 @@ function PaidStamp({
   slogan,
   label,
   isThermal,
+  compact,
 }: {
   businessName: string;
   slogan?: string | null;
   label: string;
   isThermal: boolean;
+  /** Rouleau 58 mm : le tampon doit laisser la place au montant. */
+  compact?: boolean;
 }) {
   const nameUpper = businessName.toUpperCase();
   const sloganUpper = (slogan ?? "").toUpperCase();
-  const size = isThermal ? 80 : 120;
+  const size = compact ? 62 : isThermal ? 80 : 120;
 
   return (
     <div className="pointer-events-none z-20 my-0.5 flex shrink-0 select-none items-center justify-center opacity-95">

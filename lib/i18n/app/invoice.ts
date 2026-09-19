@@ -29,6 +29,9 @@ export interface InvoiceCopy {
     paymentStatus: string;
     unpaid: string;
     paid: string;
+    partial: string;
+    deposit: string;
+    remaining: string;
     rate: (rate: string) => string;
     securityCode: string;
     securityHint: string;
@@ -93,6 +96,9 @@ const fr: InvoiceCopy = {
     paymentStatus: "Statut du paiement",
     unpaid: "En attente de paiement",
     paid: "Payé",
+    partial: "Paiement partiel",
+    deposit: "Acompte reçu",
+    remaining: "Reste à payer",
     rate: (rate) => `Taux : 1 USD = ${rate} HTG`,
     securityCode: "Code de retrait / livraison",
     securityHint: "À donner au livreur ou en boutique pour recevoir la commande.",
@@ -146,6 +152,9 @@ const ht: InvoiceCopy = {
     paymentStatus: "Estati pèman",
     unpaid: "Poko peye",
     paid: "Peye",
+    partial: "Peman pasyèl",
+    deposit: "Avans resevwa",
+    remaining: "Rete pou peye",
     rate: (rate) => `To : 1 USD = ${rate} HTG`,
     securityCode: "Kòd ranmase / livrezon",
     securityHint: "Bay livrè a oswa moun nan boutik la li pou w resevwa kòmand lan.",
@@ -199,6 +208,9 @@ const en: InvoiceCopy = {
     paymentStatus: "Payment status",
     unpaid: "Awaiting payment",
     paid: "Paid",
+    partial: "Partial payment",
+    deposit: "Deposit received",
+    remaining: "Left to pay",
     rate: (rate) => `Rate: 1 USD = ${rate} HTG`,
     securityCode: "Pickup / delivery code",
     securityHint: "Give it to the courier or at the store to receive the order.",

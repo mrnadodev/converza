@@ -191,7 +191,7 @@ export function CustomerListClient({
       {invoiceCard && (
         <InvoiceModal
           card={invoiceCard}
-          type="devis"
+          type="invoice"
           businessName={business.name}
           businessLogoUrl={business.logo_url}
           businessPhone={business.phone_e164 ?? undefined}

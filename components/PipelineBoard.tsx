@@ -95,7 +95,7 @@ export function PipelineBoard(props: PipelineBoardProps) {
   const m = MESSAGE_COPY[language] ?? MESSAGE_COPY.fr;
 
   const [cards, setCards] = useState<PipelineCard[]>(initial);
-  const [activeModal, setActiveModal] = useState<{ card: PipelineCard; type: "devis" | "facture"; payMethod?: PayMethod } | null>(null);
+  const [activeModal, setActiveModal] = useState<{ card: PipelineCard; type: "invoice" | "receipt"; payMethod?: PayMethod } | null>(null);
   const [promoCard, setPromoCard] = useState<PipelineCard | null>(null);
   const [owedOnly, setOwedOnly] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -385,7 +385,7 @@ function OrderCard({
   onAdvance: () => void;
   onSettle: () => void;
   onClose: () => void;
-  onInvoice: (type: "devis" | "facture", payMethod?: PayMethod) => void;
+  onInvoice: (type: "invoice" | "receipt", payMethod?: PayMethod) => void;
   onPromo: () => void;
 }) {
   const { language } = useLanguage();
@@ -506,7 +506,7 @@ function OrderCard({
                 <button
                   key={method.id}
                   type="button"
-                  onClick={() => onInvoice("devis", method.id)}
+                  onClick={() => onInvoice("invoice", method.id)}
                   className="flex h-7 cursor-pointer items-center justify-center truncate rounded-lg border border-line bg-white px-1 text-[10px] font-bold text-ink active:scale-95"
                 >
                   {method.label}
@@ -518,10 +518,10 @@ function OrderCard({
       )}
 
       {(column === "demand_acha" || column === "pou_konfime") && (
-        <SecondaryButton onClick={() => onInvoice("devis")} label={o.card.invoice} icon={<DocIcon />} />
+        <SecondaryButton onClick={() => onInvoice("invoice")} label={o.card.invoice} icon={<DocIcon />} />
       )}
 
-      {isPaymentStage && <SecondaryButton onClick={() => onInvoice("facture")} label={o.card.receipt} icon={<DocIcon />} />}
+      {isPaymentStage && <SecondaryButton onClick={() => onInvoice("receipt")} label={o.card.receipt} icon={<DocIcon />} />}
 
       {column === "swivi" && (
         <div className="flex flex-col gap-1.5 border-t border-line/70 pt-2">
@@ -535,7 +535,7 @@ function OrderCard({
               href={waMeLink(card.phone_e164, buildSatisfactionMessage(card.customerName, props.businessName, m))}
               label={o.card.satisfaction}
             />
-            <SecondaryButton onClick={() => onInvoice("facture")} label={o.card.receipt} />
+            <SecondaryButton onClick={() => onInvoice("receipt")} label={o.card.receipt} />
           </div>
           <button
             type="button"
