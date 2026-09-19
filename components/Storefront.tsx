@@ -107,6 +107,8 @@ export function Storefront({
   const [customerNote, setCustomerNote] = useState("");
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
+  const [sending, setSending] = useState(false);
+  const [sendFailed, setSendFailed] = useState(false);
 
   useEffect(() => {
     const p = new URLSearchParams(window.location.search);
@@ -136,12 +138,25 @@ export function Storefront({
   const message = [baseMessage, ...extra].join("\n");
   const orderHref = waMeLink(business.phone_e164 ?? "", message);
 
-  const handleSendOrder = async () => {
+  const handleSendOrder = async (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (count === 0) return;
+    e.preventDefault();
+    if (sending) return;
+    setSending(true);
+    setSendFailed(false);
+
+    // L'onglet est ouvert tout de suite, pendant le clic : ouvert après
+    // l'attente, le navigateur du téléphone le bloquerait.
+    const tab = window.open("", "_blank");
+    const goTo = (href: string) => {
+      if (tab && !tab.closed) tab.location.href = href;
+      else window.location.href = href;
+    };
+
     try {
       // On n'envoie que des identifiants et des quantités : le serveur relit
       // les prix et les frais de livraison en base.
-      await createStorefrontOrderAction({
+      const result = await createStorefrontOrderAction({
         businessId: business.id,
         items: Object.entries(cart).map(([productId, qty]) => ({ productId, qty })),
         tableNum,
@@ -151,8 +166,20 @@ export function Storefront({
         customerPhone: customerPhone.trim() || null,
         source,
       });
-    } catch (err) {
-      console.error("Order record error:", err);
+      if (result?.ok) {
+        goTo(waMeLink(business.phone_e164 ?? "", [message, c.message.ref(result.ref)].join("\n")));
+        return;
+      }
+      // Échec d'enregistrement : on ne perd pas la vente pour autant, le
+      // client garde le message WhatsApp et le marchand voit la commande
+      // arriver dans la conversation.
+      if (tab && !tab.closed) tab.close();
+      setSendFailed(true);
+      setSending(false);
+    } catch {
+      if (tab && !tab.closed) tab.close();
+      setSendFailed(true);
+      setSending(false);
     }
   };
 
@@ -568,11 +595,26 @@ export function Storefront({
               onClick={handleSendOrder}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-3 flex h-[54px] items-center justify-center gap-2 rounded-2xl bg-brand-green text-white shadow-lg active:scale-[0.99]"
+              aria-disabled={sending}
+              className={`mt-3 flex h-[54px] items-center justify-center gap-2 rounded-2xl bg-brand-green text-white shadow-lg active:scale-[0.99] ${sending ? "opacity-70" : ""}`}
             >
               <WaIcon />
-              <span className="text-[15px] font-extrabold">{c.confirmSend}</span>
+              <span className="text-[15px] font-extrabold">{sending ? c.sending : c.confirmSend}</span>
             </a>
+
+            {sendFailed && (
+              <div className="mt-3 rounded-2xl bg-[#FCE4E4] p-3 text-[12.5px] text-[#C0392B]">
+                <p className="font-semibold">{c.orderFailed}</p>
+                <a
+                  href={orderHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-2 inline-flex h-9 items-center rounded-xl bg-brand-green px-3 font-extrabold text-white"
+                >
+                  {c.sendAnyway}
+                </a>
+              </div>
+            )}
           </div>
         </div>
       )}

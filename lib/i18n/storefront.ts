@@ -51,6 +51,9 @@ export interface StorefrontCopy {
   free: string;
   total: string;
   confirmSend: string;
+  sending: string;
+  orderFailed: string;
+  sendAnyway: string;
   scheduleVisit: string;
   previewBanner: string;
   ctaBook: string;
@@ -72,6 +75,7 @@ export interface StorefrontCopy {
     table: (n: string) => string;
     source: (s: string) => string;
     note: string;
+    ref: (ref: string) => string;
   };
 }
 
@@ -120,6 +124,9 @@ const fr: StorefrontCopy = {
   free: "gratuit",
   total: "Total à payer",
   confirmSend: "Envoyer la commande sur WhatsApp",
+  sending: "Enregistrement…",
+  orderFailed: "La commande n'a pas pu être enregistrée. Envoyez-la quand même sur WhatsApp : le marchand la verra.",
+  sendAnyway: "Envoyer quand même",
   scheduleVisit: "Demander une visite",
   previewBanner: "Aperçu de la mise en page — rien n'est enregistré",
   ctaBook: "Réserver",
@@ -152,6 +159,7 @@ const fr: StorefrontCopy = {
     table: (n) => `Table ${n}, sur place`,
     source: (s) => `Source : ${s}`,
     note: "Remarque",
+    ref: (r) => `Référence : ${r}`,
   },
 };
 
@@ -200,6 +208,9 @@ const ht: StorefrontCopy = {
   free: "gratis",
   total: "Total pou peye",
   confirmSend: "Voye kòmand lan sou WhatsApp",
+  sending: "N ap anrejistre…",
+  orderFailed: "Nou pa rive anrejistre kòmand lan. Voye l kanmenm sou WhatsApp : machann lan ap wè l.",
+  sendAnyway: "Voye l kanmenm",
   scheduleVisit: "Mande yon vizit",
   previewBanner: "Apèsi mizanpaj la — anyen pa anrejistre",
   ctaBook: "Rezève",
@@ -232,6 +243,7 @@ const ht: StorefrontCopy = {
     table: (n) => `Tab ${n}, sou plas`,
     source: (s) => `Sòs: ${s}`,
     note: "Nòt",
+    ref: (r) => `Referans : ${r}`,
   },
 };
 
@@ -280,6 +292,9 @@ const en: StorefrontCopy = {
   free: "free",
   total: "Total to pay",
   confirmSend: "Send the order on WhatsApp",
+  sending: "Saving…",
+  orderFailed: "The order could not be saved. Send it on WhatsApp anyway — the merchant will see it.",
+  sendAnyway: "Send anyway",
   scheduleVisit: "Request a visit",
   previewBanner: "Layout preview — nothing is saved",
   ctaBook: "Book",
@@ -312,6 +327,7 @@ const en: StorefrontCopy = {
     table: (n) => `Table ${n}, dine-in`,
     source: (s) => `Source: ${s}`,
     note: "Note",
+    ref: (r) => `Reference: ${r}`,
   },
 };
 
