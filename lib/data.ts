@@ -5,6 +5,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { DEBT_STATUSES } from "@/lib/dunning";
+import { pickShowcase, type ShowcaseMerchant } from "@/lib/showcase";
 import {
   demoBusiness,
   demoCustomers,
@@ -523,6 +524,46 @@ export async function getCustomers(): Promise<Customer[]> {
   if (!bid) return [];
   const { data } = await sb.from("customers").select("*").eq("business_id", bid).order("full_name");
   return (data ?? []) as Customer[];
+}
+
+// --- Boutiques présentées sur la page d'accueil ---
+/**
+ * Lit les boutiques publiques et leur nombre de produits en ligne, avec la
+ * même session anonyme qu'un visiteur : la page d'accueil ne montre rien que
+ * les vitrines ne montrent déjà. Le choix se fait dans lib/showcase.ts.
+ */
+export async function getShowcaseMerchants(): Promise<ShowcaseMerchant[]> {
+  if (!hasSupabase()) return [];
+  const sb = createClient();
+  const { data: businesses, error } = await sb
+    .from("public_businesses")
+    .select("id, name, slug, logo_url, business_type, created_at")
+    .order("created_at", { ascending: true })
+    .limit(200);
+  if (error || !businesses?.length) return [];
+
+  const { data: products } = await sb
+    .from("products")
+    .select("business_id")
+    .eq("is_active", true)
+    .in(
+      "business_id",
+      businesses.map((b) => b.id),
+    )
+    .limit(5000);
+  const counts = new Map<string, number>();
+  for (const row of products ?? []) counts.set(row.business_id, (counts.get(row.business_id) ?? 0) + 1);
+
+  return pickShowcase(
+    businesses.map((b) => ({
+      name: b.name ?? "",
+      slug: b.slug ?? "",
+      logoUrl: b.logo_url ?? null,
+      sector: b.business_type ?? null,
+      activeProducts: counts.get(b.id) ?? 0,
+      createdAt: b.created_at ?? "",
+    })),
+  );
 }
 
 // --- Vitrine publique (#0) ---

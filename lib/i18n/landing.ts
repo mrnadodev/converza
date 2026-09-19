@@ -65,7 +65,7 @@ export interface LandingCopy {
     delivery: string;
     send: string;
   };
-  proof: { label: string; slot: string };
+  proof: { label: string };
   how: {
     eyebrow: string;
     title: string;
@@ -196,7 +196,7 @@ const fr: LandingCopy = {
     delivery: "Livraison Delmas",
     send: "Envoyer",
   },
-  proof: { label: "Ils vendent déjà avec CONVERZA", slot: "[LOGO]" },
+  proof: { label: "Ils vendent déjà avec CONVERZA" },
   how: {
     eyebrow: "Comment ça marche",
     title: "Trois étapes, et vous vendez",
@@ -405,7 +405,7 @@ const ht: LandingCopy = {
     delivery: "Livrezon Delmas",
     send: "Voye",
   },
-  proof: { label: "Yo deja ap vann ak CONVERZA", slot: "[LOGO]" },
+  proof: { label: "Yo deja ap vann ak CONVERZA" },
   how: {
     eyebrow: "Kijan li mache",
     title: "Twa etap, epi w ap vann",
@@ -614,7 +614,7 @@ const en: LandingCopy = {
     delivery: "Delmas delivery",
     send: "Send",
   },
-  proof: { label: "Already selling with CONVERZA", slot: "[LOGO]" },
+  proof: { label: "Already selling with CONVERZA" },
   how: {
     eyebrow: "How it works",
     title: "Three steps, and you are selling",

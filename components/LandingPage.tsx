@@ -6,6 +6,8 @@ import { useLanguage } from "@/components/LanguageContext";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { landingCopy } from "@/lib/i18n/landing";
 import { applyOverrides, type LandingOverrides } from "@/lib/landing-overrides";
+import { initialsOf, type ShowcaseMerchant } from "@/lib/showcase";
+import { paletteFor } from "@/lib/storefront-designs";
 import { useScrollReveal, useScrolledPast } from "@/components/useScrollReveal";
 
 // Page d'accueil publique.
@@ -19,7 +21,16 @@ const INK = "#06231C";
 const GREEN = "#008069";
 const ACTION = "#25D366";
 
-export function LandingPage({ pricing, overrides }: { pricing?: Record<string, number>; overrides?: LandingOverrides }) {
+export function LandingPage({
+  pricing,
+  overrides,
+  showcase = [],
+}: {
+  pricing?: Record<string, number>;
+  overrides?: LandingOverrides;
+  /** Vraies boutiques qui vendent, choisies par lib/showcase.ts (quatre au plus). */
+  showcase?: ShowcaseMerchant[];
+}) {
   const { language } = useLanguage();
   // Textes du code, corrigés par ce que le super-admin a modifié dans la console.
   const c = applyOverrides(landingCopy(language), overrides?.[language]);
@@ -193,18 +204,36 @@ export function LandingPage({ pricing, overrides }: { pricing?: Record<string, n
           </div>
         </div>
 
-        {/* Preuve */}
-        <div data-reveal="fade" className="relative mx-auto flex w-full max-w-[1240px] flex-col gap-5 px-5 pb-14 sm:px-8 lg:flex-row lg:items-center lg:gap-10 lg:px-12">
-          <span className="whitespace-nowrap text-[13.5px] font-semibold text-[#7D9A92]">{c.proof.label}</span>
-          <div className="grid flex-1 grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-            {[0, 1, 2, 3, 4].map((i) => (
-              <div key={i} className="flex h-[52px] items-center justify-center rounded-[9px] border border-dashed"
-                style={{ borderColor: "rgba(255,255,255,0.18)" }}>
-                <span className="text-[11.5px] text-[#5E7E75]">{c.proof.slot} {i + 1}</span>
-              </div>
-            ))}
+        {/* Preuve : de vraies boutiques qui vendent. Sans elles, la section
+            disparaît plutôt que d'afficher des cases vides. */}
+        {showcase.length > 0 && (
+          <div data-reveal="fade" className="relative mx-auto flex w-full max-w-[1240px] flex-col gap-5 px-5 pb-14 sm:px-8 lg:flex-row lg:items-center lg:gap-10 lg:px-12">
+            <span className="whitespace-nowrap text-[13.5px] font-semibold text-[#7D9A92]">{c.proof.label}</span>
+            <div className="grid flex-1 grid-cols-2 gap-3 sm:grid-cols-4">
+              {showcase.map((m) => (
+                <a
+                  key={m.slug}
+                  href={`/b/${m.slug}`}
+                  className="flex h-[60px] min-w-0 items-center gap-3 rounded-[11px] border px-3 transition-colors hover:bg-white/[0.06]"
+                  style={{ borderColor: "rgba(255,255,255,0.14)" }}
+                >
+                  {m.logoUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={m.logoUrl} alt="" loading="lazy" className="h-9 w-9 shrink-0 rounded-lg bg-white object-contain" />
+                  ) : (
+                    <span
+                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-[13px] font-black text-white"
+                      style={{ background: paletteFor(m.sector).strong }}
+                    >
+                      {initialsOf(m.name)}
+                    </span>
+                  )}
+                  <span className="truncate text-[13.5px] font-bold text-[#DCEAE5]">{m.name}</span>
+                </a>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </section>
 
       {/* ══════════ COMMENT ÇA MARCHE ══════════ */}
