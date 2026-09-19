@@ -16,6 +16,12 @@ export interface AuditLogEntry {
     | "REPAIR_MERCHANT_MEDIA"
     | "APPROVE_PHONE_CHANGE"
     | "REJECT_PHONE_CHANGE"
+    | "SUSPEND_MERCHANT"
+    | "UNSUSPEND_MERCHANT"
+    | "RESET_PASSWORD_LINK"
+    | "CHANGE_OWNER_EMAIL"
+    | "TRANSFER_OWNERSHIP"
+    | "VIEW_MERCHANT"
     | "TOGGLE_FREEZE"
     | "SECURITY_ALERT";
   targetBusinessId?: string;

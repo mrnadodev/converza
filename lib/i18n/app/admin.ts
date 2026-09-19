@@ -11,6 +11,7 @@ export interface AdminCopy {
     expired: (n: number) => string;
     expiringSoon: (n: number) => string;
     phones: (n: number) => string;
+    blocked: (n: number) => string;
   };
   kpis: {
     mrr: string;
@@ -169,6 +170,44 @@ export interface AdminCopy {
     off: string;
     saved: string;
   };
+  health: {
+    title: string;
+    ok: string;
+    levels: { blocker: string; warning: string; info: string };
+    codes: Record<string, string>;
+    filter: string;
+    only: string;
+  };
+  support: {
+    open: string;
+    title: string;
+    readOnly: string;
+    sections: { identity: string; team: string; products: string; orders: string; stock: string; payments: string };
+    empty: string;
+    back: string;
+    suspend: string;
+    unsuspend: string;
+    suspendReason: string;
+    suspendConfirm: (name: string) => string;
+    suspendedSince: (date: string) => string;
+    recovery: string;
+    recoveryHint: string;
+    copyLink: string;
+    copied: string;
+    changeEmail: string;
+    changeEmailHint: string;
+    transfer: string;
+    transferHint: string;
+    transferConfirm: (name: string) => string;
+    remind: string;
+    remindMessage: (p: { shop: string; plan: string; date: string }) => string;
+    lastSignIn: (date: string) => string;
+    neverSignedIn: string;
+    orders7d: (n: number) => string;
+    errors: { title: string; hint: string; empty: string; unavailable: string };
+    migration: string;
+    done: string;
+  };
   phones: {
     title: string;
     hint: string;
@@ -209,6 +248,8 @@ export interface AdminCopy {
       statsView: { label: string; desc: string };
       extendedStats: { label: string; desc: string };
       phoneChanges: { label: string; desc: string };
+      support: { label: string; desc: string };
+      subscription: { label: string; desc: string };
     };
     ok: string;
     missing: string;
@@ -277,6 +318,7 @@ const fr: AdminCopy = {
     expired: (n) => `${n} abonnement${n > 1 ? "s" : ""} expiré${n > 1 ? "s" : ""}`,
     expiringSoon: (n) => `${n} abonnement${n > 1 ? "s" : ""} expire${n > 1 ? "nt" : ""} sous 7 jours`,
     phones: (n) => `${n} demande${n > 1 ? "s" : ""} de changement de numéro à vérifier`,
+    blocked: (n) => `${n} marchand${n > 1 ? "s" : ""} bloqué${n > 1 ? "s" : ""} : vitrine vide, paiement ou abonnement`,
   },
   kpis: {
     mrr: "Revenu mensuel récurrent",
@@ -450,6 +492,63 @@ const fr: AdminCopy = {
     off: "Désactivé",
     saved: "Réglages enregistrés.",
   },
+  health: {
+    title: "Diagnostic",
+    ok: "Rien à signaler",
+    levels: { blocker: "Bloquant", warning: "À surveiller", info: "À améliorer" },
+    codes: {
+      suspended: "Compte suspendu",
+      noProducts: "Aucun produit : la vitrine est vide",
+      noPayMethod: "Aucun moyen de paiement configuré",
+      noPhone: "Aucun numéro WhatsApp",
+      noCover: "Pas de photo de couverture",
+      noDelivery: "Aucune zone de livraison",
+      planExpired: "Abonnement expiré",
+      noOrders: "Aucune commande depuis l'inscription",
+      stale: "Aucune commande depuis plus de 15 jours",
+      noStock: "Stock non suivi (aucune quantité)",
+      noCosts: "Aucun prix d'achat : bénéfice incalculable",
+      neverSignedIn: "Pas de connexion depuis plus de 15 jours",
+    },
+    filter: "Diagnostic",
+    only: "Avec un problème",
+  },
+  support: {
+    open: "Voir le compte",
+    title: "Vue support",
+    readOnly: "Lecture seule : rien n'est modifié ici. Consultation enregistrée dans le journal.",
+    sections: { identity: "Boutique", team: "Équipe", products: "Produits", orders: "Dernières commandes", stock: "Derniers mouvements de stock", payments: "Moyens de paiement du marchand" },
+    empty: "Rien à afficher.",
+    back: "Retour à la console",
+    suspend: "Suspendre le compte",
+    unsuspend: "Lever la suspension",
+    suspendReason: "Motif (vu par le marchand)",
+    suspendConfirm: (name) => `Suspendre ${name} ? Son équipe ne pourra plus travailler et la vitrine sera masquée.`,
+    suspendedSince: (date) => `Suspendu depuis le ${date}`,
+    recovery: "Lien de réinitialisation du mot de passe",
+    recoveryHint: "Créez un lien à envoyer au propriétaire par WhatsApp, sans passer par sa boîte mail.",
+    copyLink: "Copier le lien",
+    copied: "Lien copié",
+    changeEmail: "Changer l'e-mail du propriétaire",
+    changeEmailHint: "À utiliser quand il a perdu l'accès à sa boîte mail.",
+    transfer: "Transférer la propriété",
+    transferHint: "L'ancien propriétaire devient agent et garde son accès.",
+    transferConfirm: (name) => `Donner la propriété de la boutique à ${name} ?`,
+    remind: "Relancer",
+    remindMessage: ({ shop, plan, date }) =>
+      `Bonjour ${shop}, votre abonnement ${plan} chez CONVERZA se termine le ${date}. Renouvelez-le pour garder votre vitrine et vos outils.`,
+    lastSignIn: (date) => `Dernière connexion : ${date}`,
+    neverSignedIn: "Jamais connecté",
+    orders7d: (n) => (n <= 1 ? `${n} commande (7 j)` : `${n} commandes (7 j)`),
+    errors: {
+      title: "Erreurs techniques",
+      hint: "Échecs enregistrés par le serveur, les plus récents en premier.",
+      empty: "Aucune erreur enregistrée.",
+      unavailable: "Disponible après la migration 7.",
+    },
+    migration: "Mise à jour de la base nécessaire (migration 7).",
+    done: "Fait.",
+  },
   phones: {
     title: "Changements de numéro WhatsApp",
     hint: "Le nouveau numéro reçoit les commandes et l'argent des clients : vérifiez avant de valider.",
@@ -494,6 +593,8 @@ const fr: AdminCopy = {
       statsView: { label: "Statistiques marchands", desc: "Vue admin_business_stats accessible" },
       extendedStats: { label: "Activité des marchands", desc: "Dernière commande et montant encaissé (migration 3)" },
       phoneChanges: { label: "Changements de numéro", desc: "Table, bucket privé et verrou du numéro (migration 4)" },
+      support: { label: "Support et suspension", desc: "Suspension de compte et journal d'erreurs (migration 7)" },
+      subscription: { label: "Abonnement dû", desc: "La vitrine retombe en Gratis à l'échéance (migration 8)" },
     },
     ok: "En place",
     missing: "Manquant",
@@ -517,6 +618,12 @@ const fr: AdminCopy = {
       UPDATE_MERCHANT: "Fiche marchand modifiée",
       REPAIR_MERCHANT_MEDIA: "Médias marchand normalisés",
       APPROVE_PHONE_CHANGE: "Changement de numéro validé",
+      SUSPEND_MERCHANT: "Compte suspendu",
+      UNSUSPEND_MERCHANT: "Suspension levée",
+      RESET_PASSWORD_LINK: "Lien de mot de passe créé",
+      CHANGE_OWNER_EMAIL: "E-mail du propriétaire changé",
+      TRANSFER_OWNERSHIP: "Propriété transférée",
+      VIEW_MERCHANT: "Compte consulté (support)",
       REJECT_PHONE_CHANGE: "Changement de numéro refusé",
       SECURITY_ALERT: "Alerte de sécurité",
     },
@@ -585,6 +692,7 @@ const ht: AdminCopy = {
     expired: (n) => `${n} abònman ki ekspire`,
     expiringSoon: (n) => `${n} abònman ap ekspire nan 7 jou`,
     phones: (n) => `${n} demann chanjman nimewo pou verifye`,
+    blocked: (n) => `${n} machann bloke : vitrin vid, peman oswa abònman`,
   },
   kpis: {
     mrr: "Revni chak mwa",
@@ -758,6 +866,63 @@ const ht: AdminCopy = {
     off: "Dezaktive",
     saved: "Reglaj yo anrejistre.",
   },
+  health: {
+    title: "Dyagnostik",
+    ok: "Anyen pou siyale",
+    levels: { blocker: "Bloke", warning: "Pou siveye", info: "Pou amelyore" },
+    codes: {
+      suspended: "Kont sispann",
+      noProducts: "Pa gen pwodwi : vitrin nan vid",
+      noPayMethod: "Pa gen mwayen peman",
+      noPhone: "Pa gen nimewo WhatsApp",
+      noCover: "Pa gen foto kouvèti",
+      noDelivery: "Pa gen zòn livrezon",
+      planExpired: "Abònman ekspire",
+      noOrders: "Pa gen kòmand depi enskripsyon an",
+      stale: "Pa gen kòmand depi plis pase 15 jou",
+      noStock: "Stòk pa swiv (pa gen kantite)",
+      noCosts: "Pa gen pri acha : nou pa ka kalkile benefis",
+      neverSignedIn: "Pa konekte depi plis pase 15 jou",
+    },
+    filter: "Dyagnostik",
+    only: "Ki gen pwoblèm",
+  },
+  support: {
+    open: "Wè kont lan",
+    title: "Vi sipò",
+    readOnly: "Lekti sèlman : anyen pa chanje isit la. Konsiltasyon an antre nan jounal la.",
+    sections: { identity: "Boutik", team: "Ekip", products: "Pwodwi", orders: "Dènye kòmand", stock: "Dènye mouvman stòk", payments: "Mwayen peman machann nan" },
+    empty: "Pa gen anyen pou montre.",
+    back: "Retounen nan konsòl la",
+    suspend: "Sispann kont lan",
+    unsuspend: "Retire sispansyon an",
+    suspendReason: "Rezon (machann nan wè l)",
+    suspendConfirm: (name) => `Sispann ${name} ? Ekip li p ap ka travay epi vitrin nan ap kache.`,
+    suspendedSince: (date) => `Sispann depi ${date}`,
+    recovery: "Lyen pou refè modpas",
+    recoveryHint: "Kreye yon lyen pou voye bay mèt boutik la sou WhatsApp, san pase nan imèl li.",
+    copyLink: "Kopye lyen an",
+    copied: "Lyen kopye",
+    changeEmail: "Chanje imèl mèt boutik la",
+    changeEmailHint: "Sèvi ak sa lè l pèdi aksè nan imèl li.",
+    transfer: "Bay yon lòt moun boutik la",
+    transferHint: "Ansyen mèt la vin ajan epi li kenbe aksè li.",
+    transferConfirm: (name) => `Bay ${name} pwopriyete boutik la ?`,
+    remind: "Raple",
+    remindMessage: ({ shop, plan, date }) =>
+      `Bonjou ${shop}, abònman ${plan} ou a nan CONVERZA ap fini ${date}. Renouvle l pou w kenbe vitrin ou ak zouti ou yo.`,
+    lastSignIn: (date) => `Dènye koneksyon : ${date}`,
+    neverSignedIn: "Pa janm konekte",
+    orders7d: (n) => `${n} kòmand (7 jou)`,
+    errors: {
+      title: "Erè teknik",
+      hint: "Echèk sèvè a anrejistre, pi resan yo an premye.",
+      empty: "Pa gen erè anrejistre.",
+      unavailable: "Disponib apre migrasyon 7.",
+    },
+    migration: "Fòk baz done a mete ajou (migrasyon 7).",
+    done: "Fèt.",
+  },
   phones: {
     title: "Chanjman nimewo WhatsApp",
     hint: "Nouvo nimewo a ap resevwa kòmand ak lajan kliyan yo : verifye anvan ou valide.",
@@ -802,6 +967,8 @@ const ht: AdminCopy = {
       statsView: { label: "Estatistik machann", desc: "Vi admin_business_stats aksesib" },
       extendedStats: { label: "Aktivite machann", desc: "Dènye kòmand ak lajan ki antre (migrasyon 3)" },
       phoneChanges: { label: "Chanjman nimewo", desc: "Tab, bucket prive ak kadna nimewo a (migrasyon 4)" },
+      support: { label: "Sipò ak sispansyon", desc: "Sispansyon kont ak jounal erè (migrasyon 7)" },
+      subscription: { label: "Abònman ki dwe", desc: "Vitrin lan tounen Gratis lè dat la pase (migrasyon 8)" },
     },
     ok: "An plas",
     missing: "Manke",
@@ -825,6 +992,12 @@ const ht: AdminCopy = {
       UPDATE_MERCHANT: "Fich machann chanje",
       REPAIR_MERCHANT_MEDIA: "Medya machann normalize",
       APPROVE_PHONE_CHANGE: "Chanjman nimewo valide",
+      SUSPEND_MERCHANT: "Kont sispann",
+      UNSUSPEND_MERCHANT: "Sispansyon leve",
+      RESET_PASSWORD_LINK: "Lyen modpas kreye",
+      CHANGE_OWNER_EMAIL: "Imèl mèt boutik chanje",
+      TRANSFER_OWNERSHIP: "Boutik pase bay yon lòt",
+      VIEW_MERCHANT: "Kont konsilte (sipò)",
       REJECT_PHONE_CHANGE: "Chanjman nimewo refize",
       SECURITY_ALERT: "Alèt sekirite",
     },
@@ -893,6 +1066,7 @@ const en: AdminCopy = {
     expired: (n) => `${n} expired subscription${n > 1 ? "s" : ""}`,
     expiringSoon: (n) => `${n} subscription${n > 1 ? "s" : ""} expiring within 7 days`,
     phones: (n) => `${n} number change request${n > 1 ? "s" : ""} to review`,
+    blocked: (n) => `${n} blocked merchant${n > 1 ? "s" : ""}: empty storefront, payment or subscription`,
   },
   kpis: {
     mrr: "Monthly recurring revenue",
@@ -1066,6 +1240,63 @@ const en: AdminCopy = {
     off: "Off",
     saved: "Settings saved.",
   },
+  health: {
+    title: "Diagnosis",
+    ok: "Nothing to report",
+    levels: { blocker: "Blocking", warning: "Watch", info: "Could improve" },
+    codes: {
+      suspended: "Account suspended",
+      noProducts: "No product: the storefront is empty",
+      noPayMethod: "No payment method set up",
+      noPhone: "No WhatsApp number",
+      noCover: "No cover photo",
+      noDelivery: "No delivery zone",
+      planExpired: "Subscription expired",
+      noOrders: "No order since sign-up",
+      stale: "No order for over 15 days",
+      noStock: "Stock not tracked (no quantity)",
+      noCosts: "No purchase cost: profit can't be computed",
+      neverSignedIn: "No sign-in for over 15 days",
+    },
+    filter: "Diagnosis",
+    only: "With an issue",
+  },
+  support: {
+    open: "View account",
+    title: "Support view",
+    readOnly: "Read-only: nothing is changed here. The visit is recorded in the log.",
+    sections: { identity: "Shop", team: "Team", products: "Products", orders: "Latest orders", stock: "Latest stock movements", payments: "Merchant's payment methods" },
+    empty: "Nothing to show.",
+    back: "Back to the console",
+    suspend: "Suspend the account",
+    unsuspend: "Lift the suspension",
+    suspendReason: "Reason (shown to the merchant)",
+    suspendConfirm: (name) => `Suspend ${name}? Their team won't be able to work and the storefront will be hidden.`,
+    suspendedSince: (date) => `Suspended since ${date}`,
+    recovery: "Password reset link",
+    recoveryHint: "Create a link to send the owner on WhatsApp, without using their mailbox.",
+    copyLink: "Copy the link",
+    copied: "Link copied",
+    changeEmail: "Change the owner's email",
+    changeEmailHint: "Use this when they've lost access to their mailbox.",
+    transfer: "Transfer ownership",
+    transferHint: "The previous owner becomes an agent and keeps their access.",
+    transferConfirm: (name) => `Give ownership of the shop to ${name}?`,
+    remind: "Remind",
+    remindMessage: ({ shop, plan, date }) =>
+      `Hello ${shop}, your ${plan} subscription with CONVERZA ends on ${date}. Renew it to keep your storefront and tools.`,
+    lastSignIn: (date) => `Last sign-in: ${date}`,
+    neverSignedIn: "Never signed in",
+    orders7d: (n) => (n === 1 ? "1 order (7 d)" : `${n} orders (7 d)`),
+    errors: {
+      title: "Technical errors",
+      hint: "Failures recorded by the server, most recent first.",
+      empty: "No error recorded.",
+      unavailable: "Available after migration 7.",
+    },
+    migration: "A database update is needed (migration 7).",
+    done: "Done.",
+  },
   phones: {
     title: "WhatsApp number changes",
     hint: "The new number receives customers' orders and money: check before approving.",
@@ -1110,6 +1341,8 @@ const en: AdminCopy = {
       statsView: { label: "Merchant statistics", desc: "admin_business_stats view reachable" },
       extendedStats: { label: "Merchant activity", desc: "Last order and collected amount (migration 3)" },
       phoneChanges: { label: "Number changes", desc: "Table, private bucket and number lock (migration 4)" },
+      support: { label: "Support and suspension", desc: "Account suspension and error log (migration 7)" },
+      subscription: { label: "Plan actually due", desc: "Storefront falls back to Free at expiry (migration 8)" },
     },
     ok: "In place",
     missing: "Missing",
@@ -1133,6 +1366,12 @@ const en: AdminCopy = {
       UPDATE_MERCHANT: "Merchant record changed",
       REPAIR_MERCHANT_MEDIA: "Merchant media normalised",
       APPROVE_PHONE_CHANGE: "Number change approved",
+      SUSPEND_MERCHANT: "Account suspended",
+      UNSUSPEND_MERCHANT: "Suspension lifted",
+      RESET_PASSWORD_LINK: "Password link created",
+      CHANGE_OWNER_EMAIL: "Owner email changed",
+      TRANSFER_OWNERSHIP: "Ownership transferred",
+      VIEW_MERCHANT: "Account viewed (support)",
       REJECT_PHONE_CHANGE: "Number change declined",
       SECURITY_ALERT: "Security alert",
     },

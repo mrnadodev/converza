@@ -5,6 +5,7 @@ import { getMemberContext, getMemberPermissions } from "@/lib/auth";
 import { hasSupabase, getMyBusiness } from "@/lib/data";
 import { toCents } from "@/lib/money";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { logAppError } from "@/lib/app-errors";
 import { EXPENSE_CATEGORIES, type ExpenseCategory } from "@/lib/kes-period";
 
 // Dépenses de la boutique. Réservées aux profils qui voient les chiffres
@@ -50,7 +51,7 @@ export async function addExpense(input: {
   });
   if (error) {
     if (/expenses/.test(error.message) && /exist|schema cache/i.test(error.message)) return { ok: false, error: "migration" };
-    console.error("addExpense:", error.message);
+    await logAppError({ scope: "kes.expense", message: error.message, businessId: me.businessId, userId: me.userId });
     return { ok: false, error: "failed" };
   }
   revalidatePath("/kes");

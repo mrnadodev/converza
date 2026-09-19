@@ -5,6 +5,7 @@ import { getMemberContext, getMemberPermissions } from "@/lib/auth";
 import { hasSupabase } from "@/lib/data";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { toCents } from "@/lib/money";
+import { logAppError } from "@/lib/app-errors";
 
 // Mouvements de stock saisis par le marchand : réception de marchandise,
 // perte ou casse, inventaire. Les ventes et annulations sont enregistrées
@@ -47,7 +48,7 @@ export async function recordStockMovement(input: {
   if (error) {
     // Fonction absente : la migration 5 n'a pas encore été exécutée.
     if (/apply_stock_movement|function|schema cache/i.test(error.message)) return { ok: false, error: "migration" };
-    console.error("recordStockMovement:", error.message);
+    await logAppError({ scope: "stock.movement", message: error.message, businessId: me.businessId, userId: me.userId, details: { kind: input.kind } });
     return { ok: false, error: "failed" };
   }
 
@@ -111,7 +112,7 @@ export async function recordPurchase(input: {
   });
   if (error) {
     if (/record_purchase|function|schema cache/i.test(error.message)) return { ok: false, error: "migration" };
-    console.error("recordPurchase:", error.message);
+    await logAppError({ scope: "stock.purchase", message: error.message, businessId: me.businessId, userId: me.userId, details: { lines: items.length } });
     return { ok: false, error: "failed" };
   }
 

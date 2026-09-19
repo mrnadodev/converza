@@ -2,6 +2,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { planOf } from "@/lib/plans";
 import { adminEmails } from "@/lib/admin";
 import { loadPlans, loadPaymentInfo, loadPlatformSettings } from "@/lib/platform-store";
+import { merchantIssues, type Issue } from "@/lib/merchant-health";
 
 // Fenêtre de paiements chargée pour la file de validation, l'historique et la
 // détection de références réutilisées. Au-delà, la file n'est plus consultable.
@@ -40,6 +41,15 @@ export interface AdminMerchant {
   social_instagram: string | null;
   social_facebook: string | null;
   social_tiktok: string | null;
+  /** Compte du propriétaire, pour les actions de support. */
+  ownerUserId: string | null;
+  lastSignInAt: string | null;
+  /** Commandes reçues sur les 7 derniers jours. */
+  orders7d: number;
+  suspendedAt: string | null;
+  suspendedReason: string | null;
+  /** Diagnostic (lib/merchant-health). */
+  issues: Issue[];
 }
 
 /** Demande de changement de numéro, telle que la console la présente. */
@@ -83,7 +93,7 @@ export async function getAdminData() {
     admin
       .from("businesses")
       .select(
-        "id,name,slug,business_type,plan,plan_until,created_at,phone_e164,category,address,logo_url,cover_url,hours,theme,layout,default_currency,social_instagram,social_facebook,social_tiktok",
+        "id,name,slug,business_type,plan,plan_until,created_at,phone_e164,category,address,logo_url,cover_url,hours,theme,layout,default_currency,social_instagram,social_facebook,social_tiktok,delivery_zones,moncash_number,natcash_number,bank_accounts,zelle_info,usdt_trc20_address,suspended_at,suspended_reason",
       ),
     admin
       .from("subscription_payments")
@@ -114,17 +124,42 @@ export async function getAdminData() {
     lastOrder.set(id, typeof s.last_order_at === "string" ? s.last_order_at : null);
   }
 
+  // Signaux d'activité récents, pour repérer un marchand qui décroche.
+  const weekAgo = new Date(now - 7 * 864e5).toISOString();
+  const [recentOrdersRes, trackedRes, costsRes, errorsRes, dbVersionRes] = await Promise.all([
+    admin.from("orders").select("business_id").gte("created_at", weekAgo).limit(5000),
+    admin.from("products").select("business_id,stock_qty").not("stock_qty", "is", null).limit(20000),
+    admin.from("product_costs").select("business_id").limit(20000),
+    admin.from("app_errors").select("id,scope,message,business_id,created_at").order("created_at", { ascending: false }).limit(50),
+    admin.from("platform_settings").select("value").eq("key", "db_version").maybeSingle(),
+  ]);
+  // Repère posé par les migrations : une vue ne se reconnaît pas depuis l'app.
+  const dbVersion = Number((dbVersionRes.data?.value as { migration?: number } | null)?.migration ?? 0);
+  const countBy = (rows: { business_id: string | null }[] | null | undefined) => {
+    const map = new Map<string, number>();
+    for (const r of rows ?? []) if (r.business_id) map.set(r.business_id, (map.get(r.business_id) ?? 0) + 1);
+    return map;
+  };
+  const orders7d = countBy(recentOrdersRes.data);
+  const trackedProducts = countBy(trackedRes.data);
+  const productsWithCost = countBy(costsRes.data);
+
   // Adresse du propriétaire de chaque boutique : le support en a besoin pour
   // répondre à un marchand, et elle n'existe que dans l'annuaire d'auth.
   const ownerEmailByBusiness = new Map<string, string>();
+  const ownerUserByBusiness = new Map<string, string>();
+  const lastSignInByBusiness = new Map<string, string | null>();
   const owners = membersRes.data ?? [];
   if (owners.length > 0) {
     try {
       const { data: userList } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
-      const emailByUser = new Map((userList?.users ?? []).map((u) => [u.id, u.email ?? ""]));
+      const byUser = new Map((userList?.users ?? []).map((u) => [u.id, u]));
       for (const m of owners) {
-        const email = emailByUser.get(m.user_id);
-        if (email && m.business_id) ownerEmailByBusiness.set(m.business_id, email);
+        const user = byUser.get(m.user_id);
+        if (!m.business_id) continue;
+        if (user?.email) ownerEmailByBusiness.set(m.business_id, user.email);
+        ownerUserByBusiness.set(m.business_id, m.user_id);
+        lastSignInByBusiness.set(m.business_id, user?.last_sign_in_at ?? null);
       }
     } catch {
       // L'annuaire d'auth peut être indisponible : la console reste utilisable
@@ -213,6 +248,30 @@ export async function getAdminData() {
       social_instagram: b.social_instagram ?? null,
       social_facebook: b.social_facebook ?? null,
       social_tiktok: b.social_tiktok ?? null,
+      ownerUserId: ownerUserByBusiness.get(b.id) ?? null,
+      lastSignInAt: lastSignInByBusiness.get(b.id) ?? null,
+      orders7d: orders7d.get(b.id) ?? 0,
+      suspendedAt: b.suspended_at ?? null,
+      suspendedReason: b.suspended_reason ?? null,
+      issues: merchantIssues(
+        {
+          suspendedAt: b.suspended_at ?? null,
+          products: prodCount.get(b.id) ?? 0,
+          orders: ordCount.get(b.id) ?? 0,
+          lastOrderAt: lastOrder.get(b.id) ?? null,
+          createdAt: b.created_at,
+          plan: b.plan ?? "gratis",
+          planUntil: b.plan_until,
+          phone: b.phone_e164,
+          coverUrl: b.cover_url,
+          deliveryZones: Array.isArray(b.delivery_zones) ? b.delivery_zones : [],
+          hasPayMethod: Boolean(b.moncash_number || b.natcash_number || b.bank_accounts || b.zelle_info || b.usdt_trc20_address),
+          trackedProducts: trackedProducts.get(b.id) ?? 0,
+          productsWithCost: productsWithCost.get(b.id) ?? 0,
+          lastSignInAt: lastSignInByBusiness.get(b.id) ?? null,
+        },
+        now,
+      ),
     }))
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
@@ -287,6 +346,8 @@ export async function getAdminData() {
     statsView: !statsRes.error,
     extendedStats: lastOrder.size > 0 && [...lastOrder.values()].some((v) => v !== null),
     phoneChanges: !phoneRes.error,
+    support: !errorsRes.error,
+    subscription: dbVersion >= 8,
   };
 
   return {
@@ -310,6 +371,13 @@ export async function getAdminData() {
     expiringSoon,
     merchants,
     auditLogs: auditRes.data ?? [],
+    appErrors: (errorsRes.data ?? []).map((e) => ({
+      id: e.id as string,
+      scope: e.scope as string,
+      message: e.message as string,
+      businessId: (e.business_id as string | null) ?? null,
+      createdAt: e.created_at as string,
+    })),
     phoneRequests,
     checks,
     platformPlans,

@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { hasSupabase } from "@/lib/data";
 import { getMemberContext } from "@/lib/auth";
 import { createInviteToken } from "@/lib/invite";
-import { memberSeatsFor } from "@/lib/plans";
+import { effectivePlan, memberSeatsFor } from "@/lib/plans";
 import { storefrontBaseUrl } from "@/lib/order";
 
 export async function removeAgent(memberId: string) {
@@ -63,8 +63,8 @@ export async function createInviteLinkAction(): Promise<{ ok: boolean; url?: str
   // La limite de sièges du plan se vérifie ici : sinon un lien copié une fois
   // continuerait d'ajouter des membres au-delà de ce que le plan autorise.
   const sb = createClient();
-  const { data: business } = await sb.from("businesses").select("plan").eq("id", me.businessId).maybeSingle();
-  const seats = memberSeatsFor(business?.plan);
+  const { data: business } = await sb.from("businesses").select("plan, plan_until").eq("id", me.businessId).maybeSingle();
+  const seats = memberSeatsFor(effectivePlan(business?.plan, business?.plan_until));
   if (seats !== null) {
     const { count } = await sb
       .from("members")

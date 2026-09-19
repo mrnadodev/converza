@@ -396,3 +396,106 @@ export async function decidePhoneChange(requestId: string, decision: "approve" |
   revalidatePath("/chanje-nimewo");
   return { ok: true };
 }
+
+// ------------------------------------------------------------------
+// Support : suspension, accès au compte, propriété
+// ------------------------------------------------------------------
+
+/** Suspend une boutique (ou lève la suspension avec `reason` vide). */
+export async function suspendMerchant(businessId: string, reason: string, suspended: boolean) {
+  const adminEmail = await requireAdmin();
+  if (!adminEmail) return { ok: false, error: "Non otorize" };
+  const admin = createAdminClient();
+  if (!admin) return { ok: false, error: "SUPABASE_SERVICE_ROLE_KEY manke" };
+
+  const { error } = await admin
+    .from("businesses")
+    .update({
+      suspended_at: suspended ? new Date().toISOString() : null,
+      suspended_reason: suspended ? reason.trim().slice(0, 200) || null : null,
+    })
+    .eq("id", businessId);
+  if (error) return { ok: false, error: /suspended_at/.test(error.message) ? "migration" : error.message };
+
+  await logAdminAction({
+    adminEmail,
+    action: suspended ? "SUSPEND_MERCHANT" : "UNSUSPEND_MERCHANT",
+    targetBusinessId: businessId,
+    details: { reason: reason.trim().slice(0, 200) },
+  });
+  revalidatePath("/admin");
+  revalidatePath("/");
+  return { ok: true };
+}
+
+/**
+ * Lien de réinitialisation du mot de passe du propriétaire.
+ * Le lien est renvoyé à la console : le support l'envoie lui-même par
+ * WhatsApp, sans dépendre de la boîte mail du marchand.
+ */
+export async function ownerRecoveryLink(businessId: string) {
+  const adminEmail = await requireAdmin();
+  if (!adminEmail) return { ok: false as const, error: "Non otorize" };
+  const admin = createAdminClient();
+  if (!admin) return { ok: false as const, error: "SUPABASE_SERVICE_ROLE_KEY manke" };
+
+  const { data: owner } = await admin.from("members").select("user_id").eq("business_id", businessId).eq("role", "owner").maybeSingle();
+  if (!owner) return { ok: false as const, error: "Pa gen mèt boutik" };
+  const { data: user } = await admin.auth.admin.getUserById(owner.user_id);
+  const email = user?.user?.email;
+  if (!email) return { ok: false as const, error: "Pa gen imèl" };
+
+  const site = (process.env.NEXT_PUBLIC_SITE_URL || "").replace(/\/+$/, "");
+  const { data, error } = await admin.auth.admin.generateLink({
+    type: "recovery",
+    email,
+    options: site ? { redirectTo: `${site}/nouvo-modpas` } : undefined,
+  });
+  if (error || !data?.properties?.action_link) return { ok: false as const, error: error?.message ?? "Echèk" };
+
+  await logAdminAction({ adminEmail, action: "RESET_PASSWORD_LINK", targetBusinessId: businessId, details: { email } });
+  return { ok: true as const, link: data.properties.action_link, email };
+}
+
+/** Change l'adresse du propriétaire quand il a perdu sa boîte mail. */
+export async function changeOwnerEmail(businessId: string, email: string) {
+  const adminEmail = await requireAdmin();
+  if (!adminEmail) return { ok: false, error: "Non otorize" };
+  const admin = createAdminClient();
+  if (!admin) return { ok: false, error: "SUPABASE_SERVICE_ROLE_KEY manke" };
+
+  const clean = email.trim().toLowerCase();
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(clean)) return { ok: false, error: "Imèl la pa valab" };
+
+  const { data: owner } = await admin.from("members").select("user_id").eq("business_id", businessId).eq("role", "owner").maybeSingle();
+  if (!owner) return { ok: false, error: "Pa gen mèt boutik" };
+
+  const { error } = await admin.auth.admin.updateUserById(owner.user_id, { email: clean, email_confirm: true });
+  if (error) return { ok: false, error: error.message };
+
+  await logAdminAction({ adminEmail, action: "CHANGE_OWNER_EMAIL", targetBusinessId: businessId, details: { email: clean } });
+  revalidatePath("/admin");
+  return { ok: true };
+}
+
+/** Transfère la propriété de la boutique à un autre membre de l'équipe. */
+export async function transferOwnership(businessId: string, memberId: string) {
+  const adminEmail = await requireAdmin();
+  if (!adminEmail) return { ok: false, error: "Non otorize" };
+  const admin = createAdminClient();
+  if (!admin) return { ok: false, error: "SUPABASE_SERVICE_ROLE_KEY manke" };
+
+  const { data: target } = await admin.from("members").select("id, user_id, full_name").eq("id", memberId).eq("business_id", businessId).maybeSingle();
+  if (!target) return { ok: false, error: "Manm lan pa jwenn" };
+
+  // L'ancien propriétaire devient agent : la boutique garde toujours un seul
+  // propriétaire, et personne ne perd son accès.
+  const { error: demote } = await admin.from("members").update({ role: "agent" }).eq("business_id", businessId).eq("role", "owner");
+  if (demote) return { ok: false, error: demote.message };
+  const { error } = await admin.from("members").update({ role: "owner", agent_profile: null }).eq("id", memberId);
+  if (error) return { ok: false, error: error.message };
+
+  await logAdminAction({ adminEmail, action: "TRANSFER_OWNERSHIP", targetBusinessId: businessId, details: { memberId, name: target.full_name } });
+  revalidatePath("/admin");
+  return { ok: true };
+}

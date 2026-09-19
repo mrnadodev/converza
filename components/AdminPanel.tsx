@@ -27,6 +27,7 @@ import { SETTINGS_COPY } from "@/lib/i18n/app/settings";
 import { STOREFRONT_COPY } from "@/lib/i18n/storefront";
 import { csvCell } from "@/lib/reports";
 import { formatMoney } from "@/lib/money";
+import { waMeLink } from "@/lib/whatsapp";
 import { SECTOR_THEME, THEMES, THEME_KEYS, themeOf } from "@/lib/themes";
 import { INDUSTRY_SECTORS, verticalOf } from "@/lib/verticals";
 import { designFor, paletteFor } from "@/lib/storefront-designs";
@@ -86,8 +87,10 @@ export function AdminPanel({ data }: { data: AdminData }) {
   };
 
   const pendingPhones = data.phoneRequests.filter((r) => r.status === "pending").length;
+  const blocked = data.merchants.filter((m) => m.issues.some((i) => i.level === "blocker")).length;
   const alerts = [
     pendingPhones > 0 && { tone: "warn" as const, text: a.alerts.phones(pendingPhones) },
+    blocked > 0 && { tone: "danger" as const, text: a.alerts.blocked(blocked) },
     data.duplicateRefAlerts.length > 0 && { tone: "danger" as const, text: a.alerts.duplicates(data.duplicateRefAlerts.length) },
     data.pendingPayments.length > 0 && { tone: "warn" as const, text: a.alerts.pending(data.pendingPayments.length) },
     data.expired.length > 0 && { tone: "warn" as const, text: a.alerts.expired(data.expired.length) },
@@ -482,7 +485,23 @@ function MerchantsTab({
                 <Info label="WhatsApp" value={m.phone_e164 ?? "—"} />
                 <Info label={a.merchants.lastOrder} value={m.lastOrderAt ? fmtDate(language, m.lastOrderAt) : a.merchants.never} />
                 <Info label={a.merchants.joined} value={fmtDate(language, m.created_at)} />
+                <Info label={a.support.orders7d(m.orders7d)} value={m.lastSignInAt ? fmtDate(language, m.lastSignInAt) : a.support.neverSignedIn} />
               </div>
+
+              {m.issues.length > 0 && (
+                <ul className="mt-3 flex flex-wrap gap-1.5">
+                  {m.issues.map((i) => (
+                    <li
+                      key={i.code}
+                      className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${
+                        i.level === "blocker" ? "bg-[#FCE4E4] text-[#C0392B]" : i.level === "warning" ? "bg-owed-bg text-owed-text" : "bg-[#F3F6F4] text-ink-soft"
+                      }`}
+                    >
+                      {a.health.codes[i.code] ?? i.code}
+                    </li>
+                  ))}
+                </ul>
+              )}
 
               <div className="mt-3 grid grid-cols-3 gap-2 text-center sm:grid-cols-5">
                 <Mini n={m.products} l={a.merchants.stats.products} />
@@ -507,6 +526,25 @@ function MerchantsTab({
                 >
                   {a.merchants.storefront}
                 </a>
+                <a
+                  href={`/admin/marchand/${m.id}`}
+                  className="h-8 rounded-lg bg-[#F3F6F4] px-3 text-[12px] font-extrabold leading-8 text-ink-soft active:scale-95"
+                >
+                  {a.support.open}
+                </a>
+                {m.phone_e164 && m.plan !== "gratis" && !isActive(m) && (
+                  <a
+                    href={waMeLink(
+                      m.phone_e164,
+                      a.support.remindMessage({ shop: m.name, plan: planLabel(m.plan, plans), date: fmtDate(language, m.plan_until) }),
+                    )}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="h-8 rounded-lg bg-brand-green px-3 text-[12px] font-extrabold leading-8 text-white active:scale-95"
+                  >
+                    {a.support.remind}
+                  </a>
+                )}
 
                 {m.plan !== "gratis" && (
                   <>
@@ -1491,8 +1529,10 @@ function SecurityTab({ data }: { data: AdminData }) {
     { ok: checks.statsView, label: a.security.checks.statsView.label, desc: a.security.checks.statsView.desc },
     { ok: checks.extendedStats, label: a.security.checks.extendedStats.label, desc: a.security.checks.extendedStats.desc },
     { ok: checks.phoneChanges, label: a.security.checks.phoneChanges.label, desc: a.security.checks.phoneChanges.desc },
+    { ok: checks.support, label: a.security.checks.support.label, desc: a.security.checks.support.desc },
+    { ok: checks.subscription, label: a.security.checks.subscription.label, desc: a.security.checks.subscription.desc },
   ];
-  const needsMigration = !checks.extendedStats || !checks.auditTable || !checks.phoneChanges;
+  const needsMigration = !checks.extendedStats || !checks.auditTable || !checks.phoneChanges || !checks.support || !checks.subscription;
 
   return (
     <div className="flex flex-col gap-4 px-4 pt-5 md:px-6">
@@ -1529,6 +1569,27 @@ function SecurityTab({ data }: { data: AdminData }) {
                   </span>
                 </div>
                 <span className="shrink-0 text-[11px] text-ink-faint">{fmtDateTime(language, p.created_at)}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Card>
+
+      <Card>
+        <CardTitle title={a.support.errors.title} hint={a.support.errors.hint} count={data.appErrors.length} />
+        {!data.checks.support ? (
+          <p className="mt-2 text-sm text-ink-faint">{a.support.errors.unavailable}</p>
+        ) : data.appErrors.length === 0 ? (
+          <p className="mt-2 text-sm text-ink-faint">{a.support.errors.empty}</p>
+        ) : (
+          <ul className="mt-2 flex flex-col divide-y divide-line">
+            {data.appErrors.map((e) => (
+              <li key={e.id} className="flex items-start justify-between gap-3 py-2.5 text-[12.5px]">
+                <div className="flex min-w-0 flex-col">
+                  <span className="font-bold">{e.scope}</span>
+                  <span className="break-words text-ink-muted">{e.message}</span>
+                </div>
+                <span className="shrink-0 text-[11px] text-ink-faint">{fmtDateTime(language, e.createdAt)}</span>
               </li>
             ))}
           </ul>

@@ -7,6 +7,7 @@ import { getMemberPermissions } from "@/lib/auth";
 import type { DeliveryZone } from "@/lib/types";
 import { loadPlatformSettings } from "@/lib/platform-store";
 import { resolveLayout } from "@/lib/storefront-layouts";
+import { effectivePlan } from "@/lib/plans";
 
 export interface BusinessInput {
   name: string;
@@ -113,10 +114,10 @@ export async function updateBusiness(input: BusinessInput) {
   // Le plan limite les dispositions : l'interface grise celles qui ne sont pas
   // incluses, le serveur ne se fie pas à elle.
   const [{ data: current }, { designs }] = await Promise.all([
-    sb.from("businesses").select("plan, phone_e164").eq("id", member.business_id).maybeSingle(),
+    sb.from("businesses").select("plan, plan_until, phone_e164").eq("id", member.business_id).maybeSingle(),
     loadPlatformSettings(),
   ]);
-  payload.layout = resolveLayout(input.layout, current?.plan, designs);
+  payload.layout = resolveLayout(input.layout, effectivePlan(current?.plan, current?.plan_until), designs);
   // Le numéro enregistré reçoit les commandes : il ne change que par une
   // demande vérifiée (/chanje-nimewo). La base applique la même règle.
   if (current?.phone_e164) payload.phone_e164 = current.phone_e164;

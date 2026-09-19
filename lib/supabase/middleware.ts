@@ -41,6 +41,8 @@ export async function updateSession(request: NextRequest) {
     // Cible du lien de réinitialisation : la session n'existe pas encore quand
     // le marchand arrive ici, elle se crée à partir du jeton dans l'URL.
     path === "/nouvo-modpas" ||
+    // Écran expliquant la suspension : il doit rester accessible.
+    path === "/sispann" ||
     path.startsWith("/b/") ||
     // Suivi de commande envoyé au client, qui n'a pas de compte.
     path.startsWith("/suivi/") ||
@@ -57,6 +59,23 @@ export async function updateSession(request: NextRequest) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/login";
     return NextResponse.redirect(redirectUrl);
+  }
+
+  // Boutique suspendue par CONVERZA : l'espace de travail se ferme, mais la
+  // personne reste connectée et voit pourquoi (migration 7).
+  if (user && !isPublic) {
+    const { data, error } = await supabase
+      .from("members")
+      .select("businesses(suspended_at)")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    const business = Array.isArray(data?.businesses) ? data?.businesses[0] : data?.businesses;
+    // Colonne absente (migration non passée) : on n'empêche personne de travailler.
+    if (!error && business?.suspended_at) {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = "/sispann";
+      return NextResponse.redirect(redirectUrl);
+    }
   }
 
   return response;

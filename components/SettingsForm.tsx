@@ -17,6 +17,7 @@ import { parseBankAccounts, formatBankAccountsString, HAITI_BANKS, type BankAcco
 import type { Business } from "@/lib/types";
 import type { DesignLayoutConfig } from "@/lib/platform-config";
 import { STOREFRONT_LAYOUTS, layoutAllowed, layoutRule, resolveLayout } from "@/lib/storefront-layouts";
+import { effectivePlan } from "@/lib/plans";
 import { LayoutThumb } from "@/components/LayoutThumb";
 import { designFor } from "@/lib/storefront-designs";
 import { DESIGN_COPY, designName } from "@/lib/i18n/app/designs";
@@ -45,7 +46,7 @@ export function SettingsForm({ business, designs }: { business: Business; design
     theme: isThemeKey(business.theme) ? business.theme : SECTOR_THEME,
     // Une ancienne valeur (« auto ») ou une disposition que le plan ne couvre
     // plus s'affiche comme celle que la vitrine montre réellement.
-    layout: resolveLayout(business.layout, business.plan, designs),
+    layout: resolveLayout(business.layout, effectivePlan(business.plan, business.plan_until), designs),
     phone_e164: business.phone_e164 ?? "",
     hours: business.hours ?? "",
     address: business.address ?? "",
@@ -102,7 +103,7 @@ export function SettingsForm({ business, designs }: { business: Business; design
     });
   }
 
-  const plan = (business.plan ?? "gratis").toLowerCase();
+  const plan = effectivePlan(business.plan, business.plan_until);
   const phoneLocked = Boolean(business.phone_e164?.trim());
   const designCopy = useDict(DESIGN_COPY);
   const sectorId = verticalOf(f.business_type).id;

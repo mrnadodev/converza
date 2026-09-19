@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { getMemberContext } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { logAppError } from "@/lib/app-errors";
 import {
   MAX_PROOFS,
   NOTICE_DAY_OPTIONS,
@@ -102,7 +103,7 @@ export async function submitPhoneChange(input: {
   if (error) {
     // Index unique : une demande est déjà en cours pour cette boutique.
     if (error.code === "23505") return { ok: false, error: "alreadyPending" };
-    console.error("submitPhoneChange:", error.message);
+    await logAppError({ scope: "phone.request", message: error.message, businessId: me.businessId, userId: me.userId });
     return { ok: false, error: "failed" };
   }
 

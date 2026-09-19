@@ -110,6 +110,34 @@ export function planOf(key: string | null | undefined, plans: Plan[] = DEFAULT_P
  * La limite était contrôlée uniquement dans l'interface : un lien d'invitation
  * suffisait à la contourner. Elle est désormais vérifiée aussi côté serveur.
  */
+/**
+ * Jours de tolérance après l'échéance. Un marchand qui paie le 5 et renouvelle
+ * le 6 ne doit pas voir sa vitrine changer entre les deux.
+ */
+export const PLAN_GRACE_DAYS = 3;
+
+/**
+ * Plan réellement dû aujourd'hui. **Toute fonction payante se décide ici**,
+ * jamais sur `business.plan` seul : le plan reste écrit en base après
+ * l'échéance, donc le lire directement offre l'abonnement à vie au premier
+ * mois payé.
+ *
+ * `plan_until` vide signifie « pas d'échéance connue » — un plan accordé
+ * depuis la console. On le laisse actif : c'est une décision humaine.
+ */
+export function effectivePlan(
+  plan: string | null | undefined,
+  planUntil: string | Date | null | undefined,
+  now: Date = new Date(),
+): string {
+  const key = (plan ?? "gratis").toLowerCase();
+  if (key === "gratis") return "gratis";
+  if (!planUntil) return key;
+  const end = planUntil instanceof Date ? planUntil.getTime() : Date.parse(planUntil);
+  if (!Number.isFinite(end)) return key;
+  return end + PLAN_GRACE_DAYS * 86_400_000 > now.getTime() ? key : "gratis";
+}
+
 export function memberSeatsFor(plan: string | null | undefined): number | null {
   switch ((plan ?? "gratis").toLowerCase()) {
     case "premium":
