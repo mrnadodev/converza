@@ -4,7 +4,12 @@ import { PWARegister } from "@/components/PWARegister";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { LanguageProvider } from "@/components/LanguageContext";
 
+const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://converza-green.vercel.app").replace(/\/$/, "");
+
 export const metadata: Metadata = {
+  // Les vignettes de lien sont des URL absolues : sans cette base, elles
+  // pointeraient sur localhost une fois déployées.
+  metadataBase: new URL(siteUrl),
   title: "CONVERZA — Gestion des Ventes & Clients WhatsApp",
   description:
     "Plateforme de gestion de ventes WhatsApp. Gérez vos clients, commandes et catalogue en un seul endroit.",
