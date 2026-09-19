@@ -1,7 +1,7 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { planOf } from "@/lib/plans";
 import { adminEmails } from "@/lib/admin";
-import { loadPlans, loadPaymentInfo, loadPlatformSettings, loadLegalInfo } from "@/lib/platform-store";
+import { loadPlans, loadPaymentInfo, loadPlatformSettings, loadLegalInfo, loadLandingOverrides } from "@/lib/platform-store";
 import { merchantIssues, type Issue } from "@/lib/merchant-health";
 
 // Fenêtre de paiements chargée pour la file de validation, l'historique et la
@@ -109,11 +109,12 @@ export async function getAdminData() {
   if (!admin) return null;
   const now = Date.now();
 
-  const [platformPlans, platformPaymentInfo, platformSettings, legalInfo] = await Promise.all([
+  const [platformPlans, platformPaymentInfo, platformSettings, legalInfo, landingOverrides] = await Promise.all([
     loadPlans(),
     loadPaymentInfo(),
     loadPlatformSettings(),
     loadLegalInfo(),
+    loadLandingOverrides(),
   ]);
 
   // Les compteurs par marchand sont agrégés par Postgres (vue
@@ -421,6 +422,7 @@ export async function getAdminData() {
     platformPlans,
     platformPaymentInfo,
     legalInfo,
+    landingOverrides,
     platformSettings,
   };
 }

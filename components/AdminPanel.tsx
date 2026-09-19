@@ -30,6 +30,7 @@ import { csvCell } from "@/lib/reports";
 import { formatMoney } from "@/lib/money";
 import { waMeLink } from "@/lib/whatsapp";
 import { buildFunnel } from "@/lib/funnel";
+import { LandingEditor } from "@/components/LandingEditor";
 import { SECTOR_THEME, THEMES, THEME_KEYS, themeOf } from "@/lib/themes";
 import { INDUSTRY_SECTORS, verticalOf } from "@/lib/verticals";
 import { designFor, paletteFor } from "@/lib/storefront-designs";
@@ -41,7 +42,7 @@ import type { DesignLayoutConfig, QrMenuServiceConfig } from "@/lib/platform-con
 import type { Language } from "@/lib/i18n/translations";
 import { DEFAULT_LAYOUT, STOREFRONT_LAYOUTS, isLayoutKey, layoutRule, type LayoutKey } from "@/lib/storefront-layouts";
 
-type Tab = "overview" | "merchants" | "billing" | "phones" | "qrMenu" | "platform" | "security";
+type Tab = "overview" | "merchants" | "billing" | "phones" | "qrMenu" | "platform" | "landing" | "security";
 type Runner = (id: string, fn: () => Promise<unknown>) => void;
 
 const PLAN_KEYS = ["gratis", "qr_express", "pro", "premium"] as const;
@@ -118,7 +119,7 @@ export function AdminPanel({ data }: { data: AdminData }) {
       </header>
 
       <nav className="flex gap-1 overflow-x-auto border-b border-line bg-white px-4 pt-3 text-[13.5px] font-bold [scrollbar-width:none]">
-        {(["overview", "merchants", "billing", "phones", "qrMenu", "platform", "security"] as const).map((key) => {
+        {(["overview", "merchants", "billing", "phones", "qrMenu", "platform", "landing", "security"] as const).map((key) => {
           const badge =
             key === "billing"
               ? data.pendingPayments.length
@@ -172,6 +173,7 @@ export function AdminPanel({ data }: { data: AdminData }) {
       {tab === "phones" && <PhonesTab data={data} run={run} pending={pending} busy={busy} />}
       {tab === "qrMenu" && <QrMenuTab data={data} run={run} pending={pending} busy={busy} onPrint={(m) => setQrMerchant(m)} />}
       {tab === "platform" && <PlatformTab data={data} run={run} pending={pending} />}
+      {tab === "landing" && <LandingEditor initial={data.landingOverrides ?? {}} />}
       {tab === "security" && <SecurityTab data={data} />}
 
       {cockpit && <CockpitModal merchant={cockpit} onClose={() => setCockpit(null)} onRefresh={() => router.refresh()} />}

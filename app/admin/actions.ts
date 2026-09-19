@@ -145,7 +145,10 @@ export async function upgradePlan(businessId: string, targetPlan: string, months
   return { ok: !error, error: error?.message };
 }
 
-import { savePlan, savePaymentInfo, savePlatformSettings, saveLegalInfo } from "@/lib/platform-store";
+import { savePlan, savePaymentInfo, savePlatformSettings, saveLegalInfo, loadLandingOverrides, saveLandingOverrides } from "@/lib/platform-store";
+import { LANDING_COPY } from "@/lib/i18n/landing";
+import { sanitizeOverrides } from "@/lib/landing-overrides";
+import type { Language } from "@/lib/i18n/translations";
 
 export async function rejectPayment(paymentId: string) {
   const adminEmail = await requireAdmin();
@@ -186,6 +189,32 @@ export async function updatePlanConfig(key: string, priceGdes: number, tagline: 
   revalidatePath("/accueil");
   revalidatePath("/abonman");
   return { ok: !!updated };
+}
+
+/**
+ * Textes de la page d'accueil, pour une langue. Seuls les écarts avec le texte
+ * du code sont gardés : un champ remis à l'origine recommence à suivre le code.
+ */
+export async function updateLandingCopy(language: Language, values: Record<string, string>) {
+  const adminEmail = await requireAdmin();
+  if (!adminEmail) return { ok: false, error: "Non otorize" };
+  const base = LANDING_COPY[language];
+  if (!base) return { ok: false, error: "Langue inconnue" };
+
+  const clean = sanitizeOverrides(values, base);
+  const current = await loadLandingOverrides();
+  const saved = await saveLandingOverrides({ ...current, [language]: clean });
+  if (!saved) return { ok: false, error: "Enposib pou anrejistre" };
+
+  await logAdminAction({
+    adminEmail,
+    action: "UPDATE_LANDING_COPY",
+    details: { language, fields: Object.keys(clean).length },
+  });
+  revalidatePath("/");
+  revalidatePath("/accueil");
+  revalidatePath("/admin");
+  return { ok: true, count: Object.keys(clean).length };
 }
 
 /**

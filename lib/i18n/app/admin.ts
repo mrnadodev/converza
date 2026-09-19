@@ -3,7 +3,21 @@ import type { Language } from "../translations";
 // Console super-admin CONVERZA (plateforme), en français, kreyòl et anglais.
 export interface AdminCopy {
   header: { title: string; subtitle: string; signOut: string };
-  tabs: { overview: string; merchants: string; billing: string; phones: string; qrMenu: string; platform: string; security: string };
+  tabs: { overview: string; merchants: string; billing: string; phones: string; qrMenu: string; platform: string; landing: string; security: string };
+  landing: {
+    title: string;
+    hint: string;
+    language: string;
+    sections: Record<string, string>;
+    original: string;
+    modified: string;
+    reset: string;
+    save: string;
+    saved: (n: number) => string;
+    view: string;
+    pricesNote: string;
+    unsaved: string;
+  };
   alerts: {
     title: string;
     duplicates: (n: number) => string;
@@ -347,7 +361,35 @@ export interface AdminCopy {
 
 const fr: AdminCopy = {
   header: { title: "Console CONVERZA", subtitle: "Supervision de la plateforme et des abonnements", signOut: "Se déconnecter" },
-  tabs: { overview: "Vue d'ensemble", merchants: "Marchands", billing: "Abonnements", phones: "Numéros", qrMenu: "Menu QR", platform: "Plateforme", security: "Sécurité" },
+  tabs: { overview: "Vue d'ensemble", merchants: "Marchands", billing: "Abonnements", phones: "Numéros", qrMenu: "Menu QR", platform: "Plateforme", landing: "Page d'accueil", security: "Sécurité" },
+  landing: {
+    title: "Textes de la page d'accueil",
+    hint: "Chaque texte de la page publique, dans chaque langue. Un champ laissé tel quel suit le texte d'origine.",
+    language: "Langue modifiée",
+    sections: {
+      nav: "Menu du haut",
+      hero: "Accroche",
+      shop: "Vitrine d'exemple",
+      proof: "Ils vendent déjà",
+      how: "Comment ça marche",
+      pipeline: "Suivi des commandes",
+      message: "Message WhatsApp",
+      features: "Ce qui est inclus",
+      resto: "Restaurants",
+      pricing: "Tarifs",
+      faq: "Questions fréquentes",
+      finalCta: "Appel final",
+      footer: "Pied de page",
+    },
+    original: "Texte d'origine",
+    modified: "Modifié",
+    reset: "Rétablir",
+    save: "Enregistrer cette langue",
+    saved: (n) => (n === 0 ? "Enregistré : la page suit les textes d'origine." : `Enregistré : ${n} texte${n > 1 ? "s" : ""} modifié${n > 1 ? "s" : ""}.`),
+    view: "Voir la page",
+    pricesNote: "Les prix se règlent dans l'onglet Abonnements.",
+    unsaved: "Modifications non enregistrées",
+  },
   alerts: {
     title: "À traiter",
     duplicates: (n) => `${n} paiement${n > 1 ? "s" : ""} avec une référence déjà utilisée`,
@@ -702,6 +744,7 @@ const fr: AdminCopy = {
       UPDATE_PLAN_CONFIG: "Tarif de plan modifié",
       UPDATE_PAYMENT_INFO: "Coordonnées de paiement modifiées",
       UPDATE_LEGAL_INFO: "Mentions légales modifiées",
+      UPDATE_LANDING_COPY: "Textes de la page d'accueil modifiés",
       UPDATE_PLATFORM_SETTINGS: "Réglages plateforme modifiés",
       UPDATE_MERCHANT: "Fiche marchand modifiée",
       REPAIR_MERCHANT_MEDIA: "Médias marchand normalisés",
@@ -772,7 +815,35 @@ const fr: AdminCopy = {
 
 const ht: AdminCopy = {
   header: { title: "Konsòl CONVERZA", subtitle: "Sipèvizyon plataform lan ak abònman yo", signOut: "Dekonekte" },
-  tabs: { overview: "Apèsi", merchants: "Machann", billing: "Abònman", phones: "Nimewo", qrMenu: "Meni QR", platform: "Plataform", security: "Sekirite" },
+  tabs: { overview: "Apèsi", merchants: "Machann", billing: "Abònman", phones: "Nimewo", qrMenu: "Meni QR", platform: "Plataform", landing: "Paj akèy", security: "Sekirite" },
+  landing: {
+    title: "Tèks paj akèy la",
+    hint: "Chak tèks paj piblik la, nan chak lang. Yon chan ou pa touche swiv tèks orijinal la.",
+    language: "Lang w ap chanje",
+    sections: {
+      nav: "Meni anlè",
+      hero: "Tit prensipal",
+      shop: "Vitrin egzanp",
+      proof: "Yo deja ap vann",
+      how: "Kijan l mache",
+      pipeline: "Swivi kòmand",
+      message: "Mesaj WhatsApp",
+      features: "Sa ki ladan l",
+      resto: "Restoran",
+      pricing: "Pri",
+      faq: "Kesyon moun poze souvan",
+      finalCta: "Dènye apèl",
+      footer: "Anba paj la",
+    },
+    original: "Tèks orijinal",
+    modified: "Chanje",
+    reset: "Remete",
+    save: "Anrejistre lang sa a",
+    saved: (n) => (n === 0 ? "Anrejistre : paj la swiv tèks orijinal yo." : `Anrejistre : ${n} tèks chanje.`),
+    view: "Wè paj la",
+    pricesNote: "Pri yo regle nan onglè Abònman an.",
+    unsaved: "Chanjman ki poko anrejistre",
+  },
   alerts: {
     title: "Pou trete",
     duplicates: (n) => `${n} pèman ak yon referans ki deja sèvi`,
@@ -1127,6 +1198,7 @@ const ht: AdminCopy = {
       UPDATE_PLAN_CONFIG: "Pri plan chanje",
       UPDATE_PAYMENT_INFO: "Enfòmasyon pèman chanje",
       UPDATE_LEGAL_INFO: "Mansyon legal yo chanje",
+      UPDATE_LANDING_COPY: "Tèks paj akèy la chanje",
       UPDATE_PLATFORM_SETTINGS: "Reglaj plataform chanje",
       UPDATE_MERCHANT: "Fich machann chanje",
       REPAIR_MERCHANT_MEDIA: "Medya machann normalize",
@@ -1197,7 +1269,35 @@ const ht: AdminCopy = {
 
 const en: AdminCopy = {
   header: { title: "CONVERZA console", subtitle: "Platform and subscription oversight", signOut: "Sign out" },
-  tabs: { overview: "Overview", merchants: "Merchants", billing: "Billing", phones: "Numbers", qrMenu: "QR menu", platform: "Platform", security: "Security" },
+  tabs: { overview: "Overview", merchants: "Merchants", billing: "Billing", phones: "Numbers", qrMenu: "QR menu", platform: "Platform", landing: "Home page", security: "Security" },
+  landing: {
+    title: "Home page texts",
+    hint: "Every text of the public page, in every language. A field left untouched follows the original text.",
+    language: "Language being edited",
+    sections: {
+      nav: "Top menu",
+      hero: "Headline",
+      shop: "Sample storefront",
+      proof: "Already selling",
+      how: "How it works",
+      pipeline: "Order tracking",
+      message: "WhatsApp message",
+      features: "What's included",
+      resto: "Restaurants",
+      pricing: "Pricing",
+      faq: "FAQ",
+      finalCta: "Final call to action",
+      footer: "Footer",
+    },
+    original: "Original text",
+    modified: "Edited",
+    reset: "Restore",
+    save: "Save this language",
+    saved: (n) => (n === 0 ? "Saved: the page follows the original texts." : `Saved: ${n} text${n > 1 ? "s" : ""} edited.`),
+    view: "View the page",
+    pricesNote: "Prices are set in the Billing tab.",
+    unsaved: "Unsaved changes",
+  },
   alerts: {
     title: "Needs attention",
     duplicates: (n) => `${n} payment${n > 1 ? "s" : ""} with an already-used reference`,
@@ -1552,6 +1652,7 @@ const en: AdminCopy = {
       UPDATE_PLAN_CONFIG: "Plan pricing changed",
       UPDATE_PAYMENT_INFO: "Payment details changed",
       UPDATE_LEGAL_INFO: "Legal details changed",
+      UPDATE_LANDING_COPY: "Home page texts changed",
       UPDATE_PLATFORM_SETTINGS: "Platform settings changed",
       UPDATE_MERCHANT: "Merchant record changed",
       REPAIR_MERCHANT_MEDIA: "Merchant media normalised",

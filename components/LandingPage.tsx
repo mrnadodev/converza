@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useLanguage } from "@/components/LanguageContext";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { landingCopy } from "@/lib/i18n/landing";
+import { applyOverrides, type LandingOverrides } from "@/lib/landing-overrides";
 import { useScrollReveal, useScrolledPast } from "@/components/useScrollReveal";
 
 // Page d'accueil publique.
@@ -18,9 +19,10 @@ const INK = "#06231C";
 const GREEN = "#008069";
 const ACTION = "#25D366";
 
-export function LandingPage({ pricing }: { pricing?: Record<string, number> }) {
+export function LandingPage({ pricing, overrides }: { pricing?: Record<string, number>; overrides?: LandingOverrides }) {
   const { language } = useLanguage();
-  const c = landingCopy(language);
+  // Textes du code, corrigés par ce que le super-admin a modifié dans la console.
+  const c = applyOverrides(landingCopy(language), overrides?.[language]);
 
   const rootRef = useRef<HTMLDivElement>(null);
   useScrollReveal(rootRef);

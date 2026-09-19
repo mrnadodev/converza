@@ -2,6 +2,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { DEFAULT_PLANS, DEFAULT_PAYMENT_INFO, type Plan, type PlatformPaymentInfo } from "./plans";
 import { DEFAULT_PLATFORM_SETTINGS, type PlatformGlobalSettings } from "./platform-config";
 import { DEFAULT_LEGAL_INFO, mergeLegalInfo, type LegalInfo } from "./legal";
+import type { LandingOverrides } from "./landing-overrides";
 
 // Persistance de la configuration plateforme (tarifs, coordonnées de paiement
 // CONVERZA, feature flags).
@@ -11,7 +12,7 @@ import { DEFAULT_LEGAL_INFO, mergeLegalInfo, type LegalInfo } from "./legal";
 // d'origine. Un changement de tarif décidé par le super-admin ne tenait pas.
 // Elles sont maintenant stockées en base, dans une table à une ligne par clé.
 
-type SettingsKey = "plans" | "payment_info" | "global_settings" | "legal_info";
+type SettingsKey = "plans" | "payment_info" | "global_settings" | "legal_info" | "landing_copy";
 
 const TABLE = "platform_settings";
 const CACHE_TTL_MS = 30_000;
@@ -49,6 +50,16 @@ async function writeSetting<T>(key: SettingsKey, value: T): Promise<boolean> {
 export async function loadPlans(): Promise<Plan[]> {
   const stored = await readSetting<Plan[]>("plans", DEFAULT_PLANS);
   return Array.isArray(stored) && stored.length > 0 ? stored : DEFAULT_PLANS;
+}
+
+/** Textes de la page d'accueil modifiés depuis la console (lib/landing-overrides.ts). */
+export async function loadLandingOverrides(): Promise<LandingOverrides> {
+  const stored = await readSetting<LandingOverrides>("landing_copy", {});
+  return stored && typeof stored === "object" ? stored : {};
+}
+
+export async function saveLandingOverrides(value: LandingOverrides): Promise<boolean> {
+  return writeSetting("landing_copy", value);
 }
 
 /** Coordonnées affichées dans les conditions et la confidentialité. */
