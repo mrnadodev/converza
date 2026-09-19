@@ -12,6 +12,8 @@ import { DASHBOARD_COPY } from "@/lib/i18n/app/dashboard";
 import { formatMoney } from "@/lib/money";
 import { analyzeStockRisk } from "@/lib/stock_ai";
 import { canSell, setupProgress, setupSteps } from "@/lib/setup-steps";
+import { collectDebts } from "@/lib/dunning";
+import { waMeLink } from "@/lib/whatsapp";
 import type { DashboardOrder, SourceRow } from "@/lib/data";
 import type { RolePermissions, UserSession } from "@/lib/rbac";
 import type { Business, OrderStatus, Product } from "@/lib/types";
@@ -121,6 +123,7 @@ export function DashboardView(props: DashboardViewProps) {
                   <Metric label={d.metrics.inProgress} value={String(inProgress)} />
                   <Metric label={d.metrics.toCollect} value={formatMoney(stats.owedCents)} tone={stats.owedCents > 0 ? "owed" : undefined} />
                 </section>
+                <Collect orders={recentOrders} shopName={business.name} />
                 <RecentOrders orders={recentOrders.slice(0, 5)} />
                 <Funnel funnel={funnel} />
                 <Sources sources={props.sources} />
@@ -189,6 +192,89 @@ function StoreActions({ slug, canMakePoster, onPoster }: { slug: string; canMake
   );
 }
 
+
+/**
+ * Créances à recouvrer, les plus anciennes d'abord. Le tableau de bord
+ * affichait un montant sans dire de qui il venait : impossible d'agir dessus.
+ */
+function Collect({ orders, shopName }: { orders: DashboardOrder[]; shopName: string }) {
+  const d = useDict(DASHBOARD_COPY);
+  const c = useDict(COMMON_COPY);
+  const summary = collectDebts(orders);
+  if (summary.count === 0) return null;
+
+  const shown = summary.debts.slice(0, 5);
+  const rest = summary.count - shown.length;
+  const tone: Record<string, string> = {
+    old: "bg-[#FCE4E4] text-[#C0392B]",
+    due: "bg-owed-bg text-owed-text",
+    fresh: "bg-[#F3F6F4] text-ink-soft",
+  };
+
+  return (
+    <section className="flex flex-col gap-3 rounded-2xl bg-white p-4 shadow-card md:col-span-2">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex min-w-0 flex-col">
+          <h2 className="text-base font-extrabold text-ink">{d.dunning.title}</h2>
+          <p className="text-[12.5px] text-ink-muted">{d.dunning.hint}</p>
+        </div>
+        <div className="flex shrink-0 flex-col items-end">
+          <span className="text-[11px] font-semibold text-ink-muted">{d.dunning.total}</span>
+          <span className="text-lg font-extrabold text-owed-text">{formatMoney(summary.totalOwedCents)}</span>
+        </div>
+      </div>
+
+      {summary.oldestDays > 0 && <p className="text-[12px] text-ink-muted">{d.dunning.oldest(summary.oldestDays)}</p>}
+
+      <ul className="flex flex-col divide-y divide-line">
+        {shown.map((debt) => (
+          <li key={debt.id} className="flex items-center justify-between gap-3 py-2.5">
+            <div className="flex min-w-0 flex-col">
+              <span className="truncate text-[13.5px] font-bold text-ink">{debt.customerName || c.customerFallback}</span>
+              <span className="text-[11.5px] text-ink-muted">
+                {debt.ref} · {d.dunning.age(debt.ageDays)}
+              </span>
+            </div>
+            <div className="flex shrink-0 items-center gap-2">
+              <span className={`rounded-full px-2 py-0.5 text-[10.5px] font-black ${tone[debt.tier]}`}>{d.dunning.tiers[debt.tier]}</span>
+              <span className="text-[13.5px] font-extrabold tabular-nums text-ink">{formatMoney(debt.owedCents)}</span>
+              {debt.reachable ? (
+                <a
+                  href={waMeLink(
+                    debt.customerPhone ?? "",
+                    d.dunning.message({
+                      name: debt.customerName || c.customerFallback,
+                      ref: debt.ref,
+                      owed: formatMoney(debt.owedCents),
+                      shop: shopName,
+                    }),
+                  )}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="rounded-lg bg-brand-green px-2.5 py-1.5 text-[11.5px] font-extrabold text-white active:scale-95"
+                >
+                  {d.dunning.remind}
+                </a>
+              ) : (
+                <span className="rounded-lg bg-[#F3F6F4] px-2.5 py-1.5 text-[11.5px] font-bold text-ink-faint">{d.dunning.noPhone}</span>
+              )}
+            </div>
+          </li>
+        ))}
+      </ul>
+
+      <div className="flex items-center justify-between gap-3 text-[11.5px] text-ink-muted">
+        <span>{summary.unreachable > 0 ? d.dunning.unreachable(summary.unreachable) : ""}</span>
+        {rest > 0 && (
+          <Link href="/komand" className="font-bold text-brand">
+            {d.dunning.more(rest)}
+          </Link>
+        )}
+      </div>
+    </section>
+  );
+}
+
 function FirstSteps({ business, productCount, orderCount }: { business: Business; productCount: number; orderCount: number }) {
   const d = useDict(DASHBOARD_COPY);
   const { share, copied } = useShareStore(business.slug);
@@ -228,24 +314,31 @@ function FirstSteps({ business, productCount, orderCount }: { business: Business
       )}
       <ol className="flex flex-col gap-2.5">
         {steps.map((s, i) => (
-          <li key={i} className={`flex items-center gap-3 rounded-xl border p-3 ${s.done ? "border-transparent bg-[#F3F8F6]" : "border-line"}`}>
+          <li
+            key={i}
+            className={`flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border p-3 ${s.done ? "border-transparent bg-[#F3F8F6]" : "border-line"}`}
+          >
             <span
               className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-bold ${s.done ? "bg-brand text-white" : "bg-[#EEF2F3] text-ink-muted"}`}
             >
               {s.done ? <CheckIcon color="#fff" /> : i + 1}
             </span>
-            <div className="flex min-w-0 flex-1 flex-col">
+            <div className="flex min-w-[9rem] flex-1 flex-col">
               <span className={`text-sm font-bold ${s.done ? "text-ink-muted line-through decoration-ink-faint" : "text-ink"}`}>{s.copy.title}</span>
               {!s.done && <span className="text-xs text-ink-muted">{s.copy.desc}</span>}
             </div>
             {s.done ? (
-              <span className="text-xs font-semibold text-brand">{d.firstSteps.done}</span>
+              <span className="ml-auto text-xs font-semibold text-brand">{d.firstSteps.done}</span>
             ) : s.href ? (
-              <Link href={s.href} className="shrink-0 rounded-lg bg-brand px-3 py-2 text-xs font-bold text-white">
+              <Link href={s.href} className="ml-auto shrink-0 rounded-lg bg-brand px-3 py-2 text-xs font-bold text-white">
                 {s.copy.cta}
               </Link>
             ) : (
-              <button type="button" onClick={s.onClick} className="shrink-0 cursor-pointer rounded-lg bg-brand px-3 py-2 text-xs font-bold text-white">
+              <button
+                type="button"
+                onClick={s.onClick}
+                className="ml-auto shrink-0 cursor-pointer rounded-lg bg-brand px-3 py-2 text-xs font-bold text-white"
+              >
                 {copied ? d.actions.copied : s.copy.cta}
               </button>
             )}

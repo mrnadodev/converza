@@ -4,6 +4,7 @@
 // NEXT_PUBLIC_SUPABASE_* sont présentes.
 
 import { createClient } from "@/lib/supabase/server";
+import { DEBT_STATUSES } from "@/lib/dunning";
 import {
   demoBusiness,
   demoCustomers,
@@ -41,6 +42,7 @@ export async function getDashboard() {
       ref: c.ref,
       status: c.status,
       customerName: c.customerName,
+      customerPhone: c.phone_e164 || null,
       totalCents: c.totalCents,
       owedCents: c.owedCents,
       created_at: "",
@@ -85,7 +87,7 @@ export async function getDashboard() {
   const { data: orders } = await sb
     .from("orders")
     .select(
-      "id, ref, status, created_at, delivery_fee_cents, amount_paid_cents, customer_id, customers(full_name), order_items(qty, unit_price_cents)",
+      "id, ref, status, created_at, delivery_fee_cents, amount_paid_cents, customer_id, customers(full_name, phone_e164), order_items(qty, unit_price_cents)",
     )
     .eq("business_id", member.business_id)
     .neq("status", "anile")
@@ -112,6 +114,7 @@ export async function getDashboard() {
         ref: o.ref,
         status: o.status,
         customerName: o.customers?.full_name ?? "",
+        customerPhone: o.customers?.phone_e164 ?? null,
         totalCents,
         owedCents: Math.max(totalCents - (o.amount_paid_cents ?? 0), 0),
         created_at: o.created_at,
@@ -129,6 +132,8 @@ export interface DashboardOrder {
   status: OrderStatus;
   /** Vide quand la commande n'a pas de client rattaché. */
   customerName: string;
+  /** Numéro du client, pour la relance WhatsApp. Vide si aucun client. */
+  customerPhone: string | null;
   totalCents: number;
   owedCents: number;
   created_at: string;
@@ -181,7 +186,8 @@ function aggregateStats(orders: any[]) {
 
   for (const o of orders) {
     const total = orderTotalOf(o);
-    owedCents += Math.max(total - (o.amount_paid_cents ?? 0), 0);
+    // Une dette commence là où le marchand s'est engagé (lib/dunning.ts).
+    if (DEBT_STATUSES.includes(o.status)) owedCents += Math.max(total - (o.amount_paid_cents ?? 0), 0);
     const c = new Date(o.created_at);
     if (c >= today) ordersToday++;
     if (c >= weekStart) {

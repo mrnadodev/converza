@@ -1,6 +1,19 @@
 import type { Language } from "../translations";
 
 export interface DashboardCopy {
+  dunning: {
+    title: string;
+    hint: string;
+    total: string;
+    oldest: (days: number) => string;
+    tiers: { fresh: string; due: string; old: string };
+    age: (days: number) => string;
+    remind: string;
+    noPhone: string;
+    unreachable: (n: number) => string;
+    more: (n: number) => string;
+    message: (p: { name: string; ref: string; owed: string; shop: string }) => string;
+  };
   greeting: (name: string) => string;
   search: string;
   signOutAs: (name: string) => string;
@@ -56,6 +69,20 @@ export interface DashboardCopy {
 }
 
 const fr: DashboardCopy = {
+  dunning: {
+    title: "À recouvrer",
+    hint: "Le plus ancien d'abord : une dette vieillit mal.",
+    total: "Total dû",
+    oldest: (d) => `La plus ancienne attend depuis ${d} jour${d > 1 ? "s" : ""}.`,
+    tiers: { fresh: "Récente", due: "À relancer", old: "Ancienne" },
+    age: (d) => (d === 0 ? "aujourd'hui" : `${d} jour${d > 1 ? "s" : ""}`),
+    remind: "Relancer",
+    noPhone: "Aucun numéro",
+    unreachable: (n) => `${n} créance${n > 1 ? "s" : ""} sans numéro : à relancer en personne.`,
+    more: (n) => `et ${n} autre${n > 1 ? "s" : ""}`,
+    message: ({ name, ref, owed, shop }) =>
+      `Bonjour ${name} 👋 Ici ${shop}. Il reste ${owed} à régler sur votre commande ${ref}. Vous pouvez payer quand vous voulez, dites-moi ce qui vous arrange.`,
+  },
   greeting: (name) => `Bonjour, ${name}`,
   search: "Rechercher un client…",
   signOutAs: (name) => `Se déconnecter (${name})`,
@@ -152,6 +179,20 @@ const fr: DashboardCopy = {
 };
 
 const ht: DashboardCopy = {
+  dunning: {
+    title: "Pou rekipere",
+    hint: "Pi ansyen an anvan : yon dèt ki vye pa rantre.",
+    total: "Total ki dwe",
+    oldest: (d) => `Pi ansyen an ap tann depi ${d} jou.`,
+    tiers: { fresh: "Fre", due: "Pou relanse", old: "Ansyen" },
+    age: (d) => (d === 0 ? "jodi a" : `${d} jou`),
+    remind: "Relanse",
+    noPhone: "Pa gen nimewo",
+    unreachable: (n) => `${n} dèt san nimewo : fòk ou wè moun nan an pèsòn.`,
+    more: (n) => `ak ${n} lòt`,
+    message: ({ name, ref, owed, shop }) =>
+      `Bonjou ${name} 👋 Se ${shop}. Rete ${owed} pou w regle sou kòmand ${ref} ou an. Ou ka peye lè w pare, di m sa k pi bon pou ou.`,
+  },
   greeting: (name) => `Bonjou, ${name}`,
   search: "Chèche yon kliyan…",
   signOutAs: (name) => `Dekonekte (${name})`,
@@ -248,6 +289,20 @@ const ht: DashboardCopy = {
 };
 
 const en: DashboardCopy = {
+  dunning: {
+    title: "To collect",
+    hint: "Oldest first: a debt ages badly.",
+    total: "Total owed",
+    oldest: (d) => `The oldest has been waiting ${d} day${d > 1 ? "s" : ""}.`,
+    tiers: { fresh: "Recent", due: "To chase", old: "Old" },
+    age: (d) => (d === 0 ? "today" : `${d} day${d > 1 ? "s" : ""}`),
+    remind: "Remind",
+    noPhone: "No number",
+    unreachable: (n) => `${n} debt${n > 1 ? "s" : ""} with no phone number: chase in person.`,
+    more: (n) => `and ${n} more`,
+    message: ({ name, ref, owed, shop }) =>
+      `Hello ${name} 👋 This is ${shop}. There is still ${owed} to settle on your order ${ref}. You can pay whenever suits you, just tell me what works.`,
+  },
   greeting: (name) => `Hello, ${name}`,
   search: "Search for a customer…",
   signOutAs: (name) => `Sign out (${name})`,
