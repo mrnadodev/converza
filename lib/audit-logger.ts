@@ -11,6 +11,7 @@ export interface AuditLogEntry {
     | "UPGRADE_PLAN"
     | "UPDATE_PLAN_CONFIG"
     | "UPDATE_PAYMENT_INFO"
+    | "UPDATE_LEGAL_INFO"
     | "UPDATE_PLATFORM_SETTINGS"
     | "UPDATE_MERCHANT"
     | "REPAIR_MERCHANT_MEDIA"

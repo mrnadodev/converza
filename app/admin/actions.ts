@@ -6,6 +6,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { isAdminEmail } from "@/lib/admin";
 
 import { logAdminAction } from "@/lib/audit-logger";
+import { logAppError } from "@/lib/app-errors";
 
 async function requireAdmin() {
   const sb = createClient();
@@ -144,7 +145,7 @@ export async function upgradePlan(businessId: string, targetPlan: string, months
   return { ok: !error, error: error?.message };
 }
 
-import { savePlan, savePaymentInfo, savePlatformSettings } from "@/lib/platform-store";
+import { savePlan, savePaymentInfo, savePlatformSettings, saveLegalInfo } from "@/lib/platform-store";
 
 export async function rejectPayment(paymentId: string) {
   const adminEmail = await requireAdmin();
@@ -185,6 +186,39 @@ export async function updatePlanConfig(key: string, priceGdes: number, tagline: 
   revalidatePath("/accueil");
   revalidatePath("/abonman");
   return { ok: !!updated };
+}
+
+/**
+ * Identité et coordonnées affichées dans les conditions d'utilisation et la
+ * politique de confidentialité. Tant qu'elles sont vides, ces pages disent
+ * qu'aucun contact n'est publié plutôt que d'afficher un faux interlocuteur.
+ */
+export async function updateLegalInfoConfig(input: {
+  entity: string;
+  email: string;
+  whatsapp: string;
+  address: string;
+  updatedOn: string;
+}) {
+  const adminEmail = await requireAdmin();
+  if (!adminEmail) return { ok: false, error: "Non otorize" };
+
+  const clean = {
+    entity: input.entity.trim().slice(0, 120),
+    email: input.email.trim().slice(0, 160),
+    whatsapp: input.whatsapp.trim().slice(0, 40),
+    address: input.address.trim().slice(0, 200),
+    updatedOn: /^d{4}-d{2}-d{2}$/.test(input.updatedOn.trim()) ? input.updatedOn.trim() : "",
+  };
+  const saved = await saveLegalInfo(clean);
+  if (!saved) return { ok: false, error: "Enposib pou anrejistre" };
+
+  await logAdminAction({ adminEmail, action: "UPDATE_LEGAL_INFO", details: clean });
+  revalidatePath("/admin");
+  revalidatePath("/kondisyon");
+  revalidatePath("/konfidansyalite");
+  revalidatePath("/accueil");
+  return { ok: true };
 }
 
 export async function updatePaymentInfoConfig(
@@ -333,10 +367,29 @@ export async function repairMerchantDataAction(businessId: string) {
 
 const DAY_MS = 86_400_000;
 
-/** Supprime les pièces justificatives : on ne garde pas une pièce d'identité. */
-async function purgePhoneDocs(admin: NonNullable<ReturnType<typeof createAdminClient>>, req: { proof_paths: string[] | null; id_doc_path: string | null }) {
+/**
+ * Supprime les pièces justificatives : on ne garde pas une pièce d'identité
+ * après la décision. Renvoie false si la suppression a échoué — dans ce cas le
+ * dossier ne doit pas se déclarer purgé, et l'incident part au journal
+ * technique pour que scripts/purge-verification.mjs le rattrape.
+ */
+async function purgePhoneDocs(
+  admin: NonNullable<ReturnType<typeof createAdminClient>>,
+  req: { id?: string; business_id?: string; proof_paths: string[] | null; id_doc_path: string | null },
+): Promise<boolean> {
   const files = [...(req.proof_paths ?? []), req.id_doc_path].filter(Boolean) as string[];
-  if (files.length) await admin.storage.from("verification").remove(files);
+  if (files.length === 0) return true;
+  const { error } = await admin.storage.from("verification").remove(files);
+  if (error) {
+    await logAppError({
+      scope: "phone.purge",
+      message: error.message,
+      businessId: req.business_id ?? null,
+      details: { requestId: req.id ?? null, files: files.length },
+    });
+    return false;
+  }
+  return true;
 }
 
 export async function decidePhoneChange(requestId: string, decision: "approve" | "reject", adminNote: string) {
@@ -369,7 +422,7 @@ export async function decidePhoneChange(requestId: string, decision: "approve" |
     if (error) return { ok: false, error: error.message };
   }
 
-  await purgePhoneDocs(admin, req);
+  const purged = await purgePhoneDocs(admin, req);
   await admin
     .from("phone_change_requests")
     .update({
@@ -377,9 +430,9 @@ export async function decidePhoneChange(requestId: string, decision: "approve" |
       admin_email: adminEmail,
       admin_note: note,
       decided_at: now.toISOString(),
-      proof_paths: [],
-      id_doc_path: null,
-      docs_purged_at: now.toISOString(),
+      // Les chemins ne sont effacés du dossier que si les fichiers ont vraiment
+      // disparu : sinon on perdrait la trace de ce qu'il reste à supprimer.
+      ...(purged ? { proof_paths: [], id_doc_path: null, docs_purged_at: now.toISOString() } : {}),
     })
     .eq("id", requestId);
 

@@ -43,6 +43,10 @@ export async function updateSession(request: NextRequest) {
     path === "/nouvo-modpas" ||
     // Écran expliquant la suspension : il doit rester accessible.
     path === "/sispann" ||
+    // Conditions et confidentialité : un visiteur doit pouvoir les lire avant
+    // de créer un compte, et un client avant de commander.
+    path === "/kondisyon" ||
+    path === "/konfidansyalite" ||
     path.startsWith("/b/") ||
     // Suivi de commande envoyé au client, qui n'a pas de compte.
     path.startsWith("/suivi/") ||

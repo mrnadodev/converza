@@ -490,7 +490,11 @@ export function LandingPage({ pricing }: { pricing?: Record<string, number> }) {
               <span className="max-w-[290px] text-[14px] leading-[1.62] text-[#7D9A92]">{c.footer.tagline}</span>
             </div>
             <FooterCol title={c.footer.productCol} links={c.footer.productLinks} />
-            <FooterCol title={c.footer.companyCol} links={c.footer.companyLinks} />
+            <FooterCol
+              title={c.footer.companyCol}
+              links={c.footer.companyLinks}
+              hrefs={{ 1: "/kondisyon", 2: "/konfidansyalite" }}
+            />
             <FooterCol title={c.footer.languageCol} links={["Français", "Kreyòl", "English"]} />
           </div>
           <div className="mt-9 flex flex-col gap-2 border-t pt-9 sm:flex-row sm:items-center sm:justify-between" style={{ borderColor: "rgba(255,255,255,0.1)" }}>
@@ -557,13 +561,19 @@ function Card({
   );
 }
 
-function FooterCol({ title, links }: { title: string; links: string[] }) {
+function FooterCol({ title, links, hrefs }: { title: string; links: string[]; hrefs?: Record<number, string> }) {
   return (
     <div className="flex flex-col gap-3">
       <span className="text-[13px] font-bold text-white">{title}</span>
-      {links.map((l) => (
-        <span key={l} className="text-[14px] text-[#7D9A92]">{l}</span>
-      ))}
+      {links.map((l, i) =>
+        hrefs?.[i] ? (
+          <a key={l} href={hrefs[i]} className="text-[14px] text-[#7D9A92] underline-offset-4 hover:text-white hover:underline">
+            {l}
+          </a>
+        ) : (
+          <span key={l} className="text-[14px] text-[#7D9A92]">{l}</span>
+        ),
+      )}
     </div>
   );
 }

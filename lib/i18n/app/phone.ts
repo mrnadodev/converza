@@ -29,6 +29,7 @@ export interface PhoneCopy {
     remove: string;
     uploading: string;
     privacy: string;
+    privacyLink: string;
     submit: string;
     submitting: string;
   };
@@ -94,6 +95,7 @@ export const PHONE_COPY: Record<Language, PhoneCopy> = {
       remove: "Retirer",
       uploading: "Envoi…",
       privacy: "Vos documents sont stockés dans un espace privé, vus uniquement par l'équipe CONVERZA, et supprimés dès la décision prise.",
+      privacyLink: "Lire la politique de confidentialité",
       submit: "Envoyer la demande",
       submitting: "Envoi de la demande…",
     },
@@ -175,6 +177,7 @@ export const PHONE_COPY: Record<Language, PhoneCopy> = {
       remove: "Retire",
       uploading: "N ap voye…",
       privacy: "Dokiman ou yo nan yon espas prive, se ekip CONVERZA sèlman ki wè yo, epi yo efase lè desizyon an pran.",
+      privacyLink: "Li politik konfidansyalite a",
       submit: "Voye demann nan",
       submitting: "N ap voye demann nan…",
     },
@@ -256,6 +259,7 @@ export const PHONE_COPY: Record<Language, PhoneCopy> = {
       remove: "Remove",
       uploading: "Uploading…",
       privacy: "Your documents are kept in a private space, seen only by the CONVERZA team, and deleted as soon as a decision is made.",
+      privacyLink: "Read the privacy policy",
       submit: "Send request",
       submitting: "Sending request…",
     },

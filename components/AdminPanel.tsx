@@ -18,6 +18,7 @@ import {
   updateGlobalSettingsAction,
   updateMerchantStructureAction,
   updatePaymentInfoConfig,
+  updateLegalInfoConfig,
   updatePlanConfig,
 } from "@/app/admin/actions";
 import { ADMIN_COPY, type AdminCopy } from "@/lib/i18n/app/admin";
@@ -805,6 +806,11 @@ function BillingTab({ data, run, pending, busy }: { data: AdminData; run: Runner
         <PlatformPaymentCard payInfo={data.platformPaymentInfo} run={run} pending={pending} />
       </section>
 
+      <section className="flex flex-col gap-2">
+        <CardTitle title={a.billing.legal.title} hint={a.billing.legal.hint} />
+        <LegalInfoCard info={data.legalInfo} run={run} pending={pending} />
+      </section>
+
       <section className="flex flex-col gap-3">
         <CardTitle title={a.billing.plansTitle} hint={a.billing.plansHint} />
         {plans.map((p) => (
@@ -812,6 +818,72 @@ function BillingTab({ data, run, pending, busy }: { data: AdminData; run: Runner
         ))}
       </section>
     </div>
+  );
+}
+
+function LegalInfoCard({
+  info,
+  run,
+  pending,
+}: {
+  info: AdminData["legalInfo"];
+  run: Runner;
+  pending: boolean;
+}) {
+  const a = useDict(ADMIN_COPY);
+  const c = useDict(COMMON_COPY);
+  const [entity, setEntity] = useState(info?.entity ?? "");
+  const [email, setEmail] = useState(info?.email ?? "");
+  const [whatsapp, setWhatsapp] = useState(info?.whatsapp ?? "");
+  const [address, setAddress] = useState(info?.address ?? "");
+  const [updatedOn, setUpdatedOn] = useState(info?.updatedOn ?? "");
+  const nothing = !entity.trim() && !email.trim() && !whatsapp.trim();
+
+  return (
+    <Card>
+      {nothing && (
+        <p className="mb-4 rounded-xl border border-amber-300 bg-owed-bg px-3 py-2 text-[12.5px] font-semibold text-owed-text">
+          {a.billing.legal.empty}
+        </p>
+      )}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <Field label={a.billing.legal.entity}>
+          <input value={entity} onChange={(e) => setEntity(e.target.value)} placeholder="CONVERZA" className={inputCls} />
+        </Field>
+        <Field label={a.billing.legal.email}>
+          <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="contact@…" className={inputCls} />
+        </Field>
+        <Field label={a.billing.legal.whatsapp}>
+          <input value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} placeholder="+509 0000 0000" className={inputCls} />
+        </Field>
+        <Field label={a.billing.legal.updatedOn}>
+          <input value={updatedOn} onChange={(e) => setUpdatedOn(e.target.value)} placeholder="2026-09-19" className={inputCls} />
+        </Field>
+        <div className="sm:col-span-2">
+          <Field label={a.billing.legal.address}>
+            <input value={address} onChange={(e) => setAddress(e.target.value)} className={inputCls} />
+          </Field>
+        </div>
+      </div>
+
+      <div className="mt-5 flex flex-col gap-2 sm:flex-row">
+        <button
+          onClick={() => run("save-legal-info", () => updateLegalInfoConfig({ entity, email, whatsapp, address, updatedOn }))}
+          disabled={pending}
+          className="h-12 flex-1 cursor-pointer rounded-2xl bg-brand text-base font-extrabold text-white active:scale-[0.99] disabled:opacity-60"
+        >
+          {pending ? c.actions.saving : a.billing.legal.save}
+        </button>
+        <a
+          href="/kondisyon"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex h-12 items-center justify-center rounded-2xl border border-line bg-white px-5 text-sm font-bold text-ink"
+        >
+          {a.billing.legal.view}
+        </a>
+      </div>
+    </Card>
   );
 }
 

@@ -19,6 +19,7 @@ import { DESIGN_COPY } from "./app/designs";
 import { POSTER_COPY } from "./app/poster";
 import { KES_COPY } from "./app/kes";
 import { TRACKING_COPY } from "./tracking";
+import { LEGAL_COPY } from "./legal";
 
 // Dictionnaires des écrans de l'application marchand : chaque nouvel écran
 // traduit s'ajoute ici pour hériter des contrôles de parité.
@@ -40,6 +41,7 @@ const APP_DICTS: Record<string, Record<Language, object>> = {
   poster: POSTER_COPY,
   kes: KES_COPY,
   tracking: TRACKING_COPY,
+  legal: LEGAL_COPY,
 };
 
 const LANGS: Language[] = ["fr", "ht", "en"];

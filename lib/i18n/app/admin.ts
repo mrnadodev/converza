@@ -57,6 +57,18 @@ export interface AdminCopy {
     changePlan: string;
   };
   billing: {
+    legal: {
+      title: string;
+      hint: string;
+      entity: string;
+      email: string;
+      whatsapp: string;
+      address: string;
+      updatedOn: string;
+      save: string;
+      empty: string;
+      view: string;
+    };
     pendingTitle: string;
     noPending: string;
     activate: string;
@@ -370,6 +382,18 @@ const fr: AdminCopy = {
     changePlan: "Changer de plan",
   },
   billing: {
+    legal: {
+      title: "Mentions légales et contact",
+      hint: "Ce que les pages Conditions et Confidentialité affichent comme interlocuteur",
+      entity: "Nom ou raison sociale",
+      email: "E-mail de contact",
+      whatsapp: "WhatsApp du support",
+      address: "Adresse (facultatif)",
+      updatedOn: "Date de mise à jour (AAAA-MM-JJ)",
+      save: "Enregistrer les mentions",
+      empty: "Aucune coordonnée publiée : les pages légales disent qu'il n'y a pas encore de contact plutôt que d'en inventer un.",
+      view: "Voir les pages",
+    },
     pendingTitle: "Paiements à vérifier",
     noPending: "Aucun paiement en attente.",
     activate: "Activer le plan",
@@ -614,6 +638,7 @@ const fr: AdminCopy = {
       UPGRADE_PLAN: "Plan augmenté",
       UPDATE_PLAN_CONFIG: "Tarif de plan modifié",
       UPDATE_PAYMENT_INFO: "Coordonnées de paiement modifiées",
+      UPDATE_LEGAL_INFO: "Mentions légales modifiées",
       UPDATE_PLATFORM_SETTINGS: "Réglages plateforme modifiés",
       UPDATE_MERCHANT: "Fiche marchand modifiée",
       REPAIR_MERCHANT_MEDIA: "Médias marchand normalisés",
@@ -744,6 +769,18 @@ const ht: AdminCopy = {
     changePlan: "Chanje plan",
   },
   billing: {
+    legal: {
+      title: "Mansyon legal ak kontak",
+      hint: "Sa paj Kondisyon ak Konfidansyalite yo montre kòm moun pou kontakte",
+      entity: "Non oswa rezon sosyal",
+      email: "Imèl kontak",
+      whatsapp: "WhatsApp sipò",
+      address: "Adrès (si w vle)",
+      updatedOn: "Dat mizajou (AAAA-MM-JJ)",
+      save: "Anrejistre mansyon yo",
+      empty: "Pa gen kowòdone pibliye : paj legal yo di poko gen kontak olye pou yo envante youn.",
+      view: "Wè paj yo",
+    },
     pendingTitle: "Pèman pou verifye",
     noPending: "Pa gen pèman k ap tann.",
     activate: "Aktive plan an",
@@ -988,6 +1025,7 @@ const ht: AdminCopy = {
       UPGRADE_PLAN: "Plan monte",
       UPDATE_PLAN_CONFIG: "Pri plan chanje",
       UPDATE_PAYMENT_INFO: "Enfòmasyon pèman chanje",
+      UPDATE_LEGAL_INFO: "Mansyon legal yo chanje",
       UPDATE_PLATFORM_SETTINGS: "Reglaj plataform chanje",
       UPDATE_MERCHANT: "Fich machann chanje",
       REPAIR_MERCHANT_MEDIA: "Medya machann normalize",
@@ -1118,6 +1156,18 @@ const en: AdminCopy = {
     changePlan: "Change plan",
   },
   billing: {
+    legal: {
+      title: "Legal details and contact",
+      hint: "What the Terms and Privacy pages show as the point of contact",
+      entity: "Name or legal entity",
+      email: "Contact email",
+      whatsapp: "Support WhatsApp",
+      address: "Address (optional)",
+      updatedOn: "Updated on (YYYY-MM-DD)",
+      save: "Save legal details",
+      empty: "No contact published: the legal pages say there is no contact yet instead of inventing one.",
+      view: "View the pages",
+    },
     pendingTitle: "Payments to verify",
     noPending: "No pending payment.",
     activate: "Activate the plan",
@@ -1362,6 +1412,7 @@ const en: AdminCopy = {
       UPGRADE_PLAN: "Plan upgraded",
       UPDATE_PLAN_CONFIG: "Plan pricing changed",
       UPDATE_PAYMENT_INFO: "Payment details changed",
+      UPDATE_LEGAL_INFO: "Legal details changed",
       UPDATE_PLATFORM_SETTINGS: "Platform settings changed",
       UPDATE_MERCHANT: "Merchant record changed",
       REPAIR_MERCHANT_MEDIA: "Merchant media normalised",

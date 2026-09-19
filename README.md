@@ -135,6 +135,39 @@ sont pas repris — crée-les depuis `/enskri`.
 
 Ensuite, toute nouvelle migration se joue d'abord là, puis en production.
 
+## Pages légales et pièces d'identité
+
+Deux pages publiques, en français, créole et anglais :
+
+- `/kondisyon` — conditions d'utilisation ;
+- `/konfidansyalite` — politique de confidentialité.
+
+Elles décrivent **ce que le code fait réellement** : ce qui est public (la
+vitrine), ce qui ne l'est jamais (comptes de paiement, prix d'achat, clients,
+commandes), et combien de temps chaque donnée est gardée. Quand le
+comportement du logiciel change, ces textes changent avec lui
+(`lib/i18n/legal.ts`).
+
+Le nom, l'e-mail et le WhatsApp affichés en bas de ces pages se saisissent dans
+la console, **Abonnements → Mentions légales et contact**. Tant qu'ils sont
+vides, les pages disent qu'aucun contact n'est publié plutôt que d'en inventer
+un.
+
+### Pièces d'identité
+
+Une demande de changement de numéro s'accompagne d'une pièce d'identité. Elle
+est supprimée dès que la demande est tranchée ou annulée. Deux cas échappent à
+cette règle et sont rattrapés par un script :
+
+```bash
+node scripts/purge-verification.mjs         # état des lieux
+node scripts/purge-verification.mjs --yes   # supprime
+```
+
+Il supprime les envois abandonnés de plus de sept jours (un marchand qui dépose
+sa pièce puis quitte le formulaire) et les pièces des demandes laissées sans
+décision depuis plus de trente jours. À lancer une fois par semaine.
+
 ## Contrôles automatiques
 
 `.github/workflows/ci.yml` rejoue à chaque poussée ce qui ne tournait jusqu'ici

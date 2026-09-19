@@ -252,7 +252,12 @@ function RequestForm() {
         <span className="text-[11.5px] text-ink-muted">{p.form.noticeHint}</span>
       </div>
 
-      <p className="rounded-xl bg-[#F3F8F6] px-3 py-2.5 text-[12px] leading-snug text-ink-soft">🔒 {p.form.privacy}</p>
+      <p className="rounded-xl bg-[#F3F8F6] px-3 py-2.5 text-[12px] leading-snug text-ink-soft">
+        🔒 {p.form.privacy}{" "}
+        <a href="/konfidansyalite" target="_blank" rel="noopener noreferrer" className="font-bold text-brand underline underline-offset-2">
+          {p.form.privacyLink}
+        </a>
+      </p>
 
       {error && <p className="rounded-xl bg-[#FCE4E4] px-3 py-2.5 text-[13px] font-semibold text-[#C0392B]">{p.errors[error]}</p>}
 
