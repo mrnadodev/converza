@@ -175,8 +175,14 @@ export function CatalogManager({ business, initial, userSession }: { business: B
               <article key={p.id} className="flex flex-col overflow-hidden rounded-2xl border border-line bg-white">
                 <div className="relative flex aspect-[3/4] w-full items-center justify-center overflow-hidden bg-slate-100">
                   {photos.length > 0 ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={photos[0]} alt={p.name} className="h-full w-full bg-[#F1F4F2] object-contain" />
+                    <>
+                      {/* La photo entiere, jamais recadree ; le vide autour est
+                          comble par la meme photo floutee, comme sur la vitrine. */}
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={photos[0]} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full scale-125 object-cover blur-2xl" />
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={photos[0]} alt={p.name} className="relative h-full w-full object-contain" />
+                    </>
                   ) : (
                     <span className="text-[11px] font-semibold text-slate-400">{k.noPhoto}</span>
                   )}

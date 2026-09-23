@@ -242,7 +242,7 @@ export function StockManager({
                     <div className="flex min-w-0 flex-1 items-center gap-2.5">
                       {p.photo_url ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={p.photo_url} alt="" className="h-11 w-11 shrink-0 rounded-xl border border-line object-cover" />
+                        <img src={p.photo_url} alt="" className="h-11 w-11 shrink-0 rounded-xl border border-line object-contain" />
                       ) : (
                         <div className="h-11 w-11 shrink-0 rounded-xl bg-gray-100" />
                       )}

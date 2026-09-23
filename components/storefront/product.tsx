@@ -32,7 +32,18 @@ export function photosOf(p: Product): string[] {
   return p.photo_url ? [p.photo_url] : [];
 }
 
-/** Image produit, ou emplacement neutre quand le marchand n'a pas mis de photo. */
+/**
+ * Image produit, ou emplacement neutre quand le marchand n'a pas mis de photo.
+ *
+ * La photo est toujours montrée en entier : jamais recadrée, jamais étirée.
+ * Les marchands photographient au téléphone, en portrait comme en paysage, et
+ * une carte de vitrine a une forme fixe — il reste donc du vide autour de
+ * beaucoup de photos.
+ *
+ * Ce vide est comblé par la photo elle-même, agrandie et floutée derrière :
+ * la carte garde sa forme, l'article reste entier, et aucune couleur étrangère
+ * n'entre dans la vitrine du marchand.
+ */
 export function ProductImage({
   photos,
   name,
@@ -56,14 +67,24 @@ export function ProductImage({
     );
   }
   return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src={photos[index]}
-      alt={name}
-      draggable={false}
-      onClick={onZoom ? () => onZoom(photos, index) : undefined}
-      className={`h-full w-full object-contain ${dark ? "bg-slate-800" : "bg-[#F1F4F2]"} ${onZoom ? "cursor-zoom-in" : ""}`}
-    />
+    <div className="relative h-full w-full overflow-hidden">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={photos[index]}
+        alt=""
+        aria-hidden="true"
+        draggable={false}
+        className="absolute inset-0 h-full w-full scale-125 object-cover blur-2xl"
+      />
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={photos[index]}
+        alt={name}
+        draggable={false}
+        onClick={onZoom ? () => onZoom(photos, index) : undefined}
+        className={`relative h-full w-full object-contain ${onZoom ? "cursor-zoom-in" : ""}`}
+      />
+    </div>
   );
 }
 

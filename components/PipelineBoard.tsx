@@ -786,7 +786,7 @@ function PromoModal({
             <div className="flex items-center gap-2 pt-1">
               {previews.map((src, i) => (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img key={i} src={src} alt="" className="h-14 w-14 rounded-xl border border-line object-cover" />
+                <img key={i} src={src} alt="" className="h-14 w-14 rounded-xl border border-line object-contain" />
               ))}
             </div>
           )}

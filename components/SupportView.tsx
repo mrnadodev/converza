@@ -177,7 +177,7 @@ export function SupportView({ data }: { data: SupportData }) {
                 <li key={p.id} className="flex items-center gap-2.5 py-2 text-[12.5px]">
                   {p.photo ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={p.photo} alt="" className="h-9 w-9 shrink-0 rounded-lg object-cover" />
+                    <img src={p.photo} alt="" className="h-9 w-9 shrink-0 rounded-lg object-contain" />
                   ) : (
                     <span className="h-9 w-9 shrink-0 rounded-lg bg-[#F3F6F4]" />
                   )}
