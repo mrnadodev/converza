@@ -106,6 +106,8 @@ export interface Product {
   stock_state: StockState;
   photo_url: string | null;
   photos?: string[];
+  /** Mis en avant sur la vitrine par le marchand (migration 10). */
+  in_showcase?: boolean | null;
   sold_count: number;
   is_active: boolean;
   /** Prix d'achat unitaire (migration 6), pour le calcul du bénéfice. */

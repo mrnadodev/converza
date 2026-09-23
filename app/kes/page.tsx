@@ -3,6 +3,7 @@ import { BottomNav } from "@/components/BottomNav";
 import { KesView } from "@/components/KesView";
 import { getCurrentUserSession, getMyBusiness, getRolePermissions } from "@/lib/data";
 import { getKes, KES_PERIODS, type KesPeriod } from "@/lib/kes";
+import { effectivePlan } from "@/lib/plans";
 import { getMemberContext } from "@/lib/auth";
 
 // Kès — caisse, dépenses, bénéfice et argent dehors (propriétaire).
@@ -17,7 +18,7 @@ export default async function KesPage({ searchParams }: { searchParams: { p?: st
 
   return (
     <div className="app-page with-topnav relative min-h-[100dvh] bg-[#F0F2F3] pb-[110px]">
-      <KesView data={data} businessName={business.name} />
+      <KesView data={data} businessName={business.name} plan={effectivePlan(business.plan, business.plan_until)} />
       <BottomNav active="kes" userSession={session} />
     </div>
   );

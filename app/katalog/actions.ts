@@ -23,6 +23,8 @@ export interface ProductInput {
   stockState: StockState;
   photoUrl: string | null;
   photoUrl2?: string | null;
+  photoUrl3?: string | null;
+  inShowcase?: boolean;
   photos?: string[];
   isActive: boolean;
 }
@@ -62,6 +64,7 @@ export async function saveProduct(input: ProductInput) {
   const photosList: string[] = [];
   if (input.photoUrl) photosList.push(input.photoUrl);
   if (input.photoUrl2) photosList.push(input.photoUrl2);
+  if (input.photoUrl3) photosList.push(input.photoUrl3);
 
   const qty = input.stockQty === "" ? null : Math.max(0, parseInt(input.stockQty, 10) || 0);
   const state = stockStateFor(qty);
@@ -107,6 +110,8 @@ export async function saveProduct(input: ProductInput) {
     photos: photosList,
     is_active: input.isActive,
   };
+  // Colonne de la migration 10 : envoyée à part plus bas si elle existe.
+  const showcase = input.inShowcase === true;
 
   // `eq("business_id", bid)` sur la mise à jour : sans ça, un identifiant de
   // produit d'un autre marchand serait accepté tel quel.
@@ -128,8 +133,22 @@ export async function saveProduct(input: ProductInput) {
     }
   }
 
+  // Mise en vitrine : écrite séparément. Mêlée au reste, une colonne absente
+  // (migration 10 non jouée) ferait échouer tout l'enregistrement du produit.
+  if (!res.error && productId) {
+    const { error: showcaseError } = await sb
+      .from("products")
+      .update({ in_showcase: showcase })
+      .eq("id", productId)
+      .eq("business_id", bid);
+    if (showcaseError && !/in_showcase|column|schema cache/i.test(showcaseError.message)) {
+      console.warn("in_showcase:", showcaseError.message);
+    }
+  }
+
   revalidatePath("/katalog");
   revalidatePath("/stok");
+  revalidatePath("/b");
   return { ok: !res.error, error: res.error?.message };
 }
 

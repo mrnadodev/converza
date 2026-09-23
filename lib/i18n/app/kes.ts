@@ -10,6 +10,8 @@ export interface KesCopy {
     cta: string;
     columns: string;
     missing: string;
+    premiumOnly: string;
+    premiumCta: string;
   };
   title: string;
   subtitle: string;
@@ -83,6 +85,8 @@ export const KES_COPY: Record<Language, KesCopy> = {
     cta: "Télécharger pour le comptable",
     columns: "Date, journal, référence, tiers, entrée, sortie, moyen de paiement.",
     missing: "Certains journaux ne sont pas encore disponibles sur cette base : le fichier contient ce qui existe.",
+    premiumOnly: "Le livre journal fait partie du plan Premium.",
+    premiumCta: "Voir le plan Premium",
   },
     title: "Caisse",
     subtitle: "Ce qui rentre, ce qui sort, ce qui vous reste.",
@@ -154,6 +158,8 @@ export const KES_COPY: Record<Language, KesCopy> = {
     cta: "Telechaje pou kontab la",
     columns: "Dat, jounal, referans, moun, antre, soti, mwayen peman.",
     missing: "Gen jounal ki poko disponib nan baz sa a : fichye a gen sa ki egziste.",
+    premiumOnly: "Jounal la nan plan Premium nan.",
+    premiumCta: "Gade plan Premium nan",
   },
     title: "Kès",
     subtitle: "Sa k antre, sa k soti, sa k rete pou ou.",
@@ -225,6 +231,8 @@ export const KES_COPY: Record<Language, KesCopy> = {
     cta: "Download for the accountant",
     columns: "Date, journal, reference, party, in, out, payment method.",
     missing: "Some journals are not available on this database yet: the file contains what exists.",
+    premiumOnly: "The day book is part of the Premium plan.",
+    premiumCta: "See the Premium plan",
   },
     title: "Cash",
     subtitle: "What comes in, what goes out, what you keep.",

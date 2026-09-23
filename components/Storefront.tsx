@@ -187,6 +187,10 @@ export function Storefront({
   const isPromo = (p: Product) => p.category === "Pwomosyon" || p.id.startsWith("promo-");
 
   const featured = useMemo(() => {
+    // Le marchand a choisi ce qui passe en vitrine : on respecte son choix.
+    const chosen = products.filter((p) => p.in_showcase === true);
+    if (chosen.length > 0) return chosen.slice(0, 8);
+    // Personne n'a rien choisi : promotions d'abord, puis meilleures ventes.
     const promo = products.filter(isPromo);
     const rest = products.filter((p) => !isPromo(p)).sort((a, b) => b.sold_count - a.sold_count);
     return [...promo, ...rest].slice(0, 8);

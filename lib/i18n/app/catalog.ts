@@ -17,6 +17,9 @@ export interface CatalogCopy {
     editTitle: string;
     photo1: string;
     photo2: string;
+    photo3: string;
+    showcase: string;
+    showcaseHint: string;
     addPhoto: string;
     name: string;
     namePlaceholder: string;
@@ -71,6 +74,9 @@ const fr: CatalogCopy = {
     editTitle: "Modifier le produit",
     photo1: "Photo principale",
     photo2: "Deuxième photo",
+    photo3: "Troisième photo",
+    showcase: "Mettre en vitrine",
+    showcaseHint: "Ce produit apparaît en premier sur votre vitrine. Les autres restent visibles dans le catalogue complet.",
     addPhoto: "Ajouter une photo",
     name: "Nom du produit",
     namePlaceholder: "Œufs frais",
@@ -125,6 +131,9 @@ const ht: CatalogCopy = {
     editTitle: "Modifye pwodwi a",
     photo1: "Foto prensipal",
     photo2: "Dezyèm foto",
+    photo3: "Twazyèm foto",
+    showcase: "Mete nan vitrin",
+    showcaseHint: "Pwodwi sa a parèt an premye sou vitrin ou. Lòt yo rete disponib nan katalòg la.",
     addPhoto: "Ajoute yon foto",
     name: "Non pwodwi a",
     namePlaceholder: "Ze fre",
@@ -179,6 +188,9 @@ const en: CatalogCopy = {
     editTitle: "Edit product",
     photo1: "Main photo",
     photo2: "Second photo",
+    photo3: "Third photo",
+    showcase: "Feature on the storefront",
+    showcaseHint: "This product appears first on your storefront. The others stay visible in the full catalogue.",
     addPhoto: "Add a photo",
     name: "Product name",
     namePlaceholder: "Fresh eggs",

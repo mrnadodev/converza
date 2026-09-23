@@ -16,7 +16,7 @@ import { addExpense, deleteExpense, type KesError } from "@/app/kes/actions";
 
 const EXPENSE_METHODS = ["cash", "moncash", "natcash", "banque", "autre"] as const;
 
-export function KesView({ data, businessName }: { data: KesData; businessName: string }) {
+export function KesView({ data, businessName, plan = "gratis" }: { data: KesData; businessName: string; plan?: string }) {
   const k = useDict(KES_COPY);
   const { language } = useLanguage();
   const money = (cents: number) => formatMoney(cents, data.currency);
@@ -134,12 +134,24 @@ export function KesView({ data, businessName }: { data: KesData; businessName: s
               <h2 className="text-xs font-extrabold uppercase text-ink">{k.ledger.title}</h2>
               <p className="mt-1 text-[12.5px] leading-snug text-ink-muted">{k.ledger.hint}</p>
               <p className="mt-1 text-[11.5px] text-ink-faint">{k.ledger.columns}</p>
-              <a
-                href={`/api/journal?p=${data.period}&lang=${language}`}
-                className="mt-3 flex h-11 items-center justify-center rounded-xl bg-brand text-[13.5px] font-extrabold text-white active:scale-[0.99]"
-              >
-                {k.ledger.cta}
-              </a>
+              {plan === "premium" ? (
+                <a
+                  href={`/api/journal?p=${data.period}&lang=${language}`}
+                  className="mt-3 flex h-11 items-center justify-center rounded-xl bg-brand text-[13.5px] font-extrabold text-white active:scale-[0.99]"
+                >
+                  {k.ledger.cta}
+                </a>
+              ) : (
+                <>
+                  <p className="mt-2 rounded-xl bg-owed-bg px-3 py-2 text-[12.5px] font-semibold text-owed-text">{k.ledger.premiumOnly}</p>
+                  <a
+                    href="/abonman"
+                    className="mt-2 flex h-11 items-center justify-center rounded-xl border border-line bg-white text-[13.5px] font-extrabold text-ink active:scale-[0.99]"
+                  >
+                    {k.ledger.premiumCta}
+                  </a>
+                </>
+              )}
             </section>
           </>
         )}

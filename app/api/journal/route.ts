@@ -6,6 +6,7 @@ import { buildLedger, ledgerCsv, ledgerFileName, type LedgerCsvLabels } from "@/
 import { KES_PERIODS, type KesPeriod } from "@/lib/kes-period";
 import { COMMON_COPY } from "@/lib/i18n/app/common";
 import type { Language } from "@/lib/i18n/translations";
+import { effectivePlan } from "@/lib/plans";
 import type { Currency } from "@/lib/types";
 
 // Livre journal de la période, en CSV : le fichier que le marchand remet à son
@@ -26,6 +27,9 @@ export async function GET(request: Request) {
   const lang = url.searchParams.get("lang") ?? "fr";
 
   const business = await getMyBusiness();
+  if (effectivePlan(business.plan, business.plan_until) !== "premium") {
+    return new NextResponse("Le livre journal fait partie du plan Premium.", { status: 403 });
+  }
   const { input, from } = await getLedger(me.businessId, (business.default_currency as Currency) ?? "HTG", period);
   const statuses = (COMMON_COPY[lang as Language] ?? COMMON_COPY.fr).statuses as Record<string, string>;
   const readable = {

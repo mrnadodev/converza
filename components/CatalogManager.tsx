@@ -28,6 +28,8 @@ const EMPTY = (currency: "HTG" | "USD"): ProductInput => ({
   stockState: "en_stok",
   photoUrl: null,
   photoUrl2: null,
+  photoUrl3: null,
+  inShowcase: false,
   isActive: true,
 });
 
@@ -63,6 +65,8 @@ export function CatalogManager({ business, initial, userSession }: { business: B
       stockState: p.stock_state,
       photoUrl: photos[0] ?? null,
       photoUrl2: photos[1] ?? null,
+      photoUrl3: photos[2] ?? null,
+      inShowcase: p.in_showcase === true,
       isActive: p.is_active,
     });
   }
@@ -278,14 +282,32 @@ export function CatalogManager({ business, initial, userSession }: { business: B
             {error && <p className="mt-3 rounded-xl bg-[#FCE4E4] px-3 py-2 text-[13px] text-[#C0392B]">{error}</p>}
 
             <div className="mt-4 flex flex-col gap-3.5">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-3 gap-3">
                 <Field label={k.form.photo1}>
                   <ImageUpload value={form.photoUrl} folder="products" onChange={(url) => set({ photoUrl: url })} label={k.form.addPhoto} targetWidth={450} targetHeight={750} />
                 </Field>
                 <Field label={k.form.photo2}>
                   <ImageUpload value={form.photoUrl2 ?? null} folder="products" onChange={(url) => set({ photoUrl2: url })} label={k.form.addPhoto} targetWidth={450} targetHeight={750} />
                 </Field>
+                <Field label={k.form.photo3}>
+                  <ImageUpload value={form.photoUrl3 ?? null} folder="products" onChange={(url) => set({ photoUrl3: url })} label={k.form.addPhoto} targetWidth={450} targetHeight={750} />
+                </Field>
               </div>
+
+              {/* Le marchand décide de ce qui passe en vitrine ; le reste
+                  reste accessible dans le catalogue complet. */}
+              <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-[#F9FBFB] p-3">
+                <input
+                  type="checkbox"
+                  checked={form.inShowcase === true}
+                  onChange={(e) => set({ inShowcase: e.target.checked })}
+                  className="mt-0.5 h-5 w-5 shrink-0 accent-[#008069]"
+                />
+                <span className="flex flex-col gap-0.5">
+                  <span className="text-[13.5px] font-bold text-ink">{k.form.showcase}</span>
+                  <span className="text-[12px] leading-snug text-ink-muted">{k.form.showcaseHint}</span>
+                </span>
+              </label>
 
               <Field label={k.form.name}>
                 <input value={form.name} onChange={(e) => set({ name: e.target.value })} className={inputCls} placeholder={k.form.namePlaceholder} />
