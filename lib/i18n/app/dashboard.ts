@@ -29,6 +29,7 @@ export interface DashboardCopy {
   actions: {
     share: string;
     copied: string;
+    shared: string;
     shareTitle: string;
     shareText: string;
     viewStore: string;
@@ -98,6 +99,7 @@ const fr: DashboardCopy = {
   actions: {
     share: "Partager ma vitrine",
     copied: "Lien copié",
+    shared: "Fait",
     shareTitle: "Commander sur WhatsApp",
     shareText: "Découvrez notre catalogue et commandez facilement sur WhatsApp :",
     viewStore: "Voir ma vitrine",
@@ -208,6 +210,7 @@ const ht: DashboardCopy = {
   actions: {
     share: "Pataje vitrin mwen",
     copied: "Lyen kopye",
+    shared: "Fèt",
     shareTitle: "Kòmande sou WhatsApp",
     shareText: "Gade katalòg nou an epi kòmande fasil sou WhatsApp :",
     viewStore: "Gade vitrin mwen",
@@ -318,6 +321,7 @@ const en: DashboardCopy = {
   actions: {
     share: "Share my storefront",
     copied: "Link copied",
+    shared: "Done",
     shareTitle: "Order on WhatsApp",
     shareText: "Browse our catalog and order easily on WhatsApp:",
     viewStore: "View my storefront",

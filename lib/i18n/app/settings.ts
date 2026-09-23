@@ -71,6 +71,9 @@ export interface SettingsCopy {
     designs: { design1: string; design2: string; design3: string };
     images: (n: number) => string;
     preview: string;
+    qrTitle: string;
+    qrPremium: string;
+    qrCta: string;
     selected: string;
     lockedPro: string;
     lockedPremium: string;
@@ -210,6 +213,9 @@ const fr: SettingsCopy = {
     sectorColors: "Couleurs du secteur",
     images: (n: number) => `${n} images en vitrine`,
     preview: "Aperçu",
+    qrTitle: "Menu QR pour les tables",
+    qrPremium: "Le menu QR par table fait partie du plan Premium. Vos clients scannent, commandent depuis leur table, et la commande arrive sur votre WhatsApp.",
+    qrCta: "Voir le plan Premium",
     selected: "Choisie",
   },
   tables: {
@@ -345,6 +351,9 @@ const ht: SettingsCopy = {
     sectorColors: "Koulè sektè a",
     images: (n: number) => `${n} imaj nan vitrin`,
     preview: "Apèsi",
+    qrTitle: "Menu QR pou tab yo",
+    qrPremium: "Menu QR pa tab la nan plan Premium nan. Kliyan yo eskane, yo kòmande depi sou tab la, epi kòmand lan rive sou WhatsApp ou.",
+    qrCta: "Gade plan Premium nan",
     selected: "Chwazi",
   },
   tables: {
@@ -480,6 +489,9 @@ const en: SettingsCopy = {
     sectorColors: "Sector colors",
     images: (n: number) => `${n} images on the storefront`,
     preview: "Preview",
+    qrTitle: "QR menu for tables",
+    qrPremium: "The per-table QR menu is part of the Premium plan. Your customers scan, order from their table, and the order lands on your WhatsApp.",
+    qrCta: "See the Premium plan",
     selected: "Selected",
   },
   tables: {

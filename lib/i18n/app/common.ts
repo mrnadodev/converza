@@ -49,7 +49,7 @@ const fr: CommonCopy = {
     home: "Accueil",
     orders: "Commandes",
     catalog: "Catalogue",
-    cash: "Kès",
+    cash: "Caisse",
     stock: "Stock",
     customers: "Clients",
     team: "Équipe",

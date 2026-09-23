@@ -156,6 +156,7 @@ export interface AdminCopy {
     priceTitle: string;
     priceHint: string;
     syncPrice: string;
+    includedInPremium: string;
     synced: (price: string) => string;
     kpis: { restaurants: string; restaurantsHint: (n: number) => string; mrr: string; mrrHint: string; orders: string; ordersHint: string; gmv: string; gmvHint: string };
     search: string;
@@ -548,6 +549,7 @@ const fr: AdminCopy = {
     priceTitle: "Tarif mensuel du service",
     priceHint: "Le montant se répercute sur la page d'accueil et sur la page Abonnement.",
     syncPrice: "Enregistrer le tarif",
+    includedInPremium: "Le menu QR par table fait partie du plan Premium : il n'a pas de prix à part.",
     synced: (price) => `Tarif mis à jour : ${price} par mois.`,
     kpis: {
       restaurants: "Établissements",
@@ -1009,6 +1011,7 @@ const ht: AdminCopy = {
     priceTitle: "Pri sèvis la chak mwa",
     priceHint: "Montan an parèt sou paj akèy la ak sou paj Abònman an.",
     syncPrice: "Anrejistre pri a",
+    includedInPremium: "Menu QR pa tab la nan plan Premium nan : li pa gen yon pri apa.",
     synced: (price) => `Pri a mete ajou : ${price} chak mwa.`,
     kpis: {
       restaurants: "Etablisman",
@@ -1470,6 +1473,7 @@ const en: AdminCopy = {
     priceTitle: "Monthly service price",
     priceHint: "The amount flows through to the home page and the Subscription page.",
     syncPrice: "Save the price",
+    includedInPremium: "The per-table QR menu is part of the Premium plan: it has no separate price.",
     synced: (price) => `Price updated: ${price} per month.`,
     kpis: {
       restaurants: "Venues",

@@ -156,10 +156,22 @@ export function Subscription({
               </div>
             ) : (
               <>
-                <h2 className="text-lg font-extrabold">{s.payTitle(chosen.name)}</h2>
-                <p className="mt-0.5 text-[13px] text-ink-muted">
-                  {formatMoney(chosen.priceGdes * 100)} {s.perMonth}
-                </p>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <h2 className="text-lg font-extrabold">{s.payTitle(chosen.name)}</h2>
+                    <p className="mt-0.5 text-[13px] text-ink-muted">
+                      {formatMoney(chosen.priceGdes * 100)} {s.perMonth}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setChosen(null)}
+                    aria-label={s.close}
+                    className="h-9 w-9 shrink-0 cursor-pointer rounded-full bg-[#F3F6F4] text-[15px] font-bold text-ink-soft active:scale-95"
+                  >
+                    ✕
+                  </button>
+                </div>
 
                 <label className="mt-4 flex flex-col gap-1.5">
                   <span className="text-[13px] font-semibold text-ink-soft">{s.method}</span>

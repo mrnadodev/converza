@@ -6,7 +6,7 @@ import { BottomNav } from "@/components/BottomNav";
 import { BulkExcelManager } from "@/components/BulkExcelManager";
 import { ImageUpload } from "@/components/ImageUpload";
 import { LanguageToggle } from "@/components/LanguageToggle";
-import { useDict } from "@/components/LanguageContext";
+import { useDict, useLanguage } from "@/components/LanguageContext";
 import { CATALOG_COPY } from "@/lib/i18n/app/catalog";
 import { COMMON_COPY } from "@/lib/i18n/app/common";
 import { formatMoney } from "@/lib/money";
@@ -15,6 +15,7 @@ import { verticalOf } from "@/lib/verticals";
 import { saveProduct, deleteProduct, type ProductInput } from "@/app/katalog/actions";
 import type { Business, Product } from "@/lib/types";
 import type { UserSession } from "@/lib/rbac";
+import { categoriesFor, categoryLabel } from "@/lib/categories";
 
 const EMPTY = (currency: "HTG" | "USD"): ProductInput => ({
   name: "",
@@ -33,6 +34,7 @@ const EMPTY = (currency: "HTG" | "USD"): ProductInput => ({
 export function CatalogManager({ business, initial, userSession }: { business: Business; initial: Product[]; userSession?: UserSession }) {
   const k = useDict(CATALOG_COPY);
   const c = useDict(COMMON_COPY);
+  const { language } = useLanguage();
   const router = useRouter();
   const vertical = verticalOf(business.business_type);
   const canEdit = userSession ? getRolePermissions(userSession).canEditCatalog : true;
@@ -170,7 +172,7 @@ export function CatalogManager({ business, initial, userSession }: { business: B
                 <div className="relative flex aspect-[3/4] w-full items-center justify-center overflow-hidden bg-slate-100">
                   {photos.length > 0 ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={photos[0]} alt={p.name} className="h-full w-full object-cover" />
+                    <img src={photos[0]} alt={p.name} className="h-full w-full bg-[#F1F4F2] object-contain" />
                   ) : (
                     <span className="text-[11px] font-semibold text-slate-400">{k.noPhoto}</span>
                   )}
@@ -183,7 +185,7 @@ export function CatalogManager({ business, initial, userSession }: { business: B
                     <h3 className="line-clamp-1 text-xs font-bold text-ink">{p.name}</h3>
                     <span className="text-xs font-extrabold text-brand">{formatMoney(p.price_cents, p.currency)}</span>
                     <span className="text-[10.5px] font-medium text-ink-faint">
-                      {p.category || k.general} · {p.stock_qty ?? "—"} {k.stockState[p.stock_state]}
+                      {categoryLabel(p.category, language) || k.general} · {p.stock_qty ?? "—"} {k.stockState[p.stock_state]}
                     </span>
                   </div>
                   {canEdit && (
@@ -216,7 +218,7 @@ export function CatalogManager({ business, initial, userSession }: { business: B
                 </div>
                 <div className="flex items-center gap-2 text-[12.5px] text-ink-faint">
                   <span className="font-semibold text-ink">{formatMoney(p.price_cents, p.currency)}</span>
-                  {p.category && <span>· {p.category}</span>}
+                  {p.category && <span>· {categoryLabel(p.category, language)}</span>}
                   <span>
                     · {p.stock_qty ?? "—"} {k.stockState[p.stock_state]}
                   </span>
@@ -305,8 +307,8 @@ export function CatalogManager({ business, initial, userSession }: { business: B
               <Field label={k.form.category}>
                 <input value={form.category} onChange={(e) => set({ category: e.target.value })} list="cats" className={inputCls} placeholder={k.form.categoryPlaceholder} />
                 <datalist id="cats">
-                  {vertical.defaultCategories.map((cat) => (
-                    <option key={cat} value={cat} />
+                  {categoriesFor(business.business_type, language).map((cat) => (
+                    <option key={cat.label} value={cat.label} />
                   ))}
                 </datalist>
               </Field>

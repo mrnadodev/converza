@@ -44,20 +44,6 @@ export const DEFAULT_PLANS: Plan[] = [
     features: ["Vitrin piblik", "Katalòg + kòmand WhatsApp", "1 itilizatè", "Zòn livrezon"],
   },
   {
-    key: "qr_express",
-    name: "Menu QR Express",
-    priceGdes: 500,
-    tagline: "Spesyal pou Restoran, Bar & Kafeterya (Sèvis Standalone)",
-    highlight: true,
-    features: [
-      "Menu Dijital ak Imaj 4:5 Hyper-Visyèl (Fòma 2Lx2.5H)",
-      "Gjeniratè Chevalet QR pou Tab (Jiska 25 tab)",
-      "Pran kòmand sou Tab ak notifikasyon Kwizin (/komand)",
-      "Sipò Not Kizin (San piman, plis glas...)",
-      "Kòmand dirèk WhatsApp ak chwa tab",
-    ],
-  },
-  {
     key: "pro",
     name: "Pro",
     priceGdes: 750,
@@ -77,6 +63,7 @@ export const DEFAULT_PLANS: Plan[] = [
     tagline: "Pou vann san rete",
     features: [
       "Tout sa ki nan Pro",
+      "Menu QR pou tab yo (restoran, bar, kafeterya)",
       "API WhatsApp, mesaj otomatik (byento)",
       "Asistan IA ki reponn pou ou (byento)",
       "Ajan san limit",

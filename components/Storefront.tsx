@@ -27,6 +27,7 @@ import { maskPhone, phoneNoticeState } from "@/lib/phone-change";
 import { useTheme } from "@/components/ThemeProvider";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { useLanguage } from "@/components/LanguageContext";
+import { categoriesFor, categoryLabel } from "@/lib/categories";
 
 type View = "vitrine" | "full";
 
@@ -208,11 +209,11 @@ export function Storefront({
 
     const map = new Map<string, Product[]>();
     for (const p of list) {
-      const cat = p.category || "—";
+      const cat = categoryLabel(p.category, language) || "—";
       if (!map.has(cat)) map.set(cat, []);
       map.get(cat)!.push(p);
     }
-    const order = vertical.defaultCategories;
+    const order = categoriesFor(business.business_type, language).map((o) => o.label);
     return [...map.entries()].sort((a, b) => {
       const ia = order.indexOf(a[0]);
       const ib = order.indexOf(b[0]);
@@ -221,7 +222,7 @@ export function Storefront({
       if (ib !== -1) return 1;
       return a[0].localeCompare(b[0]);
     });
-  }, [products, inStockOnly, sort, vertical.defaultCategories]);
+  }, [products, inStockOnly, sort, business.business_type, language]);
 
   const openZoom = (photos: string[], index: number) => setLightbox({ photos, index });
   const visitHref = (p: Product) =>

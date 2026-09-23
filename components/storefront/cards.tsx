@@ -84,7 +84,7 @@ export function ProductImage({
       alt={name}
       draggable={false}
       onClick={onZoom ? () => onZoom(photos, index) : undefined}
-      className={`h-full w-full object-cover ${onZoom ? "cursor-zoom-in" : ""}`}
+      className={`h-full w-full object-contain ${dark ? "bg-slate-800" : "bg-[#F1F4F2]"} ${onZoom ? "cursor-zoom-in" : ""}`}
     />
   );
 }
@@ -113,7 +113,6 @@ export function OverlayCard({
       </div>
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
       <div className="relative z-10 flex flex-col gap-1 p-3">
-        {p.category && <span className="text-[10.5px] font-bold uppercase tracking-wide text-white/70">{p.category}</span>}
         <h4 className="line-clamp-1 text-sm font-extrabold">{p.name}</h4>
         <div className="mt-0.5 flex items-center justify-between gap-2">
           <span className="text-[13px] font-extrabold text-emerald-200">{formatMoney(p.price_cents, p.currency)}</span>
@@ -245,9 +244,6 @@ export function FoodCard({
       <div className="relative aspect-[4/5] w-full overflow-hidden">
         <ProductImage photos={photos} name={p.name} dark={dark} onZoom={onZoom} />
         <div className="absolute left-2 top-2 z-10 flex flex-wrap gap-1">
-          {p.category && (
-            <span className="max-w-[110px] truncate rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-extrabold uppercase text-slate-950">{p.category}</span>
-          )}
           {p.sold_count > 0 && (
             <span className="hidden rounded-full bg-emerald-500 px-2 py-0.5 text-[10px] font-extrabold text-white sm:inline-block">{c.bestSeller}</span>
           )}

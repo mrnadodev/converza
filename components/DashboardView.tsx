@@ -158,7 +158,7 @@ export function DashboardView(props: DashboardViewProps) {
 
 function StoreActions({ slug, canMakePoster, onPoster }: { slug: string; canMakePoster: boolean; onPoster: () => void }) {
   const d = useDict(DASHBOARD_COPY);
-  const { share, copied } = useShareStore(slug);
+  const { share, copied, shareLabel } = useShareStore(slug);
   return (
     <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3 md:col-span-2">
       <button
@@ -167,7 +167,7 @@ function StoreActions({ slug, canMakePoster, onPoster }: { slug: string; canMake
         className="flex h-12 cursor-pointer items-center justify-center gap-2 rounded-2xl bg-brand-green px-4 text-sm font-bold text-white shadow-[0_6px_16px_rgba(37,211,102,0.3)] active:scale-[0.99]"
       >
         {copied ? <CheckIcon /> : <ShareIcon />}
-        <span>{copied ? d.actions.copied : d.actions.share}</span>
+        <span>{copied ? shareLabel : d.actions.share}</span>
       </button>
       <a
         href={`/b/${slug}`}
@@ -277,7 +277,7 @@ function Collect({ orders, shopName }: { orders: DashboardOrder[]; shopName: str
 
 function FirstSteps({ business, productCount, orderCount }: { business: Business; productCount: number; orderCount: number }) {
   const d = useDict(DASHBOARD_COPY);
-  const { share, copied } = useShareStore(business.slug);
+  const { share, copied, shareLabel } = useShareStore(business.slug);
   const computed = setupSteps({
     activeProducts: productCount,
     coverUrl: business.cover_url,
@@ -339,7 +339,7 @@ function FirstSteps({ business, productCount, orderCount }: { business: Business
                 onClick={s.onClick}
                 className="ml-auto shrink-0 cursor-pointer rounded-lg bg-brand px-3 py-2 text-xs font-bold text-white"
               >
-                {copied ? d.actions.copied : s.copy.cta}
+                {copied ? shareLabel : s.copy.cta}
               </button>
             )}
           </li>
@@ -620,13 +620,19 @@ function AgentQueue({
 
 function useShareStore(slug: string) {
   const d = useDict(DASHBOARD_COPY);
-  const [copied, setCopied] = useState(false);
+  const [state, setState] = useState<"shared" | "copied" | null>(null);
+
+  const confirm = (kind: "shared" | "copied") => {
+    setState(kind);
+    setTimeout(() => setState(null), 2500);
+  };
 
   async function share() {
     const url = `${window.location.origin}/b/${slug}`;
     if (typeof navigator !== "undefined" && navigator.share) {
       try {
         await navigator.share({ title: d.actions.shareTitle, text: d.actions.shareText, url });
+        confirm("shared");
         return;
       } catch {
         /* partage annulé : on retombe sur la copie */
@@ -634,14 +640,14 @@ function useShareStore(slug: string) {
     }
     try {
       await navigator.clipboard.writeText(url);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      confirm("copied");
     } catch {
       /* presse-papier indisponible */
     }
   }
 
-  return { share, copied };
+  // « copied » reste vrai pour les deux cas : le bouton montre la coche.
+  return { share, copied: state !== null, shareLabel: state === "shared" ? d.actions.shared : d.actions.copied };
 }
 
 function BusinessMark({ business }: { business: Business }) {

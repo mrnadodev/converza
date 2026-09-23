@@ -362,9 +362,9 @@ export function ProductPosterModal({ business, products, onClose }: { business: 
   const label = "text-[12px] font-bold text-ink-muted";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/70 p-0 backdrop-blur-sm sm:items-center sm:p-4">
-      <div className="flex min-h-[100dvh] w-full max-w-5xl flex-col bg-white text-ink shadow-2xl sm:min-h-0 sm:rounded-3xl">
-        <div className="sticky top-0 z-10 flex items-start justify-between gap-3 border-b border-line bg-white px-4 py-3.5 sm:rounded-t-3xl sm:px-6">
+    <div className="fixed inset-0 z-50 flex items-stretch justify-center bg-black/70 p-0 backdrop-blur-sm sm:items-center sm:p-4">
+      <div className="flex max-h-[100dvh] w-full max-w-5xl flex-col overflow-hidden bg-white text-ink shadow-2xl sm:max-h-[92dvh] sm:rounded-3xl">
+        <div className="flex shrink-0 items-start justify-between gap-3 border-b border-line bg-white px-4 py-3.5 sm:rounded-t-3xl sm:px-6">
           <div className="min-w-0">
             <h2 className="text-[17px] font-extrabold">{t.title}</h2>
             <p className="text-[12px] text-ink-muted">{t.subtitle}</p>
@@ -374,7 +374,7 @@ export function ProductPosterModal({ business, products, onClose }: { business: 
           </button>
         </div>
 
-        <div className="flex flex-col gap-5 p-4 sm:p-6 md:flex-row-reverse">
+        <div className="flex flex-1 flex-col gap-5 overflow-y-auto p-4 sm:p-6 md:flex-row-reverse">
           {/* Aperçu : le canvas exporté, affiché en réduction. */}
           <div className="flex flex-col items-center gap-2 md:w-[320px] md:shrink-0">
             <span className="text-[12px] font-bold text-ink-muted">{t.preview}</span>

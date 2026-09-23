@@ -1309,59 +1309,27 @@ function QrMenuTab({
 }) {
   const a = useDict(ADMIN_COPY);
   const plans = data.platformPlans ?? [];
-  const qrPlan = plans.find((p) => p.key === "qr_express");
+  const premiumPrice = plans.find((p) => p.key === "premium")?.priceGdes ?? 0;
   const settings = data.platformSettings?.qrMenuService;
-  const [price, setPrice] = useState<number>(qrPlan?.priceGdes ?? settings?.standalonePriceGdes ?? 500);
-  const [saved, setSaved] = useState<string | null>(null);
   const [q, setQ] = useState("");
 
   const limits = settings?.tableLimits ?? { gratis: 5, pro: 25, premium: 50 };
   const venues = data.merchants.filter(
-    (m) => m.plan === "qr_express" || (m.business_type ?? "").toLowerCase().startsWith("restaur"),
+    (m) => m.plan === "premium" || (m.business_type ?? "").toLowerCase().startsWith("restaur"),
   );
-  const subscribers = data.merchants.filter((m) => m.plan === "qr_express" && isActive(m)).length;
+  const subscribers = data.merchants.filter((m) => m.plan === "premium" && isActive(m)).length;
   const shown = venues.filter((m) => m.name.toLowerCase().includes(q.toLowerCase()) || m.slug.includes(q.toLowerCase()));
-
-  function savePrice() {
-    run("sync-qr-price", async () => {
-      const res = await updatePlanConfig("qr_express", price);
-      await updateGlobalSettingsAction({
-        qrMenuService: {
-          enabled: settings?.enabled ?? true,
-          standalonePriceGdes: price,
-          tableLimits: limits,
-          allowKitchenNotes: settings?.allowKitchenNotes ?? true,
-          autoOpenWhatsapp: settings?.autoOpenWhatsapp ?? true,
-        },
-      });
-      if (res.ok) setSaved(a.qr.synced(formatMoney(price * 100)));
-    });
-  }
 
   return (
     <div className="flex flex-col gap-4 px-4 pt-5 md:px-6">
       <Card>
         <CardTitle title={a.qr.title} hint={a.qr.subtitle} />
-        <div className="mt-3 flex flex-col gap-3 border-t border-line pt-3 sm:flex-row sm:items-end sm:justify-between">
-          <div className="flex-1">
-            <Field label={a.qr.priceTitle} hint={a.qr.priceHint}>
-              <input type="number" value={price} onChange={(e) => setPrice(Number(e.target.value))} className={`${inputCls} max-w-[200px]`} />
-            </Field>
-          </div>
-          <button
-            onClick={savePrice}
-            disabled={pending}
-            className="h-11 shrink-0 cursor-pointer rounded-xl bg-brand px-4 text-[13px] font-extrabold text-white active:scale-95 disabled:opacity-60"
-          >
-            {pending && busy === "sync-qr-price" ? "…" : a.qr.syncPrice}
-          </button>
-        </div>
-        {saved && <p className="mt-2 rounded-xl bg-[#E7F7F1] px-3 py-2 text-[12.5px] font-semibold text-brand">{saved}</p>}
+        <p className="mt-3 border-t border-line pt-3 text-[12.5px] text-ink-muted">{a.qr.includedInPremium}</p>
       </Card>
 
       <section className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <Kpi label={a.qr.kpis.restaurants} value={String(venues.length)} sub={a.qr.kpis.restaurantsHint(subscribers)} />
-        <Kpi label={a.qr.kpis.mrr} value={formatMoney(subscribers * price * 100)} sub={a.qr.kpis.mrrHint} />
+        <Kpi label={a.qr.kpis.mrr} value={formatMoney(subscribers * premiumPrice * 100)} sub={a.qr.kpis.mrrHint} />
         <Kpi label={a.qr.kpis.orders} value={String(venues.reduce((s, m) => s + m.orders, 0))} sub={a.qr.kpis.ordersHint} />
         <Kpi label={a.qr.kpis.gmv} value={formatMoney(venues.reduce((s, m) => s + m.gmvCents, 0))} sub={a.qr.kpis.gmvHint} />
       </section>

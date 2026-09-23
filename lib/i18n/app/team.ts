@@ -37,6 +37,7 @@ export interface TeamCopy {
     manualNote: string;
     payTitle: (plan: string) => string;
     method: string;
+    close: string;
     sendTo: (amount: string) => string;
     holder: string;
     notConfigured: string;
@@ -88,6 +89,7 @@ const fr: TeamCopy = {
     manualNote: "Les paiements sont vérifiés à la main : le plan est activé après confirmation.",
     payTitle: (plan) => `Payer le plan ${plan}`,
     method: "Moyen de paiement",
+    close: "Fermer",
     sendTo: (amount) => `Envoyez ${amount} sur :`,
     holder: "Titulaire",
     notConfigured: "Les coordonnées de paiement CONVERZA ne sont pas encore renseignées. Contactez l'équipe avant de payer.",
@@ -139,6 +141,7 @@ const ht: TeamCopy = {
     manualNote: "Pèman yo verifye alamen : plan an aktive apre konfimasyon.",
     payTitle: (plan) => `Peye plan ${plan}`,
     method: "Mwayen pèman",
+    close: "Fèmen",
     sendTo: (amount) => `Voye ${amount} sou :`,
     holder: "Titilè",
     notConfigured: "Kowòdone pèman CONVERZA yo poko anrejistre. Kontakte ekip la anvan w peye.",
@@ -190,6 +193,7 @@ const en: TeamCopy = {
     manualNote: "Payments are checked by hand: the plan is activated after confirmation.",
     payTitle: (plan) => `Pay for the ${plan} plan`,
     method: "Payment method",
+    close: "Close",
     sendTo: (amount) => `Send ${amount} to:`,
     holder: "Account holder",
     notConfigured: "CONVERZA payment details are not set up yet. Contact the team before paying.",

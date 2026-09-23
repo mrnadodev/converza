@@ -44,9 +44,10 @@ export function LandingPage({
 
   // Prix et textes des offres viennent de la console : un changement s'y fait
   // une seule fois, et se voit ici comme sur la page Abonnement des marchands.
-  const PLAN_ORDER = ["gratis", "qr_express", "pro", "premium"];
+  const PLAN_ORDER = ["gratis", "pro", "premium"];
   const offers = PLAN_ORDER.map((key) => plans.find((p) => p.key === key)).filter(Boolean) as Plan[];
-  const qrPrice = plans.find((p) => p.key === "qr_express")?.priceGdes;
+  // Le menu QR par table fait partie du Premium : c est son prix qui s affiche.
+  const qrPrice = plans.find((p) => p.key === "premium")?.priceGdes;
 
   return (
     <div ref={rootRef} style={{ background: "#FFFFFF", color: INK }} className="overflow-x-hidden">

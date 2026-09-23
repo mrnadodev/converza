@@ -568,7 +568,19 @@ export function SettingsForm({ business, designs }: { business: Business; design
               </div>
             </Card>
 
-            <TableQrGenerator business={business} />
+            {plan === "premium" ? (
+              <TableQrGenerator business={business} />
+            ) : (
+              <Card title={s.look.qrTitle}>
+                <p className="text-[13px] leading-snug text-ink-muted">{s.look.qrPremium}</p>
+                <a
+                  href="/abonman"
+                  className="mt-3 flex h-10 items-center justify-center rounded-xl bg-brand px-4 text-[13px] font-extrabold text-white"
+                >
+                  {s.look.qrCta}
+                </a>
+              </Card>
+            )}
           </>
         )}
       </div>
