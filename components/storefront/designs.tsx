@@ -1,20 +1,29 @@
 "use client";
 
-import type { CSSProperties, ReactNode } from "react";
+import type { CSSProperties } from "react";
 import { formatMoney } from "@/lib/money";
 import type { Product } from "@/lib/types";
 import type { LayoutKey } from "@/lib/storefront-layouts";
-import type { Language } from "@/lib/i18n/translations";
 import { designFor, type DesignCta, type DesignSkin, type SectorPalette } from "@/lib/storefront-designs";
-import { categoryLabel } from "@/lib/categories";
-import { useLanguage } from "@/components/LanguageContext";
-import { ProductImage, photosOf, useCopy, type CartOps } from "@/components/storefront/cards";
+import {
+  PriceText,
+  ProductCategory,
+  ProductImage,
+  SoldBadge,
+  photosOf,
+  useCopy,
+  type CartOps,
+} from "@/components/storefront/product";
 
-// Section « mis en avant » de la vitrine : le design du secteur de la boutique
+// Section « À la une » de la vitrine : le design du secteur de la boutique
 // (lib/storefront-designs), dans la disposition choisie par le marchand.
 //
 // Chaque design affiche un nombre fixe d'images ; les autres produits sont
 // dans le catalogue complet. Les couleurs sont celles du secteur.
+//
+// Ce fichier ne décide que de la mise en page. Ce qu'une carte montre d'un
+// produit vient de components/storefront/product.tsx, partagé avec le
+// catalogue complet.
 
 type Zoom = (photos: string[], index: number) => void;
 
@@ -26,13 +35,7 @@ interface Ctx {
   cta: DesignCta;
   skin: DesignSkin;
   pal: SectorPalette;
-  language: Language;
 }
-
-// Les categories sont enregistrees dans la langue du marchand, ou sous forme
-// de cle (« femme.vetements ») : elles sont traduites a l’affichage, comme
-// le reste de la vitrine.
-const catOf = (p: Product, ctx: Ctx) => categoryLabel(p.category, ctx.language);
 
 export function FeaturedSection({
   layout,
@@ -57,8 +60,7 @@ export function FeaturedSection({
 }) {
   const spec = designFor(verticalId, layout);
   const items = featured.slice(0, spec.slots);
-  const { language } = useLanguage();
-  const ctx: Ctx = { cart, ops, onZoom, visitHref, cta: spec.cta, skin: spec.skin, pal: palette, language };
+  const ctx: Ctx = { cart, ops, onZoom, visitHref, cta: spec.cta, skin: spec.skin, pal: palette };
   if (items.length === 0) return null;
 
   const tile = (p: Product, className: string, extra?: { tone?: "dark" | "light"; shape?: string }) => (
@@ -239,15 +241,6 @@ function skinOf(skin: DesignSkin, pal: SectorPalette): SkinStyle {
   }
 }
 
-function PriceText({ p, className, style, wrap }: { p: Product; className?: string; style?: CSSProperties; wrap?: boolean }) {
-  return (
-    <span className={`${wrap ? "" : "whitespace-nowrap"} font-extrabold ${className ?? ""}`} style={style}>
-      {formatMoney(p.price_cents, p.currency)}
-      {p.unit ? <span className="text-[11px] font-semibold opacity-70"> / {p.unit}</span> : null}
-    </span>
-  );
-}
-
 /* ─────────── Bouton d'action ─────────── */
 
 function Cta({ p, ctx, variant, full, compact }: { p: Product; ctx: Ctx; variant: SkinStyle["button"]; full?: boolean; compact?: boolean }) {
@@ -289,17 +282,6 @@ function Cta({ p, ctx, variant, full, compact }: { p: Product; ctx: Ctx; variant
       {ctx.cta === "add" && <span aria-hidden="true">+</span>}
       {label}
     </button>
-  );
-}
-
-function Badge({ children, ctx, onDark }: { children: ReactNode; ctx: Ctx; onDark?: boolean }) {
-  return (
-    <span
-      className="w-fit max-w-full truncate rounded-full px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide"
-      style={onDark ? { background: "rgba(0,0,0,0.45)", color: "#fff" } : { background: ctx.pal.soft, color: ctx.pal.strong }}
-    >
-      {children}
-    </span>
   );
 }
 
@@ -346,13 +328,11 @@ function Sheet({ p, ctx, aspect, compact }: { p: Product; ctx: Ctx; aspect: stri
     <div className={`flex h-full min-w-0 flex-col overflow-hidden rounded-2xl ${s.shell}`} style={s.style}>
       <div className={`relative w-full overflow-hidden ${aspect}`}>
         <ProductImage photos={photos} name={p.name} dark={ctx.skin === "vip" || ctx.skin === "neon" || ctx.skin === "executive"} onZoom={ctx.onZoom} />
-        {p.sold_count > 0 && (
-          <span className={`absolute left-2 top-2 rounded-full bg-white/90 px-2 py-0.5 text-[10.5px] font-bold text-slate-900 shadow-sm ${hideSmall}`}>{c.sold(p.sold_count)}</span>
-        )}
+        <SoldBadge p={p} className={`absolute left-2 top-2 rounded-full bg-white/90 px-2 py-0.5 text-[10.5px] font-bold text-slate-900 shadow-sm ${hideSmall}`} />
       </div>
       <div className={`flex flex-1 flex-col justify-between gap-2 ${compact ? "p-2 sm:p-3" : "p-3"}`}>
         <div className="flex min-w-0 flex-col gap-0.5">
-          {catOf(p, ctx) && <span className={`truncate text-[10.5px] font-bold uppercase tracking-wide ${s.sub} ${hideSmall}`}>{catOf(p, ctx)}</span>}
+          <ProductCategory p={p} className={`truncate text-[10.5px] font-bold uppercase tracking-wide ${s.sub} ${hideSmall}`} />
           <h4 className={`line-clamp-2 font-extrabold leading-snug ${compact ? "text-[12px] sm:text-[13.5px]" : "text-[13.5px]"}`}>{p.name}</h4>
           <PriceText p={p} wrap={compact} className={`${compact ? "text-[12px] sm:text-[14px]" : "text-[14px]"} ${s.price}`} style={s.priceStyle} />
         </div>
@@ -370,7 +350,7 @@ function Circle({ p, ctx }: { p: Product; ctx: Ctx }) {
       <div className="relative h-28 w-28 overflow-hidden rounded-full border-4 shadow-md md:h-32 md:w-32" style={{ borderColor: ctx.pal.strong }}>
         <ProductImage photos={photosOf(p)} name={p.name} onZoom={ctx.onZoom} />
       </div>
-      {catOf(p, ctx) && <span className="text-[10px] font-extrabold uppercase" style={{ color: ctx.pal.strong }}>{catOf(p, ctx)}</span>}
+      <ProductCategory p={p} className="text-[10px] font-extrabold uppercase" style={{ color: ctx.pal.strong }} />
       <h4 className="line-clamp-1 text-[13px] font-extrabold">{p.name}</h4>
       <PriceText p={p} className="rounded-full bg-white px-3 py-0.5 text-[13px] shadow-sm" style={{ color: ctx.pal.strong }} />
       <Cta p={p} ctx={ctx} variant="solid" full />
@@ -385,7 +365,7 @@ function Arch({ p, ctx }: { p: Product; ctx: Ctx }) {
       <div className="relative aspect-[4/5] w-full overflow-hidden rounded-b-2xl rounded-t-full border-4 border-white shadow-sm">
         <ProductImage photos={photosOf(p)} name={p.name} onZoom={ctx.onZoom} />
       </div>
-      {catOf(p, ctx) && <span className="text-[10.5px] font-bold uppercase tracking-wide" style={{ color: ctx.pal.strong }}>{catOf(p, ctx)}</span>}
+      <ProductCategory p={p} className="text-[10.5px] font-bold uppercase tracking-wide" style={{ color: ctx.pal.strong }} />
       <h4 className="line-clamp-2 text-[13.5px] font-extrabold leading-snug">{p.name}</h4>
       <PriceText p={p} className="text-[13.5px]" style={{ color: ctx.pal.strong }} />
       <Cta p={p} ctx={ctx} variant="solid" full />
@@ -403,11 +383,11 @@ function Row({ p, ctx }: { p: Product; ctx: Ctx }) {
         <ProductImage photos={photosOf(p)} name={p.name} compact onZoom={ctx.onZoom} />
       </div>
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-        {catOf(p, ctx) && <span className={`truncate text-[10.5px] font-bold uppercase tracking-wide ${s.sub}`}>{catOf(p, ctx)}</span>}
+        <ProductCategory p={p} className={`truncate text-[10.5px] font-bold uppercase tracking-wide ${s.sub}`} />
         <h4 className="line-clamp-1 text-[14px] font-extrabold">{p.name}</h4>
         <div className="flex items-center gap-2">
           <PriceText p={p} className={`text-[13.5px] ${s.price}`} style={s.priceStyle} />
-          {p.sold_count > 0 && <span className={`hidden whitespace-nowrap text-[11px] sm:inline ${s.sub}`}>· {c.sold(p.sold_count)}</span>}
+          <SoldBadge p={p} prefix="· " className={`hidden whitespace-nowrap text-[11px] sm:inline ${s.sub}`} />
         </div>
       </div>
       <Cta p={p} ctx={ctx} variant={s.button} />
@@ -439,7 +419,7 @@ function PricingColumn({ p, ctx, highlight }: { p: Product; ctx: Ctx; highlight:
       <div className="h-14 w-14 overflow-hidden rounded-2xl">
         <ProductImage photos={photosOf(p)} name={p.name} compact onZoom={ctx.onZoom} />
       </div>
-      {catOf(p, ctx) && <span className={`text-[10.5px] font-bold uppercase tracking-wide ${neon ? "text-slate-400" : "text-ink-muted"}`}>{catOf(p, ctx)}</span>}
+      <ProductCategory p={p} className={`text-[10.5px] font-bold uppercase tracking-wide ${neon ? "text-slate-400" : "text-ink-muted"}`} />
       <h4 className="line-clamp-2 text-[15px] font-extrabold">{p.name}</h4>
       <span className="text-[22px] font-black" style={{ color: neon ? ctx.pal.soft : ctx.pal.strong }}>
         {formatMoney(p.price_cents, p.currency)}
@@ -475,7 +455,7 @@ function TableView({ items, ctx }: { items: Product[]; ctx: Ctx }) {
               <div className="flex min-w-0 flex-col">
                 <span className="line-clamp-1 text-[13.5px] font-extrabold">{p.name}</span>
                 <PriceText p={p} className={`text-[12.5px] md:hidden ${s.price}`} style={s.priceStyle} />
-                {catOf(p, ctx) && <span className={`hidden truncate text-[11px] md:block ${s.sub}`}>{catOf(p, ctx)}</span>}
+                <ProductCategory p={p} className={`hidden truncate text-[11px] md:block ${s.sub}`} />
               </div>
             </div>
             <PriceText p={p} className={`hidden text-[14px] md:block ${s.price}`} style={s.priceStyle} />

@@ -1,127 +1,24 @@
 "use client";
 
 import { useState } from "react";
-import { formatMoney } from "@/lib/money";
 import type { Product } from "@/lib/types";
-import { storefrontCopy, type StorefrontCopy } from "@/lib/i18n/storefront";
-import { useLanguage } from "@/components/LanguageContext";
+import {
+  PriceLabel,
+  ProductImage,
+  QtyControl,
+  SoldBadge,
+  ChevronIcon,
+  photosOf,
+  useCopy,
+  type CartOps,
+} from "@/components/storefront/product";
 
-// Cartes produit de la vitrine publique, partagées par la page, le catalogue
-// complet et les designs de secteur (components/storefront/designs.tsx).
-
-export type CartOps = { add: (id: string) => void; sub: (id: string) => void };
-
-export function useCopy(): StorefrontCopy {
-  const { language } = useLanguage();
-  return storefrontCopy(language);
-}
-
-export function photosOf(p: Product): string[] {
-  if (p.photos && p.photos.length > 0) return p.photos.filter(Boolean);
-  return p.photo_url ? [p.photo_url] : [];
-}
-
-/* ─────────── Cartes produit ─────────── */
-
-export function QtyControl({ p, qty, ops, onDark }: { p: Product; qty: number; ops: CartOps; onDark?: boolean }) {
-  const c = useCopy();
-  if (p.stock_state === "fini") {
-    return <span className={`text-[12px] font-bold ${onDark ? "text-white/70" : "text-ink-faint"}`}>{c.soldOut}</span>;
-  }
-  if (qty === 0) {
-    return (
-      <button onClick={() => ops.add(p.id)}
-        className="flex h-9 items-center justify-center gap-1.5 rounded-[11px] bg-[#E7F7F1] px-3 text-brand active:scale-95">
-        <PlusIcon /><span className="text-[12.5px] font-bold">{c.add}</span>
-      </button>
-    );
-  }
-  return (
-    <div className="flex h-9 items-center gap-2 rounded-[11px] bg-[#E7F7F1] px-1.5">
-      <button onClick={() => ops.sub(p.id)} aria-label="−" className="flex h-7 w-7 items-center justify-center rounded-lg bg-white font-bold text-brand">−</button>
-      <span className="min-w-4 text-center text-sm font-extrabold text-brand">{qty}</span>
-      <button onClick={() => ops.add(p.id)} aria-label="+" className="flex h-7 w-7 items-center justify-center rounded-lg bg-white font-bold text-brand">+</button>
-    </div>
-  );
-}
-
-export function PriceLabel({ p }: { p: Product }) {
-  return (
-    <span className="text-base font-extrabold">
-      {formatMoney(p.price_cents, p.currency).replace(` ${p.currency}`, "")}{" "}
-      <span className="text-[11px] font-semibold opacity-60">{p.currency}</span>
-    </span>
-  );
-}
-
-/** Image produit, ou emplacement neutre quand le marchand n'a pas mis de photo. */
-export function ProductImage({
-  photos,
-  name,
-  dark,
-  compact,
-  onZoom,
-  index = 0,
-}: {
-  photos: string[];
-  name: string;
-  dark?: boolean;
-  compact?: boolean;
-  onZoom?: (photos: string[], index: number) => void;
-  index?: number;
-}) {
-  if (photos.length === 0) {
-    return (
-      <div className={`flex h-full w-full items-center justify-center ${dark ? "bg-slate-800" : "bg-[#F1F4F2]"}`} aria-label={name}>
-        <BagIcon color={dark ? "#64748B" : "#A3B5AF"} size={compact ? 18 : 34} />
-      </div>
-    );
-  }
-  return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src={photos[index]}
-      alt={name}
-      draggable={false}
-      onClick={onZoom ? () => onZoom(photos, index) : undefined}
-      className={`h-full w-full object-contain ${dark ? "bg-slate-800" : "bg-[#F1F4F2]"} ${onZoom ? "cursor-zoom-in" : ""}`}
-    />
-  );
-}
-
-/** Carte à image pleine avec texte en surimpression. */
-export function OverlayCard({
-  p,
-  qty = 0,
-  ops,
-  onZoom,
-  className,
-  action,
-}: {
-  p: Product;
-  qty?: number;
-  ops?: CartOps;
-  onZoom: (photos: string[], index: number) => void;
-  className: string;
-  action?: React.ReactNode;
-}) {
-  const photos = photosOf(p);
-  return (
-    <div className={`group relative flex flex-col justify-end overflow-hidden rounded-2xl bg-slate-900 text-white shadow-md ${className}`}>
-      <div className="absolute inset-0">
-        <ProductImage photos={photos} name={p.name} dark onZoom={onZoom} />
-      </div>
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
-      <div className="relative z-10 flex flex-col gap-1 p-3">
-        <h4 className="line-clamp-1 text-sm font-extrabold">{p.name}</h4>
-        <div className="mt-0.5 flex items-center justify-between gap-2">
-          <span className="text-[13px] font-extrabold text-emerald-200">{formatMoney(p.price_cents, p.currency)}</span>
-          {action ?? (ops ? <QtyControl p={p} qty={qty} ops={ops} onDark /> : null)}
-        </div>
-      </div>
-    </div>
-  );
-}
+// Cartes du catalogue complet : la liste où le client retrouve tout ce que la
+// boutique vend, sous la section « À la une ».
+//
+// Ce fichier ne décide que de la mise en page. Ce qu'une carte montre d'un
+// produit — photo, catégorie, prix, compteur de ventes, bouton d'achat — vient
+// de components/storefront/product.tsx, partagé avec les designs de secteur.
 
 export function GridCard({
   p,
@@ -159,11 +56,7 @@ export function GridCard({
       >
         <ProductImage photos={photos} name={p.name} dark={dark} onZoom={onZoom} index={imgIdx} />
 
-        {p.sold_count > 0 && (
-          <span className="absolute left-2 top-2 rounded-full bg-white/90 px-2 py-0.5 text-[10.5px] font-bold text-brand shadow-sm">
-            {c.sold(p.sold_count)}
-          </span>
-        )}
+        <SoldBadge p={p} className="absolute left-2 top-2 rounded-full bg-white/90 px-2 py-0.5 text-[10.5px] font-bold text-brand shadow-sm" />
         {p.stock_state === "fini" && (
           <span className="absolute right-2 top-2 rounded-full bg-[#FCE4E4] px-2 py-0.5 text-[10.5px] font-bold text-[#C0392B]">{c.soldOut}</span>
         )}
@@ -201,7 +94,6 @@ export function GridCard({
 }
 
 export function MenuRow({ p, qty, ops, dark, boxed }: { p: Product; qty: number; ops: CartOps; dark?: boolean; boxed?: boolean }) {
-  const c = useCopy();
   const photos = photosOf(p);
   const shell = boxed
     ? `rounded-2xl border p-3 ${dark ? "border-slate-700 bg-[#1F2937]" : "border-slate-200 bg-white"}`
@@ -215,7 +107,7 @@ export function MenuRow({ p, qty, ops, dark, boxed }: { p: Product; qty: number;
         <span className="line-clamp-1 text-[15px] font-bold leading-snug">{p.name}</span>
         <div className="flex items-center gap-2">
           <PriceLabel p={p} />
-          {p.sold_count > 0 && <span className="text-[11px] text-ink-faint">· {c.sold(p.sold_count)}</span>}
+          <SoldBadge p={p} prefix="· " className="text-[11px] text-ink-faint" />
         </div>
       </div>
       <QtyControl p={p} qty={qty} ops={ops} />
@@ -261,17 +153,4 @@ export function FoodCard({
       </div>
     </div>
   );
-}
-
-
-/* ─────────── Icônes ─────────── */
-
-export function PlusIcon() {
-  return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#008069" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>;
-}
-export function BagIcon({ color, size = 40 }: { color: string; size?: number }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" /><path d="M3 6h18" /><path d="M16 10a4 4 0 0 1-8 0" /></svg>;
-}
-export function ChevronIcon({ color, dir, size = 18 }: { color: string; dir: "left" | "right"; size?: number }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={dir === "left" ? "m15 18-6-6 6-6" : "m9 6 6 6-6 6"} /></svg>;
 }

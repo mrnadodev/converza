@@ -10,17 +10,15 @@ import { paletteOfTheme, themeOf } from "@/lib/themes";
 import type { Business, Product } from "@/lib/types";
 import { createStorefrontOrderAction } from "@/app/p/actions";
 import { DEFAULT_LAYOUT, type LayoutKey } from "@/lib/storefront-layouts";
+import { FoodCard, GridCard, MenuRow } from "@/components/storefront/cards";
 import {
   BagIcon,
   ChevronIcon,
-  FoodCard,
-  GridCard,
-  MenuRow,
   ProductImage,
   photosOf,
   useCopy,
   type CartOps,
-} from "@/components/storefront/cards";
+} from "@/components/storefront/product";
 import { FeaturedSection } from "@/components/storefront/designs";
 import { maskPhone, phoneNoticeState } from "@/lib/phone-change";
 

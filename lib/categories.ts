@@ -17,6 +17,12 @@ export interface CategoryOption {
   /** Regroupement affiché avant la catégorie (Homme, Femme, Enfant…). */
   group?: string;
   labels: Record<Language, string>;
+  /**
+   * Anciennes écritures de la même catégorie, déjà enregistrées chez des
+   * marchands. Elles ne sont plus proposées, mais restent reconnues pour que
+   * leurs produits gardent une catégorie lisible.
+   */
+  aliases?: string[];
 }
 
 /**
@@ -43,9 +49,20 @@ const FASHION: CategoryOption[] = [
   })),
 );
 
-const opt = (key: string, fr: string, ht: string, en: string): CategoryOption => ({ key, labels: { fr, ht, en } });
+const opt = (key: string, fr: string, ht: string, en: string, ...aliases: string[]): CategoryOption => ({
+  key,
+  labels: { fr, ht, en },
+  ...(aliases.length > 0 ? { aliases } : {}),
+});
 
-/** Catégories proposées par secteur, hors mode. */
+/**
+ * Catégories proposées par secteur, hors mode.
+ *
+ * Les listes d'origine (lib/verticals) n'existaient que dans une seule langue :
+ * en créole pour le commerce et la restauration, en français pour les neuf
+ * autres secteurs. Un marchand voyait donc toujours la langue de l'autre.
+ * Chaque secteur a maintenant ses catégories dans les trois langues.
+ */
 const BY_SECTOR: Record<string, CategoryOption[]> = {
   commerce_vente: [
     opt("mode", "Vêtements & chaussures", "Rad & Soulye", "Clothing & shoes"),
@@ -60,6 +77,60 @@ const BY_SECTOR: Record<string, CategoryOption[]> = {
     opt("dessert", "Pâtisserie & desserts", "Patisri & Desè", "Pastry & desserts"),
     opt("boisson", "Boissons", "Bwason", "Drinks"),
     opt("combo", "Combos spéciaux", "Konbo Spesyal", "Special combos"),
+  ],
+  immobilier: [
+    opt("immo_location", "Appartements à louer", "Apatman pou lwe", "Apartments for rent", "Appartements à Louer"),
+    opt("immo_vente", "Maisons à vendre", "Kay pou vann", "Houses for sale", "Maisons en Vente"),
+    opt("immo_terrain", "Terrains", "Teren", "Land"),
+    opt("immo_commercial", "Espaces commerciaux", "Espas komèsyal", "Commercial spaces", "Espaces Commercial"),
+  ],
+  automobile: [
+    opt("auto_vehicule", "Véhicules", "Machin", "Vehicles"),
+    opt("auto_moteur", "Pièces moteur", "Pyès motè", "Engine parts", "Pièces Moteur"),
+    opt("auto_freinage", "Freinage & suspension", "Fren & sispansyon", "Brakes & suspension", "Freinage & Suspension"),
+    opt("auto_location", "Location & lavage", "Lwe & lave machin", "Rental & car wash", "Location & Car Wash"),
+  ],
+  sante_bienetre: [
+    opt("sante_consultation", "Consultations", "Konsiltasyon", "Consultations"),
+    opt("sante_esthetique", "Soins esthétiques", "Swen estetik", "Aesthetic care", "Soins Esthétiques"),
+    opt("sante_pharmacie", "Pharmacie & traitements", "Famasi & tretman", "Pharmacy & treatments", "Pharmacie & Traitements"),
+    opt("sante_labo", "Bilans & labo", "Analiz & labo", "Tests & lab", "Bilan & Labo"),
+  ],
+  beaute_services: [
+    opt("beaute_coiffure", "Coiffure & coupe", "Kwafi & koup", "Hair & cuts", "Coiffure & Coupe"),
+    opt("beaute_ongles", "Manucure & pédicure", "Manikè & pedikè", "Manicure & pedicure", "Manucure & Pédicure"),
+    opt("beaute_maquillage", "Maquillage", "Makiyaj", "Makeup"),
+    opt("beaute_photo", "Photo & vidéo", "Foto & videyo", "Photo & video", "Shooting & Vidéo"),
+  ],
+  education: [
+    opt("edu_certifiante", "Formations certifiantes", "Fòmasyon ak sètifika", "Certified training", "Formations Certifiantes"),
+    opt("edu_soir", "Cours du soir", "Kou aswè", "Evening classes", "Cours du Soir"),
+    opt("edu_atelier", "Ateliers & bootcamps", "Atelye & bootcamp", "Workshops & bootcamps", "Ateliers & Bootcamp"),
+    opt("edu_coaching", "Coaching individuel", "Akonpayman endividyèl", "One-on-one coaching", "Coaching 1-on-1"),
+  ],
+  services_pros: [
+    opt("pro_audit", "Audit & conseil", "Odit & konsèy", "Audit & consulting", "Audit & Conseil"),
+    opt("pro_compta", "Comptabilité", "Kontablite", "Accounting"),
+    opt("pro_juridique", "Contrats & juridique", "Kontra & jiridik", "Contracts & legal", "Contrats & Juridique"),
+    opt("pro_finance", "Assurance & finance", "Asirans & finans", "Insurance & finance", "Assurance & Finance"),
+  ],
+  construction: [
+    opt("btp_cle_en_main", "Projets clé en main", "Pwojè kle an men", "Turnkey projects", "Projets Clé en Main"),
+    opt("btp_solaire", "Kits solaires", "Kit solè", "Solar kits", "Kits Solaires"),
+    opt("btp_materiaux", "Matériaux & bois", "Materyo & bwa", "Materials & timber", "Matériaux & Bois"),
+    opt("btp_renovation", "Rénovation & déco", "Renovasyon & dekorasyon", "Renovation & decor", "Rénovation & Déco"),
+  ],
+  digital_tech: [
+    opt("tech_dev", "Développement web & app", "Devlopman web & app", "Web & app development", "Développement Web/App"),
+    opt("tech_branding", "Image de marque & design", "Imaj mak & design", "Branding & design", "Branding & Design"),
+    opt("tech_marketing", "Marketing digital", "Maketing dijital", "Digital marketing", "Marketing Digital"),
+    opt("tech_maintenance", "Maintenance technique", "Antretyen teknik", "Technical maintenance", "Maintenance Tech"),
+  ],
+  grossistes_distribution: [
+    opt("gros_palette", "Vente par palettes", "Vann an palèt", "Pallet sales", "Vente par Palettes"),
+    opt("gros_carton", "Vente par cartons", "Vann an katon", "Carton sales", "Vente par Cartons"),
+    opt("gros_volume", "Promos volume B2B", "Pwomo gwo kantite B2B", "B2B volume deals", "Promos Volume B2B"),
+    opt("gros_sec", "Produits secs", "Pwodwi sèk", "Dry goods", "Produits Secs"),
   ],
 };
 
@@ -88,7 +159,10 @@ export function categoryLabel(value: string | null | undefined, language: Langua
   if (!raw) return "";
   const needle = raw.toLowerCase();
   const found = ALL.find(
-    (o) => o.key === needle || Object.values(o.labels).some((l) => l.toLowerCase() === needle),
+    (o) =>
+      o.key === needle ||
+      Object.values(o.labels).some((l) => l.toLowerCase() === needle) ||
+      (o.aliases ?? []).some((a) => a.toLowerCase() === needle),
   );
   return found ? found.labels[language] ?? raw : raw;
 }

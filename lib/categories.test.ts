@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { INDUSTRY_SECTORS } from "./verticals";
 import { categoriesFor, categoryLabel, isFashionShop } from "./categories";
 
 describe("catégories proposées au marchand", () => {
@@ -28,9 +29,21 @@ describe("catégories proposées au marchand", () => {
     expect(categoriesFor("Vendeur TikTok", "ht").map((c) => c.label)).toContain("Pwomo Flach");
   });
 
-  it("garde les suggestions d'origine pour un secteur sans liste traduite", () => {
-    const labels = categoriesFor("Appartements à Louer", "fr").map((c) => c.label);
-    expect(labels.length).toBeGreaterThan(0);
+  it("propose des catégories traduites dans chaque secteur", () => {
+    // Les listes d'origine n'existaient qu'en créole (commerce, restauration)
+    // ou qu'en français (les neuf autres). Aucun secteur ne doit rester dans
+    // une seule langue : un marchand verrait la langue de quelqu'un d'autre.
+    for (const sector of Object.values(INDUSTRY_SECTORS)) {
+      const fr = categoriesFor(sector.label, "fr").map((c) => c.label);
+      const ht = categoriesFor(sector.label, "ht").map((c) => c.label);
+      expect(fr.length, sector.id).toBeGreaterThan(0);
+      expect(fr, `${sector.id} n'est pas traduit`).not.toEqual(ht);
+    }
+  });
+
+  it("traduit les catégories des secteurs de services", () => {
+    expect(categoriesFor("Agence immobilière", "ht").map((c) => c.label)).toContain("Apatman pou lwe");
+    expect(categoriesFor("Garage automobile", "en").map((c) => c.label)).toContain("Engine parts");
   });
 });
 
@@ -44,6 +57,12 @@ describe("affichage d'une catégorie enregistrée", () => {
 
   it("ne tient pas compte de la casse", () => {
     expect(categoryLabel("pwomo flach", "en")).toBe("Deals");
+  });
+
+  it("reconnaît les anciennes écritures d'une catégorie", () => {
+    // Des produits portent encore l'orthographe d'origine des listes.
+    expect(categoryLabel("Espaces Commercial", "fr")).toBe("Espaces commerciaux");
+    expect(categoryLabel("Coaching 1-on-1", "ht")).toBe("Akonpayman endividyèl");
   });
 
   it("laisse intacte une catégorie écrite par le marchand", () => {
