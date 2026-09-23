@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-import { resizeImage } from "@/lib/image";
+import { cropImage, fitImage, scaleImage } from "@/lib/image";
 import { useDict } from "@/components/LanguageContext";
 import { COMMON_COPY } from "@/lib/i18n/app/common";
 
@@ -50,10 +50,20 @@ export function ImageUpload({
       return;
     }
 
-    const isCover = folder === "covers" || shape === "wide";
-    const w = targetWidth ?? (isCover ? 1200 : folder === "products" ? 450 : 600);
-    const h = targetHeight ?? (isCover ? 400 : folder === "products" ? 750 : 900);
-    file = await resizeImage(file, w, h);
+    // Chaque type d'image a son traitement. Seule la bannière est recadrée :
+    // c'est un bandeau. Une photo de produit garde son format d'origine — la
+    // carte de la vitrine sait afficher n'importe quelle forme. Un logo ou un
+    // QR code est posé entier dans un carré : recadrer un QR de paiement le
+    // rendrait impossible à scanner.
+    const isBanner = folder === "covers" || shape === "wide";
+    if (isBanner) {
+      file = await cropImage(file, targetWidth ?? 1200, targetHeight ?? 400);
+    } else if (folder === "products") {
+      file = await scaleImage(file, Math.max(targetWidth ?? 0, targetHeight ?? 0) || 1200);
+    } else {
+      const side = targetWidth ?? targetHeight ?? 800;
+      file = await fitImage(file, side, side);
+    }
     if (!HAS_SUPABASE) {
       setErr(c.storageOff);
       return;

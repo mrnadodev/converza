@@ -10,7 +10,7 @@ import { getActivePayMethods } from "@/lib/bank";
 import { COMMON_COPY } from "@/lib/i18n/app/common";
 import { MESSAGE_COPY } from "@/lib/i18n/app/messages";
 import { ORDERS_COPY } from "@/lib/i18n/app/orders";
-import { resizeImageTo600x900 } from "@/lib/image";
+import { scaleImage } from "@/lib/image";
 import { formatMoney } from "@/lib/money";
 import {
   buildBackInStockMessage,
@@ -726,7 +726,7 @@ function PromoModal({
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     if (!e.target.files) return;
     const picked = Array.from(e.target.files).slice(0, 3);
-    const resized = await Promise.all(picked.map((f) => resizeImageTo600x900(f)));
+    const resized = await Promise.all(picked.map((f: File) => scaleImage(f, 1200)));
     setFiles(resized);
     setPreviews(resized.map((f) => URL.createObjectURL(f)));
   }

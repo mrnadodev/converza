@@ -290,13 +290,13 @@ export function CatalogManager({ business, initial, userSession }: { business: B
             <div className="mt-4 flex flex-col gap-3.5">
               <div className="grid grid-cols-3 gap-3">
                 <Field label={k.form.photo1}>
-                  <ImageUpload value={form.photoUrl} folder="products" onChange={(url) => set({ photoUrl: url })} label={k.form.addPhoto} targetWidth={450} targetHeight={750} />
+                  <ImageUpload value={form.photoUrl} folder="products" onChange={(url) => set({ photoUrl: url })} label={k.form.addPhoto} />
                 </Field>
                 <Field label={k.form.photo2}>
-                  <ImageUpload value={form.photoUrl2 ?? null} folder="products" onChange={(url) => set({ photoUrl2: url })} label={k.form.addPhoto} targetWidth={450} targetHeight={750} />
+                  <ImageUpload value={form.photoUrl2 ?? null} folder="products" onChange={(url) => set({ photoUrl2: url })} label={k.form.addPhoto} />
                 </Field>
                 <Field label={k.form.photo3}>
-                  <ImageUpload value={form.photoUrl3 ?? null} folder="products" onChange={(url) => set({ photoUrl3: url })} label={k.form.addPhoto} targetWidth={450} targetHeight={750} />
+                  <ImageUpload value={form.photoUrl3 ?? null} folder="products" onChange={(url) => set({ photoUrl3: url })} label={k.form.addPhoto} />
                 </Field>
               </div>
 

@@ -1,9 +1,85 @@
-/**
- * Redimensionne automatiquement n'importe quelle image importée aux dimensions exactes spécifiées en haute qualité.
- * Effectue un cadrage propre (cover) sans déformer l'image d'origine.
- */
-export async function resizeImage(file: File, targetWidth: number, targetHeight: number): Promise<File> {
-  if (typeof window === "undefined") return file;
+// Préparation des images avant l'envoi vers le stockage.
+//
+// Trois besoins différents, longtemps traités de la même façon — par un
+// recadrage. Ce qu'un recadrage enlève ne revient jamais : un logo carré
+// envoyé dans un cadre portrait perdait un tiers de sa largeur, et un QR code
+// de paiement amputé de ses bords ne se scanne plus.
+//
+// Désormais, seule la bannière est recadrée : c'est un bandeau, le marchand
+// s'attend à ce qu'on en garde une bande. Tout le reste est conservé entier.
+
+export type Draw = { sx: number; sy: number; sw: number; sh: number; dx: number; dy: number; dw: number; dh: number };
+export type Plan = { width: number; height: number; draw: Draw };
+
+/* ─────────── Géométrie ───────────
+   Séparée du dessin pour être vérifiable : c'est ici qu'un QR code perdait
+   ses bords. */
+
+/** Cadrage qui remplit le cadre en coupant ce qui dépasse. */
+export function coverPlan(iw: number, ih: number, targetWidth: number, targetHeight: number): Plan {
+  const targetRatio = targetWidth / targetHeight;
+  const sourceRatio = iw / ih;
+  let sw = iw;
+  let sh = ih;
+  let sx = 0;
+  let sy = 0;
+  if (sourceRatio > targetRatio) {
+    sw = ih * targetRatio;
+    sx = (iw - sw) / 2;
+  } else {
+    sh = iw / targetRatio;
+    sy = (ih - sh) / 2;
+  }
+  return { width: targetWidth, height: targetHeight, draw: { sx, sy, sw, sh, dx: 0, dy: 0, dw: targetWidth, dh: targetHeight } };
+}
+
+/** Réduction qui garde le format d'origine, sans jamais agrandir. */
+export function scalePlan(iw: number, ih: number, longestSide: number): Plan {
+  const factor = Math.min(1, longestSide / Math.max(iw, ih));
+  const width = Math.max(1, Math.round(iw * factor));
+  const height = Math.max(1, Math.round(ih * factor));
+  return { width, height, draw: { sx: 0, sy: 0, sw: iw, sh: ih, dx: 0, dy: 0, dw: width, dh: height } };
+}
+
+/** Image entière, centrée dans le cadre, rien de coupé. */
+export function fitPlan(iw: number, ih: number, frameWidth: number, frameHeight: number): Plan {
+  const factor = Math.min(frameWidth / iw, frameHeight / ih);
+  const dw = Math.max(1, Math.round(iw * factor));
+  const dh = Math.max(1, Math.round(ih * factor));
+  return {
+    width: frameWidth,
+    height: frameHeight,
+    draw: { sx: 0, sy: 0, sw: iw, sh: ih, dx: Math.round((frameWidth - dw) / 2), dy: Math.round((frameHeight - dh) / 2), dw, dh },
+  };
+}
+
+function encode(canvas: HTMLCanvasElement, file: File, label: string, onWhite: () => void): Promise<File> {
+  return new Promise((resolve) => {
+    const done = (blob: Blob | null, type: string, fallback: () => void) => {
+      if (!blob) return fallback();
+      const ext = type === "image/webp" ? "webp" : "jpg";
+      resolve(new File([blob], `${file.name.replace(/\.[^/.]+$/, "")}_${label}.${ext}`, { type, lastModified: Date.now() }));
+    };
+    // WebP plutôt que PNG : le PNG est sans perte, donc une photo de produit y
+    // pèse plusieurs mégaoctets. Sur une connexion mobile haïtienne, c'est la
+    // vitrine du marchand qui devient lente et le forfait de son client qui se
+    // vide. Le WebP garde aussi la transparence d'un logo.
+    canvas.toBlob(
+      (webp) =>
+        done(webp, "image/webp", () => {
+          // Le JPEG ignore la transparence et la rendrait noire : on repose
+          // l'image sur du blanc avant de réessayer.
+          onWhite();
+          canvas.toBlob((jpg) => done(jpg, "image/jpeg", () => resolve(file)), "image/jpeg", 0.85);
+        }),
+      "image/webp",
+      0.82,
+    );
+  });
+}
+
+function process(file: File, plan: (w: number, h: number) => Plan): Promise<File> {
+  if (typeof window === "undefined") return Promise.resolve(file);
 
   return new Promise((resolve) => {
     const img = new Image();
@@ -14,60 +90,28 @@ export async function resizeImage(file: File, targetWidth: number, targetHeight:
       img.src = e.target.result as string;
     };
 
-    img.onload = () => {
+    img.onload = async () => {
       try {
+        const { width, height, draw } = plan(img.width, img.height);
         const canvas = document.createElement("canvas");
-        canvas.width = targetWidth;
-        canvas.height = targetHeight;
+        canvas.width = width;
+        canvas.height = height;
         const ctx = canvas.getContext("2d");
         if (!ctx) return resolve(file);
 
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = "high";
+        const paint = () => ctx.drawImage(img, draw.sx, draw.sy, draw.sw, draw.sh, draw.dx, draw.dy, draw.dw, draw.dh);
+        paint();
 
-        const targetRatio = targetWidth / targetHeight;
-        const sourceRatio = img.width / img.height;
-
-        let sw = img.width;
-        let sh = img.height;
-        let sx = 0;
-        let sy = 0;
-
-        if (sourceRatio > targetRatio) {
-          // Image trop large -> couper les côtés gauche/droite
-          sw = img.height * targetRatio;
-          sx = (img.width - sw) / 2;
-        } else {
-          // Image trop haute -> couper le haut/bas
-          sh = img.width / targetRatio;
-          sy = (img.height - sh) / 2;
-        }
-
-        ctx.drawImage(img, sx, sy, sw, sh, 0, 0, targetWidth, targetHeight);
-
-        // WebP plutôt que PNG : le PNG est sans perte, donc une photo de
-        // produit y pèse plusieurs mégaoctets. Sur une connexion mobile
-        // haïtienne, c'est la vitrine du marchand qui devient lente et le
-        // forfait de son client qui se vide. Repli sur JPEG si le navigateur
-        // ne sait pas encoder en WebP.
-        const encode = (type: string, quality: number, onFail: () => void) =>
-          canvas.toBlob(
-            (blob) => {
-              if (!blob) return onFail();
-              const ext = type === "image/webp" ? "webp" : "jpg";
-              resolve(
-                new File(
-                  [blob],
-                  `${file.name.replace(/\.[^/.]+$/, "")}_${targetWidth}x${targetHeight}.${ext}`,
-                  { type, lastModified: Date.now() },
-                ),
-              );
-            },
-            type,
-            quality,
-          );
-
-        encode("image/webp", 0.82, () => encode("image/jpeg", 0.85, () => resolve(file)));
+        resolve(
+          await encode(canvas, file, `${width}x${height}`, () => {
+            ctx.globalCompositeOperation = "destination-over";
+            ctx.fillStyle = "#FFFFFF";
+            ctx.fillRect(0, 0, width, height);
+            ctx.globalCompositeOperation = "source-over";
+          }),
+        );
       } catch {
         resolve(file);
       }
@@ -78,17 +122,33 @@ export async function resizeImage(file: File, targetWidth: number, targetHeight:
   });
 }
 
-/** Redimensionne aux dimensions 600 x 900 pixels (format vertical portrait 2:3). */
-export async function resizeImageTo600x900(file: File): Promise<File> {
-  return resizeImage(file, 600, 900);
+/**
+ * Recadre l'image pour remplir exactement les dimensions demandées.
+ * Réservé aux bannières : le cadrage enlève une partie de l'image.
+ */
+export function cropImage(file: File, targetWidth: number, targetHeight: number): Promise<File> {
+  return process(file, (iw, ih) => coverPlan(iw, ih, targetWidth, targetHeight));
 }
 
-/** Redimensionne aux dimensions 450 x 750 pixels (format vitrine 3:5). */
-export async function resizeImageTo450x750(file: File): Promise<File> {
-  return resizeImage(file, 450, 750);
+/**
+ * Garde l'image entière et son format d'origine, en limitant le côté le plus
+ * long. Une image déjà plus petite n'est pas agrandie.
+ */
+export function scaleImage(file: File, longestSide: number): Promise<File> {
+  return process(file, (iw, ih) => scalePlan(iw, ih, longestSide));
 }
 
-/** Redimensionne aux dimensions 1200 x 400 pixels (format banner panoramique 3:1). */
-export async function resizeImageTo1200x400(file: File): Promise<File> {
-  return resizeImage(file, 1200, 400);
+/**
+ * Pose l'image entière, centrée, dans un cadre aux dimensions demandées.
+ * Rien n'est coupé ni déformé : le pourtour reste transparent.
+ * C'est ce qu'il faut pour un logo, et c'est vital pour un QR code de
+ * paiement, qu'un recadrage rendrait illisible.
+ */
+export function fitImage(file: File, frameWidth: number, frameHeight: number): Promise<File> {
+  return process(file, (iw, ih) => fitPlan(iw, ih, frameWidth, frameHeight));
+}
+
+/** Bannière panoramique 1200 x 400 (3:1). */
+export function resizeImageTo1200x400(file: File): Promise<File> {
+  return cropImage(file, 1200, 400);
 }
