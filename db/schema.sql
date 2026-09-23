@@ -172,6 +172,17 @@ returns bigint language sql stable as $$
        + coalesce((select delivery_fee_cents from orders where id = p_order), 0);
 $$;
 
+-- Business_id du membre connecté.
+--
+-- Défini ici, avant tout ce qui s'en sert : PostgreSQL valide le corps d'une
+-- fonction SQL au moment où il la crée. Placé plus bas, ce fichier ne pouvait
+-- pas créer une base à partir de zéro — il n'avait jamais servi qu'à décrire
+-- une base déjà construite par les migrations.
+create or replace function my_business_id()
+returns uuid language sql stable security definer set search_path = public as $$
+  select business_id from members where user_id = auth.uid() limit 1;
+$$;
+
 -- Incrémente le compteur de ventes d'un produit (best-sellers).
 create or replace function increment_product_sold(p_product uuid, p_qty numeric)
 returns void language sql security definer set search_path = public as $$
@@ -273,12 +284,6 @@ alter table subscription_payments enable row level security;
 alter table security_audit_logs enable row level security;
 alter table platform_settings  enable row level security;
 
--- Business_id du membre connecté (helper).
-create or replace function my_business_id()
-returns uuid language sql stable security definer set search_path = public as $$
-  select business_id from members where user_id = auth.uid() limit 1;
-$$;
-
 -- Politique générique : lecture/écriture uniquement sur son business.
 create policy biz_isolation on customers
   using (business_id = my_business_id()) with check (business_id = my_business_id());
@@ -299,7 +304,12 @@ create policy members_read on members
 -- Lecture PUBLIQUE pour la vitrine partageable (/b/<slug>).
 -- On passe par une vue : une politique `using (true)` sur la table exposerait
 -- aussi les comptes bancaires, MonCash, Natcash et l'adresse USDT du marchand.
-create or replace view public_businesses as
+-- PostgreSQL refuse de remplacer une vue dont les colonnes changent d'ordre ou
+-- de nom : « create or replace » seul empêchait de monter une base neuve, car
+-- chaque migration redéfinit la vue avec une colonne de plus. On la supprime
+-- d'abord ; les droits sont réattribués juste en dessous.
+drop view if exists public_businesses;
+create view public_businesses as
 select
   id, name, slug, category, address, phone_e164, logo_url, cover_url, hours,
   business_type, theme, layout, plan, social_instagram, social_facebook,

@@ -6,19 +6,28 @@
 --
 -- Chaque table porte les données de plusieurs marchands dans les mêmes
 -- lignes. C'est la « row level security » qui empêche un marchand de lire
--- le catalogue, les commandes ou la caisse d'un autre. Une table qui en
--- est dépourvue, ou qui en a sans aucune règle, ouvre tout à tout le monde.
+-- le catalogue, les commandes ou la caisse d'un autre.
 --
--- Une table saine n'apparaît pas dans le résultat.
--- Résultat vide = rien à corriger.
+-- Deux situations très différentes :
+--
+--   À CORRIGER     — la table n'a pas de RLS du tout. Tout compte connecté
+--                    peut lire les données de tous les marchands.
+--
+--   Rôle de service — la table a la RLS sans aucune règle : personne n'y
+--                    accède depuis l'application, seule la console
+--                    (clé de service) la lit. C'est voulu pour
+--                    platform_settings, security_audit_logs et app_errors.
+--                    Toute AUTRE table dans cette liste est suspecte.
 -- ============================================================
 
 select
   c.relname as table_name,
   case
-    when not c.relrowsecurity then 'RLS DÉSACTIVÉE — table lisible par tout compte connecté'
-    when count(p.polname) = 0 then 'RLS activée mais AUCUNE règle — table inaccessible, ou ouverte au rôle de service seul'
-  end as probleme,
+    when not c.relrowsecurity then 'À CORRIGER — aucune isolation'
+    when c.relname in ('platform_settings', 'security_audit_logs', 'app_errors')
+      then 'Rôle de service (attendu)'
+    else 'À VÉRIFIER — réservée au rôle de service, est-ce voulu ?'
+  end as etat,
   count(p.polname) as nb_regles
 from pg_class c
 join pg_namespace n on n.oid = c.relnamespace

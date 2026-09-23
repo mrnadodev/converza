@@ -14,7 +14,12 @@
 -- on le laisse actif, c'est une décision humaine.
 -- ============================================================
 
-create or replace view public_businesses as
+-- PostgreSQL refuse de remplacer une vue dont les colonnes changent d'ordre ou
+-- de nom : « create or replace » seul empêchait de monter une base neuve, car
+-- chaque migration redéfinit la vue avec une colonne de plus. On la supprime
+-- d'abord ; les droits sont réattribués juste en dessous.
+drop view if exists public_businesses;
+create view public_businesses as
 select
   id, name, slug, category, address, phone_e164, logo_url, cover_url, hours,
   business_type, theme, layout,
