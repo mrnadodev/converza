@@ -4,12 +4,13 @@ import Link from "next/link";
 import { useState, useTransition } from "react";
 import { BottomNav } from "@/components/BottomNav";
 import { LanguageToggle } from "@/components/LanguageToggle";
-import { useDict } from "@/components/LanguageContext";
+import { useDict, useLanguage } from "@/components/LanguageContext";
 import { COMMON_COPY } from "@/lib/i18n/app/common";
 import { TEAM_COPY } from "@/lib/i18n/app/team";
 import { formatMoney } from "@/lib/money";
 import { submitPayment } from "@/app/abonman/actions";
 import { effectivePlan, type Plan, type PlatformPaymentInfo } from "@/lib/plans";
+import { planTexts } from "@/lib/plan-texts";
 import type { UserSession } from "@/lib/rbac";
 import type { Business } from "@/lib/types";
 
@@ -32,6 +33,7 @@ export function Subscription({
   userSession?: UserSession;
 }) {
   const s = useDict(TEAM_COPY).subscription;
+  const { language } = useLanguage();
   const c = useDict(COMMON_COPY);
   // Plan réellement dû : un abonnement échu n'est plus « actuel ».
   const current = effectivePlan(business.plan, business.plan_until);
@@ -86,11 +88,12 @@ export function Subscription({
       <div className="flex flex-col gap-3 px-4 pt-4 md:mx-auto md:max-w-[900px] md:grid md:grid-cols-2 md:items-start">
         {plans.map((p) => {
           const isCurrent = p.key === current;
+          const texts = planTexts(p, language);
           return (
             <section key={p.key} className={`rounded-2xl bg-white p-4 shadow-[0_2px_10px_rgba(17,27,33,0.05)] ${p.highlight ? "ring-2 ring-brand-green" : ""}`}>
               <div className="flex items-start justify-between gap-2">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h2 className="text-lg font-extrabold">{p.name}</h2>
+                  <h2 className="text-lg font-extrabold">{texts.name}</h2>
                   {p.highlight && <span className="rounded-full bg-brand-green px-2 py-0.5 text-[10px] font-bold text-white">{s.popular}</span>}
                   {isCurrent && <span className="rounded-full bg-[#E7F7F1] px-2 py-0.5 text-[10px] font-bold text-brand">{s.current}</span>}
                 </div>
@@ -99,9 +102,9 @@ export function Subscription({
                   {p.priceGdes > 0 && <span className="block text-[11px] text-ink-faint">{s.perMonth}</span>}
                 </div>
               </div>
-              <p className="mt-0.5 text-[12.5px] text-ink-muted">{p.tagline}</p>
+              <p className="mt-0.5 text-[12.5px] text-ink-muted">{texts.tagline}</p>
               <ul className="mt-3 flex flex-col gap-1.5">
-                {p.features.map((f) => (
+                {texts.features.map((f: string) => (
                   <li key={f} className="flex items-center gap-2 text-[13px]">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#008069" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                       <path d="M20 6 9 17l-5-5" />
@@ -124,7 +127,7 @@ export function Subscription({
                   }}
                   className="mt-3 flex h-11 w-full cursor-pointer items-center justify-center rounded-xl bg-brand-green text-sm font-bold text-white active:scale-[0.99]"
                 >
-                  {isCurrent ? s.renew(p.name) : s.choose(p.name)}
+                  {isCurrent ? s.renew(texts.name) : s.choose(texts.name)}
                 </button>
               )}
             </section>

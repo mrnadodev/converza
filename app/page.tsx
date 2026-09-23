@@ -5,8 +5,7 @@ import { LandingPage } from "@/components/LandingPage";
 import { getCatalog, getDashboard, getSourceBreakdown, hasSupabase, getCurrentUserSession, getRolePermissions, getShowcaseMerchants } from "@/lib/data";
 import { createClient } from "@/lib/supabase/server";
 import { isAdminEmail } from "@/lib/admin";
-import { getPublicPricing } from "@/lib/pricing";
-import { loadLandingOverrides } from "@/lib/platform-store";
+import { loadLandingOverrides, loadPlans } from "@/lib/platform-store";
 
 // Écran #1 — tableau de bord du marchand, ou page d'accueil pour les visiteurs.
 export default async function TabloPage({ searchParams }: { searchParams?: { view?: string } }) {
@@ -15,7 +14,7 @@ export default async function TabloPage({ searchParams }: { searchParams?: { vie
   const roleCookie = cookies().get("converza_role")?.value;
 
   if (searchParams?.view === "landing") {
-    return <LandingPage pricing={await getPublicPricing()} overrides={await loadLandingOverrides()} showcase={await getShowcaseMerchants()} />;
+    return <LandingPage plans={await loadPlans()} overrides={await loadLandingOverrides()} showcase={await getShowcaseMerchants()} />;
   }
 
   // Un visiteur non connecté est accueilli sur la page publique. La racine étant
@@ -26,7 +25,7 @@ export default async function TabloPage({ searchParams }: { searchParams?: { vie
     const {
       data: { user },
     } = await sb.auth.getUser();
-    if (!user) return <LandingPage pricing={await getPublicPricing()} overrides={await loadLandingOverrides()} showcase={await getShowcaseMerchants()} />;
+    if (!user) return <LandingPage plans={await loadPlans()} overrides={await loadLandingOverrides()} showcase={await getShowcaseMerchants()} />;
     if (isAdminEmail(user.email)) redirect("/admin");
 
     // Compte authentifié sans boutique : inscription arrêtée à mi-chemin.
@@ -37,7 +36,7 @@ export default async function TabloPage({ searchParams }: { searchParams?: { vie
       .maybeSingle();
     if (!member?.business_id) redirect("/enskri");
   } else if (!roleCookie) {
-    return <LandingPage pricing={await getPublicPricing()} overrides={await loadLandingOverrides()} showcase={await getShowcaseMerchants()} />;
+    return <LandingPage plans={await loadPlans()} overrides={await loadLandingOverrides()} showcase={await getShowcaseMerchants()} />;
   }
 
   // L'attribution des ventes est un chiffre financier : on ne va même pas la

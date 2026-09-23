@@ -149,10 +149,6 @@ describe("textes des pages publiques", () => {
     expect(other.message.points).toHaveLength(fr.message.points.length);
     expect(other.features.items).toHaveLength(fr.features.items.length);
     expect(other.faq.items).toHaveLength(fr.faq.items.length);
-    expect(other.pricing.plans).toHaveLength(fr.pricing.plans.length);
-    other.pricing.plans.forEach((plan, i) => {
-      expect(plan.features, `plan ${i} en ${lang}`).toHaveLength(fr.pricing.plans[i].features.length);
-    });
     expect(other.footer.productLinks).toHaveLength(fr.footer.productLinks.length);
     expect(other.footer.companyLinks).toHaveLength(fr.footer.companyLinks.length);
   });
@@ -165,13 +161,6 @@ describe("textes des pages publiques", () => {
     expect(empty, `valeurs vides en ${lang}`).toEqual([]);
   });
 
-  it.each(LANGS)("%s annonce les mêmes tarifs que les autres langues", (lang) => {
-    // Les prix sont des faits, pas de la traduction : ils doivent être
-    // identiques d'une langue à l'autre, sinon la page promet deux montants.
-    const prices = LANDING_COPY[lang].pricing.plans.map((p) => p.price.replace(/\s| | /g, ""));
-    const reference = LANDING_COPY.fr.pricing.plans.map((p) => p.price.replace(/\s| | /g, ""));
-    expect(prices).toEqual(reference);
-  });
 
   it.each(LANGS)("%s garde le message WhatsApp aligné sur le total affiché", (lang) => {
     // Le message reproduit ce que le produit génère : les lignes doivent

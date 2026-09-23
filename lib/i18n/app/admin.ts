@@ -140,6 +140,12 @@ export interface AdminCopy {
     planTagline: string;
     planFeatures: string;
     planFeaturesHint: string;
+    planName: string;
+    planTextsTitle: string;
+    planTextsHint: string;
+    planLangs: Record<string, string>;
+    savePrice: string;
+    savePlanTexts: (lang: string) => string;
     savePlan: (name: string) => string;
     free: string;
     perMonth: string;
@@ -525,7 +531,13 @@ const fr: AdminCopy = {
     planPrice: "Prix mensuel (HTG)",
     planTagline: "Phrase d'accroche",
     planFeatures: "Fonctionnalités incluses",
-    planFeaturesHint: "Séparez chaque ligne par une virgule.",
+    planFeaturesHint: "Un avantage par ligne.",
+    planName: "Nom affiché",
+    planTextsTitle: "Textes de l'offre",
+    planTextsHint: "Ces textes s'affichent sur la page d'accueil et sur la page Abonnement des marchands.",
+    planLangs: { fr: "Français", ht: "Kreyòl", en: "English" },
+    savePrice: "Enregistrer le prix",
+    savePlanTexts: (lang) => `Enregistrer les textes (${lang})`,
     savePlan: (name) => `Enregistrer le plan ${name}`,
     free: "Gratuit",
     perMonth: "/ mois",
@@ -980,7 +992,13 @@ const ht: AdminCopy = {
     planPrice: "Pri chak mwa (HTG)",
     planTagline: "Fraz akwoch",
     planFeatures: "Sa ki enkli",
-    planFeaturesHint: "Separe chak liy ak yon vigil.",
+    planFeaturesHint: "Yon avantaj pa liy.",
+    planName: "Non ki afiche",
+    planTextsTitle: "Tèks òf la",
+    planTextsHint: "Tèks sa yo parèt sou paj akèy la ak sou paj Abònman machann yo.",
+    planLangs: { fr: "Français", ht: "Kreyòl", en: "English" },
+    savePrice: "Anrejistre pri a",
+    savePlanTexts: (lang) => `Anrejistre tèks yo (${lang})`,
     savePlan: (name) => `Anrejistre plan ${name}`,
     free: "Gratis",
     perMonth: "/ mwa",
@@ -1435,7 +1453,13 @@ const en: AdminCopy = {
     planPrice: "Monthly price (HTG)",
     planTagline: "Tagline",
     planFeatures: "Included features",
-    planFeaturesHint: "Separate each line with a comma.",
+    planFeaturesHint: "One benefit per line.",
+    planName: "Displayed name",
+    planTextsTitle: "Plan texts",
+    planTextsHint: "These texts appear on the home page and on the merchant's Subscription page.",
+    planLangs: { fr: "Français", ht: "Kreyòl", en: "English" },
+    savePrice: "Save the price",
+    savePlanTexts: (lang) => `Save the texts (${lang})`,
     savePlan: (name) => `Save the ${name} plan`,
     free: "Free",
     perMonth: "/ month",

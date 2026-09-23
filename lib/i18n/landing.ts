@@ -115,7 +115,6 @@ export interface LandingCopy {
     mostChosen: string;
     perMonth: string;
     currency: string;
-    plans: { name: string; price: string; features: string[] }[];
   };
   faq: {
     eyebrow: string;
@@ -271,43 +270,6 @@ const fr: LandingCopy = {
     mostChosen: "Le plus choisi",
     perMonth: "HTG / mois",
     currency: "HTG",
-    plans: [
-      {
-        name: "Gratuit",
-        price: "0",
-        features: ["Vitrine publique", "Catalogue et panier WhatsApp", "Zones de livraison", "1 utilisateur"],
-      },
-      {
-        name: "Menu QR Express",
-        price: "500",
-        features: [
-          "Menu visuel pour restaurant",
-          "Chevalets QR, jusqu'à 25 tables",
-          "Commande avec numéro de table",
-          "Notes pour la cuisine",
-        ],
-      },
-      {
-        name: "Pro",
-        price: "750",
-        features: [
-          "Tout le plan Gratuit",
-          "Suivi des commandes, 7 étapes",
-          "Jusqu'à 3 comptes d'équipe",
-          "Rapports de vente et relances",
-        ],
-      },
-      {
-        name: "Premium",
-        price: "2 500",
-        features: [
-          "Tout le plan Pro",
-          "Comptes d'équipe illimités",
-          "Assistant de gestion du stock",
-          "Notifications de commande (bientôt)",
-        ],
-      },
-    ],
   },
   faq: {
     eyebrow: "Questions fréquentes",
@@ -480,43 +442,6 @@ const ht: LandingCopy = {
     mostChosen: "Pi chwazi",
     perMonth: "HTG / mwa",
     currency: "HTG",
-    plans: [
-      {
-        name: "Gratis",
-        price: "0",
-        features: ["Vitrin piblik", "Katalòg ak panier WhatsApp", "Zòn livrezon", "1 itilizatè"],
-      },
-      {
-        name: "Menu QR Express",
-        price: "500",
-        features: [
-          "Menu vizyèl pou restoran",
-          "Chevalè QR, jiska 25 tab",
-          "Kòmand ak nimewo tab",
-          "Nòt pou kwizin nan",
-        ],
-      },
-      {
-        name: "Pro",
-        price: "750",
-        features: [
-          "Tout plan Gratis la",
-          "Swivi kòmand, 7 etap",
-          "Jiska 3 kont ekip",
-          "Rapò vant ak relans",
-        ],
-      },
-      {
-        name: "Premium",
-        price: "2 500",
-        features: [
-          "Tout plan Pro a",
-          "Kont ekip san limit",
-          "Asistan jesyon stòk",
-          "Notifikasyon kòmand (byento)",
-        ],
-      },
-    ],
   },
   faq: {
     eyebrow: "Kesyon moun poze souvan",
@@ -689,28 +614,6 @@ const en: LandingCopy = {
     mostChosen: "Most chosen",
     perMonth: "HTG / month",
     currency: "HTG",
-    plans: [
-      {
-        name: "Free",
-        price: "0",
-        features: ["Public storefront", "Catalogue and WhatsApp cart", "Delivery zones", "1 user"],
-      },
-      {
-        name: "Menu QR Express",
-        price: "500",
-        features: ["Visual restaurant menu", "QR table tents, up to 25 tables", "Orders with table number", "Kitchen notes"],
-      },
-      {
-        name: "Pro",
-        price: "750",
-        features: ["Everything in Free", "Order tracking, 7 stages", "Up to 3 team accounts", "Sales reports and reminders"],
-      },
-      {
-        name: "Premium",
-        price: "2 500",
-        features: ["Everything in Pro", "Unlimited team accounts", "Stock management assistant", "Order notifications (coming soon)"],
-      },
-    ],
   },
   faq: {
     eyebrow: "Common questions",

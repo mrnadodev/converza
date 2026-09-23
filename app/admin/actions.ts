@@ -146,7 +146,16 @@ export async function upgradePlan(businessId: string, targetPlan: string, months
   return { ok: !error, error: error?.message };
 }
 
-import { savePlan, savePaymentInfo, savePlatformSettings, saveLegalInfo, loadLandingOverrides, saveLandingOverrides } from "@/lib/platform-store";
+import {
+  savePlan,
+  savePlanTexts,
+  savePaymentInfo,
+  savePlatformSettings,
+  saveLegalInfo,
+  loadLandingOverrides,
+  saveLandingOverrides,
+} from "@/lib/platform-store";
+import { sanitizePlanText } from "@/lib/plan-texts";
 import { LANDING_COPY } from "@/lib/i18n/landing";
 import { sanitizeOverrides } from "@/lib/landing-overrides";
 import type { Language } from "@/lib/i18n/translations";
@@ -168,21 +177,16 @@ export async function rejectPayment(paymentId: string) {
   return { ok: !error, error: error?.message };
 }
 
-export async function updatePlanConfig(key: string, priceGdes: number, tagline: string, featuresStr: string) {
+export async function updatePlanConfig(key: string, priceGdes: number) {
   const adminEmail = await requireAdmin();
   if (!adminEmail) return { ok: false, error: "Non otorize" };
 
   if (!Number.isFinite(priceGdes) || priceGdes < 0) return { ok: false, error: "Pri a pa valab" };
 
-  const features = featuresStr.split(",").map((s) => s.trim()).filter(Boolean);
-  const updated = await savePlan(key, { priceGdes: Math.round(priceGdes), tagline, features });
+  const updated = await savePlan(key, { priceGdes: Math.round(priceGdes) });
   if (!updated) return { ok: false, error: "Enposib pou anrejistre plan an" };
 
-  await logAdminAction({
-    adminEmail,
-    action: "UPDATE_PLAN_CONFIG",
-    details: { key, priceGdes, tagline, features },
-  });
+  await logAdminAction({ adminEmail, action: "UPDATE_PLAN_CONFIG", details: { key, priceGdes } });
 
   revalidatePath("/admin");
   revalidatePath("/");
@@ -190,6 +194,38 @@ export async function updatePlanConfig(key: string, priceGdes: number, tagline: 
   revalidatePath("/accueil");
   revalidatePath("/abonman");
   return { ok: !!updated };
+}
+
+/**
+ * Nom, accroche et avantages d'une offre, pour une langue. Ces textes
+ * s'affichent à la fois sur la page d'accueil et sur la page Abonnement : il
+ * n'y a plus qu'un seul endroit où les écrire.
+ */
+export async function updatePlanTexts(
+  key: string,
+  language: Language,
+  input: { name?: string; tagline?: string; features?: string },
+) {
+  const adminEmail = await requireAdmin();
+  if (!adminEmail) return { ok: false, error: "Non otorize" };
+  if (!LANDING_COPY[language]) return { ok: false, error: "Langue inconnue" };
+
+  const texts = sanitizePlanText(input);
+  const saved = await savePlanTexts(key, language, texts);
+  if (!saved) return { ok: false, error: "Enposib pou anrejistre plan an" };
+
+  await logAdminAction({
+    adminEmail,
+    action: "UPDATE_PLAN_CONFIG",
+    details: { key, language, fields: Object.keys(texts) },
+  });
+
+  revalidatePath("/admin");
+  revalidatePath("/");
+  revalidatePath("/acceuil");
+  revalidatePath("/accueil");
+  revalidatePath("/abonman");
+  return { ok: true };
 }
 
 /**

@@ -6,6 +6,12 @@ export interface Plan {
   tagline: string;
   features: string[];
   highlight?: boolean;
+  /**
+   * Textes par langue saisis dans la console (lib/plan-texts.ts). Les champs
+   * ci-dessus restent la version créole, écrite avant que les langues soient
+   * séparées.
+   */
+  i18n?: Partial<Record<import("./i18n/translations").Language, { name?: string; tagline?: string; features?: string[] }>>;
 }
 
 export interface BankAccountDetails {

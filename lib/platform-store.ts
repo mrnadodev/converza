@@ -3,6 +3,7 @@ import { DEFAULT_PLANS, DEFAULT_PAYMENT_INFO, type Plan, type PlatformPaymentInf
 import { DEFAULT_PLATFORM_SETTINGS, type PlatformGlobalSettings } from "./platform-config";
 import { DEFAULT_LEGAL_INFO, mergeLegalInfo, type LegalInfo } from "./legal";
 import type { LandingOverrides } from "./landing-overrides";
+import type { Language } from "./i18n/translations";
 
 // Persistance de la configuration plateforme (tarifs, coordonnées de paiement
 // CONVERZA, feature flags).
@@ -19,9 +20,9 @@ const CACHE_TTL_MS = 30_000;
 
 const cache = new Map<SettingsKey, { value: unknown; expires: number }>();
 
-async function readSetting<T>(key: SettingsKey, fallback: T): Promise<T> {
+async function readSetting<T>(key: SettingsKey, fallback: T, fresh = false): Promise<T> {
   const hit = cache.get(key);
-  if (hit && hit.expires > Date.now()) return hit.value as T;
+  if (!fresh && hit && hit.expires > Date.now()) return hit.value as T;
 
   const admin = createAdminClient();
   if (!admin) return fallback;
@@ -47,9 +48,24 @@ async function writeSetting<T>(key: SettingsKey, value: T): Promise<boolean> {
   return true;
 }
 
-export async function loadPlans(): Promise<Plan[]> {
-  const stored = await readSetting<Plan[]>("plans", DEFAULT_PLANS);
+export async function loadPlans(fresh = false): Promise<Plan[]> {
+  const stored = await readSetting<Plan[]>("plans", DEFAULT_PLANS, fresh);
   return Array.isArray(stored) && stored.length > 0 ? stored : DEFAULT_PLANS;
+}
+
+/** Textes d'une offre pour une langue (console → Abonnements). */
+export async function savePlanTexts(
+  key: string,
+  language: Language,
+  texts: { name?: string; tagline?: string; features?: string[] },
+): Promise<boolean> {
+  const plans = await loadPlans(true);
+  const plan = plans.find((p) => p.key === key);
+  if (!plan) return false;
+  const next = plans.map((p) =>
+    p.key === key ? { ...p, i18n: { ...(p.i18n ?? {}), [language]: texts } } : p,
+  );
+  return writeSetting("plans", next);
 }
 
 /** Textes de la page d'accueil modifiés depuis la console (lib/landing-overrides.ts). */
@@ -89,7 +105,8 @@ export async function planByKey(key: string | null | undefined): Promise<Plan> {
 }
 
 export async function savePlan(key: string, patch: Partial<Plan>): Promise<Plan | null> {
-  const plans = await loadPlans();
+  // Lecture fraîche : on modifie la version réellement enregistrée.
+  const plans = await loadPlans(true);
   const idx = plans.findIndex((p) => p.key === key);
   if (idx === -1) return null;
 

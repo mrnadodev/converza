@@ -9,6 +9,8 @@ import { applyOverrides, type LandingOverrides } from "@/lib/landing-overrides";
 import { initialsOf, type ShowcaseMerchant } from "@/lib/showcase";
 import { paletteFor } from "@/lib/storefront-designs";
 import { useScrollReveal, useScrolledPast } from "@/components/useScrollReveal";
+import { planTexts } from "@/lib/plan-texts";
+import type { Plan } from "@/lib/plans";
 
 // Page d'accueil publique.
 //
@@ -22,11 +24,12 @@ const GREEN = "#008069";
 const ACTION = "#25D366";
 
 export function LandingPage({
-  pricing,
+  plans = [],
   overrides,
   showcase = [],
 }: {
-  pricing?: Record<string, number>;
+  /** Offres telles que la console les enregistre : prix et textes par langue. */
+  plans?: Plan[];
   overrides?: LandingOverrides;
   /** Vraies boutiques qui vendent, choisies par lib/showcase.ts (quatre au plus). */
   showcase?: ShowcaseMerchant[];
@@ -39,15 +42,11 @@ export function LandingPage({
   useScrollReveal(rootRef);
   const scrolled = useScrolledPast(40);
 
-  // Les tarifs affichés viennent de la configuration plateforme quand elle est
-  // fournie ; les libellés du dictionnaire servent de repli.
-  const planKeys = ["gratis", "qr_express", "pro", "premium"] as const;
-  const priceFor = (index: number) => {
-    const fromConfig = pricing?.[planKeys[index]];
-    if (fromConfig === undefined) return c.pricing.plans[index].price;
-    return fromConfig.toLocaleString("fr-HT");
-  };
-  const qrPrice = pricing?.qr_express;
+  // Prix et textes des offres viennent de la console : un changement s'y fait
+  // une seule fois, et se voit ici comme sur la page Abonnement des marchands.
+  const PLAN_ORDER = ["gratis", "qr_express", "pro", "premium"];
+  const offers = PLAN_ORDER.map((key) => plans.find((p) => p.key === key)).filter(Boolean) as Plan[];
+  const qrPrice = plans.find((p) => p.key === "qr_express")?.priceGdes;
 
   return (
     <div ref={rootRef} style={{ background: "#FFFFFF", color: INK }} className="overflow-x-hidden">
@@ -430,10 +429,11 @@ export function LandingPage({
           </div>
 
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {c.pricing.plans.map((plan, i) => {
-              const highlighted = i === 2;
+            {offers.map((offer, i) => {
+              const plan = planTexts(offer, language);
+              const highlighted = offer.key === "pro";
               return (
-                <div key={plan.name} data-reveal
+                <div key={offer.key} data-reveal
                   className="cvz-lift relative flex flex-col gap-5 rounded-[20px] p-8"
                   style={{
                     ["--reveal-delay" as string]: `${i * 90}ms`,
@@ -448,12 +448,14 @@ export function LandingPage({
                   )}
                   <span className="text-[17px] font-bold" style={{ color: highlighted ? "#fff" : INK }}>{plan.name}</span>
                   <div className="flex items-baseline gap-1.5">
-                    <span className="text-[44px] font-extrabold tracking-[-2px]" style={{ color: highlighted ? ACTION : INK }}>{priceFor(i)}</span>
-                    <span className="text-[14.5px] font-semibold text-[#7D9A92]">{i === 0 ? c.pricing.currency : c.pricing.perMonth}</span>
+                    <span className="text-[44px] font-extrabold tracking-[-2px]" style={{ color: highlighted ? ACTION : INK }}>
+                      {offer.priceGdes.toLocaleString("fr-HT")}
+                    </span>
+                    <span className="text-[14.5px] font-semibold text-[#7D9A92]">{offer.priceGdes === 0 ? c.pricing.currency : c.pricing.perMonth}</span>
                   </div>
                   <div className="h-px" style={{ background: highlighted ? "rgba(255,255,255,0.14)" : "#E6ECEA" }} />
                   <div className="flex flex-col gap-2.5">
-                    {plan.features.map((f) => (
+                    {plan.features.map((f: string) => (
                       <span key={f} className="text-[14.5px]" style={{ color: highlighted ? "#C4E8DD" : "#47605A" }}>{f}</span>
                     ))}
                   </div>

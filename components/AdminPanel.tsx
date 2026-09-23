@@ -20,6 +20,7 @@ import {
   updatePaymentInfoConfig,
   updateLegalInfoConfig,
   updatePlanConfig,
+  updatePlanTexts,
 } from "@/app/admin/actions";
 import { ADMIN_COPY, type AdminCopy } from "@/lib/i18n/app/admin";
 import { COMMON_COPY } from "@/lib/i18n/app/common";
@@ -30,6 +31,8 @@ import { csvCell } from "@/lib/reports";
 import { formatMoney } from "@/lib/money";
 import { waMeLink } from "@/lib/whatsapp";
 import { buildFunnel } from "@/lib/funnel";
+import { planTexts } from "@/lib/plan-texts";
+import type { Language } from "@/lib/i18n/translations";
 import { LandingEditor } from "@/components/LandingEditor";
 import { SECTOR_THEME, THEMES, THEME_KEYS, themeOf } from "@/lib/themes";
 import { INDUSTRY_SECTORS, verticalOf } from "@/lib/verticals";
@@ -39,7 +42,6 @@ import { LayoutThumb as LayoutThumbMini } from "@/components/LayoutThumb";
 import type { AdminData, AdminMerchant } from "@/lib/admin-data";
 import type { BankAccountDetails, Plan } from "@/lib/plans";
 import type { DesignLayoutConfig, QrMenuServiceConfig } from "@/lib/platform-config";
-import type { Language } from "@/lib/i18n/translations";
 import { DEFAULT_LAYOUT, STOREFRONT_LAYOUTS, isLayoutKey, layoutRule, type LayoutKey } from "@/lib/storefront-layouts";
 
 type Tab = "overview" | "merchants" | "billing" | "phones" | "qrMenu" | "platform" | "landing" | "security";
@@ -1189,43 +1191,103 @@ function PlatformPaymentCard({
   );
 }
 
+/**
+ * Offre : le prix d'un côté, les textes par langue de l'autre.
+ *
+ * Ces textes s'affichent sur la page d'accueil comme sur la page Abonnement.
+ * Les avantages se saisissent un par ligne : séparés par des virgules, un
+ * avantage qui en contenait une (« Notes pour la cuisine, sans piment ») se
+ * coupait en deux.
+ */
 function PlanEditorCard({ plan, run, pending }: { plan: Plan; run: Runner; pending: boolean }) {
   const a = useDict(ADMIN_COPY);
   const c = useDict(COMMON_COPY);
   const [price, setPrice] = useState(plan.priceGdes);
-  const [tagline, setTagline] = useState(plan.tagline);
-  const [features, setFeatures] = useState((plan.features ?? []).join(", "));
+  const [lang, setLang] = useState<Language>("fr");
+  const saved = planTexts(plan, lang);
+  const [name, setName] = useState(saved.name);
+  const [tagline, setTagline] = useState(saved.tagline);
+  const [features, setFeatures] = useState(saved.features.join("\n"));
+
+  // Changer de langue recharge les textes de cette langue.
+  const switchLang = (next: Language) => {
+    const texts = planTexts(plan, next);
+    setLang(next);
+    setName(texts.name);
+    setTagline(texts.tagline);
+    setFeatures(texts.features.join("\n"));
+  };
+
+  const priceDirty = price !== plan.priceGdes;
+  const textDirty = name !== saved.name || tagline !== saved.tagline || features !== saved.features.join("\n");
 
   return (
     <Card>
       <div className="mb-2 flex items-center justify-between gap-2">
         <span className="text-[16px] font-extrabold">{plan.name}</span>
+        {/* Le prix enregistré, pas celui en train d'être tapé. */}
         <span className="text-[14px] font-black text-brand">
-          {price === 0 ? a.billing.free : `${formatMoney(price * 100)} ${a.billing.perMonth}`}
+          {plan.priceGdes === 0 ? a.billing.free : `${formatMoney(plan.priceGdes * 100)} ${a.billing.perMonth}`}
         </span>
       </div>
 
-      <div className="grid grid-cols-1 gap-2 text-[13px] sm:grid-cols-2">
-        <Field label={a.billing.planPrice}>
-          <input type="number" value={price} onChange={(e) => setPrice(Number(e.target.value))} className={inputCls} />
-        </Field>
-        <Field label={a.billing.planTagline}>
-          <input value={tagline} onChange={(e) => setTagline(e.target.value)} className={inputCls} />
-        </Field>
-        <div className="sm:col-span-2">
-          <Field label={a.billing.planFeatures} hint={a.billing.planFeaturesHint}>
-            <input value={features} onChange={(e) => setFeatures(e.target.value)} className={inputCls} />
+      <div className="flex flex-wrap items-end gap-2">
+        <div className="min-w-[140px] flex-1">
+          <Field label={a.billing.planPrice}>
+            <input type="number" value={price} onChange={(e) => setPrice(Number(e.target.value))} className={inputCls} />
           </Field>
         </div>
+        <button
+          onClick={() => run("save-plan-" + plan.key, () => updatePlanConfig(plan.key, price))}
+          disabled={pending || !priceDirty}
+          className="h-10 shrink-0 rounded-xl bg-brand-green/15 px-4 text-[13px] font-extrabold text-brand active:scale-[0.99] disabled:opacity-50"
+        >
+          {pending ? c.actions.saving : a.billing.savePrice}
+        </button>
       </div>
 
-      <button
-        onClick={() => run("save-plan-" + plan.key, () => updatePlanConfig(plan.key, price, tagline, features))}
-        disabled={pending}
-        className="mt-3 h-10 w-full cursor-pointer rounded-xl bg-brand-green/15 text-[13px] font-extrabold text-brand active:scale-[0.99] disabled:opacity-60"
-      >
-        {pending ? c.actions.saving : a.billing.savePlan(plan.name)}
-      </button>
+      <div className="mt-4 border-t border-line pt-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-[12px] font-semibold text-ink-muted">{a.billing.planTextsTitle}</span>
+          {(["fr", "ht", "en"] as Language[]).map((l) => (
+            <button
+              key={l}
+              onClick={() => switchLang(l)}
+              className={`rounded-full px-3 py-1 text-[12px] font-extrabold ${lang === l ? "bg-brand text-white" : "bg-[#F3F6F4] text-ink-soft"}`}
+            >
+              {a.billing.planLangs[l]}
+            </button>
+          ))}
+        </div>
+        <p className="mt-1 text-[11.5px] text-ink-faint">{a.billing.planTextsHint}</p>
+
+        <div className="mt-3 grid grid-cols-1 gap-2 text-[13px] sm:grid-cols-2">
+          <Field label={a.billing.planName}>
+            <input value={name} onChange={(e) => setName(e.target.value)} className={inputCls} />
+          </Field>
+          <Field label={a.billing.planTagline}>
+            <input value={tagline} onChange={(e) => setTagline(e.target.value)} className={inputCls} />
+          </Field>
+          <div className="sm:col-span-2">
+            <Field label={a.billing.planFeatures} hint={a.billing.planFeaturesHint}>
+              <textarea
+                value={features}
+                onChange={(e) => setFeatures(e.target.value)}
+                rows={Math.min(8, Math.max(3, features.split("\n").length + 1))}
+                className={inputCls}
+              />
+            </Field>
+          </div>
+        </div>
+
+        <button
+          onClick={() => run("save-plan-texts-" + plan.key + lang, () => updatePlanTexts(plan.key, lang, { name, tagline, features }))}
+          disabled={pending || !textDirty}
+          className="mt-3 h-10 w-full rounded-xl bg-brand-green/15 text-[13px] font-extrabold text-brand active:scale-[0.99] disabled:opacity-50"
+        >
+          {pending ? c.actions.saving : a.billing.savePlanTexts(a.billing.planLangs[lang])}
+        </button>
+      </div>
     </Card>
   );
 }
@@ -1262,7 +1324,7 @@ function QrMenuTab({
 
   function savePrice() {
     run("sync-qr-price", async () => {
-      const res = await updatePlanConfig("qr_express", price, qrPlan?.tagline ?? "", (qrPlan?.features ?? []).join(", "));
+      const res = await updatePlanConfig("qr_express", price);
       await updateGlobalSettingsAction({
         qrMenuService: {
           enabled: settings?.enabled ?? true,

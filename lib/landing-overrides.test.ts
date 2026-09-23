@@ -13,10 +13,11 @@ describe("textes modifiables de la page d'accueil", () => {
     expect(fields.find((f) => f.path === "faq.items.0.q")?.value).toBe(fr.faq.items[0].q);
   });
 
-  it("n'expose pas les prix, qui se règlent dans les abonnements", () => {
+  it("n'expose aucun texte d'offre : ils se modifient dans les abonnements", () => {
+    // Prix, noms et avantages des offres viennent de la console (lib/plan-texts.ts).
     const paths = editableFields(fr).map((f) => f.path);
-    expect(paths.some((p) => /^pricing\.plans\.\d+\.price$/.test(p))).toBe(false);
-    expect(paths).toContain("pricing.plans.0.name");
+    expect(paths.some((path) => path.startsWith("pricing.plans"))).toBe(false);
+    expect(paths).toContain("pricing.note");
   });
 
   it("présente les sections dans l'ordre de la page", () => {
@@ -43,7 +44,7 @@ describe("textes modifiables de la page d'accueil", () => {
       {
         "hero.inexistant": "x",
         "auth.signInTitle": "Pirate", // hors page d'accueil
-        "pricing.plans.0.price": "0", // réglé ailleurs
+        "pricing.plans.0.name": "Offre pirate", // les offres se règlent ailleurs
         "hero.titleLead": 42,
         "__proto__.polluted": "oui",
       } as Record<string, unknown>,
