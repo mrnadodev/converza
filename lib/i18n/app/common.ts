@@ -38,6 +38,14 @@ export interface CommonCopy {
     tooBig: (mb: number) => string;
     storageOff: string;
     failed: string;
+    frame: {
+      title: string;
+      hint: string;
+      closer: string;
+      use: string;
+      whole: string;
+      cancel: string;
+    };
   };
   orders: (n: number) => string;
   units: (n: number) => string;
@@ -98,6 +106,14 @@ const fr: CommonCopy = {
     tooBig: (mb) => `Image trop lourde (${mb} Mo maximum).`,
     storageOff: "Le stockage des images n'est pas configuré.",
     failed: "L'envoi de l'image a échoué.",
+    frame: {
+      title: "Cadrez votre produit",
+      hint: "Glissez la photo pour choisir ce qui reste visible.",
+      closer: "Se rapprocher",
+      use: "Utiliser ce cadrage",
+      whole: "Garder la photo entière",
+      cancel: "Annuler",
+    },
   },
   orders: (n) => (n <= 1 ? `${n} commande` : `${n} commandes`),
   units: (n) => (n <= 1 ? `${n} unité` : `${n} unités`),
@@ -158,6 +174,14 @@ const ht: CommonCopy = {
     tooBig: (mb) => `Imaj la twò gwo (${mb} Mo maksimòm).`,
     storageOff: "Depo imaj la pa konfigire.",
     failed: "Nou pa rive voye imaj la.",
+    frame: {
+      title: "Kadre pwodwi ou a",
+      hint: "Deplase foto a pou chwazi sa ki rete vizib.",
+      closer: "Pwoche pi pre",
+      use: "Sèvi ak kadraj sa a",
+      whole: "Kite foto a antye",
+      cancel: "Anile",
+    },
   },
   orders: (n) => `${n} kòmand`,
   units: (n) => `${n} inite`,
@@ -218,6 +242,14 @@ const en: CommonCopy = {
     tooBig: (mb) => `Image too large (${mb} MB maximum).`,
     storageOff: "Image storage is not configured.",
     failed: "The image could not be uploaded.",
+    frame: {
+      title: "Frame your product",
+      hint: "Drag the photo to choose what stays visible.",
+      closer: "Move closer",
+      use: "Use this framing",
+      whole: "Keep the whole photo",
+      cancel: "Cancel",
+    },
   },
   orders: (n) => (n === 1 ? "1 order" : `${n} orders`),
   units: (n) => (n === 1 ? "1 unit" : `${n} units`),

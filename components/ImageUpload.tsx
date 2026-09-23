@@ -3,7 +3,8 @@
 import { useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-import { cropImage, fitImage, scaleImage } from "@/lib/image";
+import { cropImage, fitImage, frameImage, scaleImage, type Frame } from "@/lib/image";
+import { PhotoFramer } from "@/components/PhotoFramer";
 import { useDict } from "@/components/LanguageContext";
 import { COMMON_COPY } from "@/lib/i18n/app/common";
 
@@ -34,9 +35,14 @@ export function ImageUpload({
   const inputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  // Photo de produit en attente de cadrage : le marchand décide avant l'envoi.
+  const [pending, setPending] = useState<File | null>(null);
 
   async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
-    let file = e.target.files?.[0];
+    const file = e.target.files?.[0];
+    // Le champ garde la dernière valeur choisie : sans cette remise à zéro,
+    // reprendre la même photo après une annulation ne déclenche plus rien.
+    e.target.value = "";
     if (!file) return;
 
     // L'attribut `accept` du champ ne filtre que la boîte de dialogue : un
@@ -50,25 +56,44 @@ export function ImageUpload({
       return;
     }
 
-    // Chaque type d'image a son traitement. Seule la bannière est recadrée :
-    // c'est un bandeau. Une photo de produit garde son format d'origine — la
-    // carte de la vitrine sait afficher n'importe quelle forme. Un logo ou un
-    // QR code est posé entier dans un carré : recadrer un QR de paiement le
-    // rendrait impossible à scanner.
-    const isBanner = folder === "covers" || shape === "wide";
-    if (isBanner) {
-      file = await cropImage(file, targetWidth ?? 1200, targetHeight ?? 400);
-    } else if (folder === "products") {
-      file = await scaleImage(file, Math.max(targetWidth ?? 0, targetHeight ?? 0) || 1200);
-    } else {
-      const side = targetWidth ?? targetHeight ?? 800;
-      file = await fitImage(file, side, side);
+    setErr(null);
+
+    // Une photo de produit passe d'abord par l'écran de cadrage : c'est le
+    // marchand qui décide de ce qui restera visible sur sa vitrine.
+    if (folder === "products") {
+      setPending(file);
+      return;
     }
+
+    // Les autres images n'ont rien à décider. Seule la bannière est recadrée :
+    // c'est un bandeau. Un logo ou un QR code est posé entier dans un carré —
+    // recadrer un QR de paiement le rendrait impossible à scanner.
+    const isBanner = folder === "covers" || shape === "wide";
+    await send(
+      isBanner
+        ? await cropImage(file, targetWidth ?? 1200, targetHeight ?? 400)
+        : await fitImage(file, targetWidth ?? targetHeight ?? 800, targetWidth ?? targetHeight ?? 800),
+    );
+  }
+
+  // Le marchand a choisi son cadrage, ou préféré garder la photo entière.
+  const longestSide = Math.max(targetWidth ?? 0, targetHeight ?? 0) || 1200;
+  async function onFramed(frame: Frame) {
+    const file = pending;
+    setPending(null);
+    if (file) await send(await frameImage(file, frame, Math.min(longestSide, Math.round(frame.size))));
+  }
+  async function onWhole() {
+    const file = pending;
+    setPending(null);
+    if (file) await send(await scaleImage(file, longestSide));
+  }
+
+  async function send(file: File) {
     if (!HAS_SUPABASE) {
       setErr(c.storageOff);
       return;
     }
-    setErr(null);
     setBusy(true);
     try {
       const sb = createClient();
@@ -94,10 +119,11 @@ export function ImageUpload({
 
   return (
     <div className="flex flex-wrap items-center gap-3">
+      {pending && <PhotoFramer file={pending} onCancel={() => setPending(null)} onFrame={onFramed} onWhole={onWhole} />}
       <div className={`relative flex ${box} shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-dashed border-line bg-[#F7F8F9]`}>
         {value ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={value} alt="" className="h-full w-full object-cover" />
+          <img src={value} alt="" className="h-full w-full object-contain" />
         ) : (
           <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#8696A0" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="4" /><circle cx="9" cy="9" r="1.6" /><path d="m21 15-5-5L5 21" /></svg>
         )}

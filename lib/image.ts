@@ -152,3 +152,45 @@ export function fitImage(file: File, frameWidth: number, frameHeight: number): P
 export function resizeImageTo1200x400(file: File): Promise<File> {
   return cropImage(file, 1200, 400);
 }
+
+/* ─────────── Cadrage choisi par le marchand ─────────── */
+
+/** Zone carrée retenue, en pixels de la photo d'origine. */
+export type Frame = { x: number; y: number; size: number };
+
+/**
+ * Traduit ce que le marchand voit dans le cadre en zone de la photo d'origine.
+ *
+ * `zoom` vaut 1 quand le plus grand carré possible est visible — soit toute la
+ * photo pour un carré, soit toute sa hauteur pour une photo panoramique.
+ * Au-delà, le marchand se rapproche du produit : c'est le geste qui sauve la
+ * chaussure photographiée à deux mètres, perdue au milieu du cadre.
+ *
+ * Le carré retenu reste toujours entièrement dans la photo : on ne fabrique
+ * jamais de bord vide.
+ */
+export function frameFromView(
+  imageWidth: number,
+  imageHeight: number,
+  zoom: number,
+  offsetX: number,
+  offsetY: number,
+): Frame {
+  const widest = Math.min(imageWidth, imageHeight);
+  const size = Math.max(1, Math.min(widest, widest / Math.max(1, zoom)));
+  const clamp = (v: number, max: number) => Math.min(Math.max(v, 0), Math.max(0, max));
+  return {
+    x: clamp((imageWidth - size) / 2 + offsetX, imageWidth - size),
+    y: clamp((imageHeight - size) / 2 + offsetY, imageHeight - size),
+    size,
+  };
+}
+
+/** Découpe le carré choisi par le marchand et le rend à la taille demandée. */
+export function frameImage(file: File, frame: Frame, side: number): Promise<File> {
+  return process(file, () => ({
+    width: side,
+    height: side,
+    draw: { sx: frame.x, sy: frame.y, sw: frame.size, sh: frame.size, dx: 0, dy: 0, dw: side, dh: side },
+  }));
+}

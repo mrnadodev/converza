@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { coverPlan, fitPlan, scalePlan } from "./image";
+import { coverPlan, fitPlan, frameFromView, scalePlan } from "./image";
 
 // La géométrie des images envoyées par le marchand.
 //
@@ -66,5 +66,34 @@ describe("bannière recadrée", () => {
     const { draw } = coverPlan(4000, 1000, 1000, 1000);
     expect(draw.sw).toBe(1000);
     expect(draw.sx).toBe(1500);
+  });
+});
+
+describe("cadrage choisi par le marchand", () => {
+  it("prend le plus grand carré possible sans zoom", () => {
+    expect(frameFromView(1600, 900, 1, 0, 0)).toEqual({ x: 350, y: 0, size: 900 });
+    expect(frameFromView(900, 1600, 1, 0, 0)).toEqual({ x: 0, y: 350, size: 900 });
+  });
+
+  it("resserre le cadre quand le marchand se rapproche", () => {
+    const { size } = frameFromView(1000, 1000, 2, 0, 0);
+    expect(size).toBe(500);
+  });
+
+  it("ne sort jamais de la photo, même si le marchand pousse le cadre", () => {
+    for (const [dx, dy] of [[9999, 9999], [-9999, -9999]]) {
+      const f = frameFromView(1200, 800, 2, dx, dy);
+      expect(f.x).toBeGreaterThanOrEqual(0);
+      expect(f.y).toBeGreaterThanOrEqual(0);
+      expect(f.x + f.size).toBeLessThanOrEqual(1200);
+      expect(f.y + f.size).toBeLessThanOrEqual(800);
+    }
+  });
+
+  it("ne fabrique pas de bord vide sur une photo très allongée", () => {
+    const f = frameFromView(3000, 400, 1, 0, 0);
+    expect(f.size).toBe(400);
+    expect(f.y).toBe(0);
+    expect(f.x + f.size).toBeLessThanOrEqual(3000);
   });
 });
