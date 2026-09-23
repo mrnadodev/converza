@@ -10,7 +10,8 @@
     "lint": "next lint",
     "test": "vitest run",
     "backup": "node scripts/backup.mjs",
-    "restore": "node scripts/restore.mjs"
+    "restore": "node scripts/restore.mjs",
+    "staging-sql": "node scripts/build-staging-sql.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.2",

@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { PGlite } from "@electric-sql/pglite";
 import { beforeAll, describe, expect, it } from "vitest";
+import { ORDRE_MONTAGE as ORDRE } from "./ordre.mjs";
 
 // Peut-on recréer la base à partir des fichiers du dépôt, sur une base vide ?
 //
@@ -16,21 +17,6 @@ import { beforeAll, describe, expect, it } from "vitest";
 
 const DB = join(__dirname);
 
-/** L'ordre dans lequel un projet neuf doit être monté. */
-const ORDRE = [
-  "schema.sql",
-  "migrate-2026-1-enums.sql",
-  "migrate-2026-2-schema.sql",
-  "migrate-2026-3-admin.sql",
-  "migrate-2026-4-numero.sql",
-  "migrate-2026-5-stock.sql",
-  "migrate-2026-5b-correctif-stock.sql",
-  "migrate-2026-6-gestion.sql",
-  "migrate-2026-7-support.sql",
-  "migrate-2026-8-abonnement.sql",
-  "migrate-2026-9-vitrine-accueil.sql",
-  "migrate-2026-10-vitrine-produits.sql",
-];
 
 /** Tables volontairement réservées à la console (clé de service). */
 const SERVICE_SEUL = ["app_errors", "platform_settings", "security_audit_logs"];
@@ -105,6 +91,53 @@ describe("montage d'une base à partir de zéro", () => {
     expect(colonnes).toContain("logo_url");
     for (const secret of ["moncash_number", "natcash_number", "usdt_address", "bank_account"]) {
       expect(colonnes, `« ${secret} » ne doit pas sortir sur la vitrine`).not.toContain(secret);
+    }
+  });
+});
+
+describe("db/staging-complet.sql", () => {
+  it("monte la même base que les douze fichiers, d'un seul bloc", async () => {
+    // C'est ce fichier-là qu'on colle dans l'éditeur SQL d'un projet neuf :
+    // s'il diverge des sources, le staging ne reproduit plus la production.
+    const neuve = new PGlite();
+    await neuve.exec(`
+      create schema if not exists auth;
+      create table auth.users (id uuid primary key default gen_random_uuid());
+      create or replace function auth.uid() returns uuid language sql stable as $$ select null::uuid $$;
+      create role authenticated; create role anon; create role service_role;
+      create schema if not exists storage;
+      create table storage.buckets (id text primary key, name text, public boolean default false);
+      create table storage.objects (id uuid primary key default gen_random_uuid(),
+        bucket_id text references storage.buckets(id), name text, owner uuid);
+      alter table storage.objects enable row level security;
+    `);
+
+    const sql = readFileSync(join(DB, "staging-complet.sql"), "utf8")
+      .replace(/create extension if not exists "pgcrypto";/g, "");
+    await expect(neuve.exec(sql)).resolves.toBeDefined();
+
+    const [v] = (await neuve.query<{ v: string }>(
+      `select value->>'migration' as v from platform_settings where key='db_version'`,
+    )).rows;
+    expect(v?.v, "le fichier assemblé est-il à jour ? npm run staging-sql").toBe("10");
+
+    const tables = (await neuve.query<{ n: number }>(
+      `select count(*)::int as n from pg_class c join pg_namespace nsp on nsp.oid=c.relnamespace
+       where nsp.nspname='public' and c.relkind='r'`,
+    )).rows[0].n;
+    expect(tables).toBe(19);
+  }, 120_000);
+
+  it("contient exactement les fichiers sources, sans dérive", () => {
+    // Un fichier assemblé périmé donnerait un staging qui ne reproduit plus la
+    // production, sans que rien ne le signale.
+    // Les fins de ligne diffèrent entre Windows et le dépôt : on compare le
+    // contenu, pas la façon dont l'éditeur termine ses lignes.
+    const lf = (t: string) => t.split("\r\n").join("\n");
+    const assemble = lf(readFileSync(join(DB, "staging-complet.sql"), "utf8"));
+    for (const fichier of ORDRE) {
+      const source = lf(readFileSync(join(DB, fichier), "utf8")).trimEnd();
+      expect(assemble, `${fichier} a changé — relancer « npm run staging-sql »`).toContain(source);
     }
   });
 });
