@@ -81,9 +81,29 @@ jobs:
           taille=$(stat -c%s "dumps/converza_${horodatage}.sql.gz")
           echo "Sauvegarde : dumps/converza_${horodatage}.sql.gz ($taille octets)"
 
-          # Une sauvegarde vide est pire qu'aucune : elle rassure à tort.
-          if [ "$taille" -lt 10000 ]; then
-            echo "ÉCHEC : l'export fait moins de 10 Ko, la base n'a pas dû être lue."
+          # Une sauvegarde vide est pire qu'aucune : elle rassure à tort. Un
+          # contrôle de taille ne suffit pas — un dump de structure sans aucune
+          # donnée pèse déjà plusieurs kilo-octets et paraît normal. On compte
+          # donc les lignes réellement exportées, table par table.
+          #
+          # Seuls les NOMS et les NOMBRES sont affichés, jamais le contenu :
+          # ces tables portent les téléphones et les commandes des clients.
+          gunzip -c "dumps/converza_${horodatage}.sql.gz" > /tmp/inv.sql
+          echo "tables créées : $(grep -c '^CREATE TABLE' /tmp/inv.sql)"
+          echo "lignes exportées, par table :"
+          awk '
+            /^COPY /  { t=$2; n=0; dans=1; next }
+            dans && /^\\\.$/ { somme+=n; printf "  %8d  %s\n", n, t; dans=0; next }
+            dans      { n++ }
+            END       { print somme+0 > "/tmp/total" }
+          ' /tmp/inv.sql | sort -rn | head -15
+          total=$(cat /tmp/total)
+          echo "total : $total lignes exportées"
+          rm -f /tmp/inv.sql /tmp/total
+
+          if [ "${total:-0}" -eq 0 ]; then
+            echo "ÉCHEC : aucune donnée dans l'export — la structure est là, pas le contenu."
+            echo "Le compte de sauvegarde peut-il lire les tables ? Vérifiez pg_read_all_data."
             exit 1
           fi
 
