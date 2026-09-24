@@ -38,10 +38,116 @@ await db.exec(`
 // Le dump est rejoué instruction par instruction : une base nue refuse
 // forcément quelques lignes propres à Supabase (extensions, propriétaires,
 // commentaires système). On les compte au lieu de s'arrêter à la première.
-const instructions = sql
-  .split(/;\s*\n/)
-  .map((s) => s.trim())
-  .filter((s) => s && !s.startsWith("--") && !s.startsWith("\\"));
+//
+// Le découpage ne peut pas se faire sur un simple « ; » : les corps de
+// fonctions PostgreSQL sont entourés de $$ et contiennent eux-mêmes des
+// points-virgules. Un découpage naïf les met en pièces et fait échouer la
+// restauration pour de mauvaises raisons.
+function decouper(texte) {
+  const sorties = [];
+  let courant = "";
+  let i = 0;
+  while (i < texte.length) {
+    const c = texte[i];
+    const deux = texte.slice(i, i + 2);
+
+    if (deux === "--") {                        // commentaire de ligne
+      const fin = texte.indexOf("\n", i);
+      i = fin === -1 ? texte.length : fin;
+      continue;
+    }
+    if (deux === "/*") {                        // commentaire de bloc
+      const fin = texte.indexOf("*/", i + 2);
+      i = fin === -1 ? texte.length : fin + 2;
+      continue;
+    }
+    if (c === "'" || c === '"') {               // chaîne ou identifiant cité
+      let j = i + 1;
+      while (j < texte.length) {
+        if (texte[j] === c && texte[j + 1] === c) { j += 2; continue; }
+        if (texte[j] === c) break;
+        j++;
+      }
+      courant += texte.slice(i, j + 1);
+      i = j + 1;
+      continue;
+    }
+    if (c === "$") {                            // corps de fonction $tag$…$tag$
+      const balise = /^\$[A-Za-z_0-9]*\$/.exec(texte.slice(i));
+      if (balise) {
+        const fin = texte.indexOf(balise[0], i + balise[0].length);
+        const j = fin === -1 ? texte.length : fin + balise[0].length;
+        courant += texte.slice(i, j);
+        i = j;
+        continue;
+      }
+    }
+    if (c === ";") { sorties.push(courant); courant = ""; i++; continue; }
+    courant += c;
+    i++;
+  }
+  if (courant.trim()) sorties.push(courant);
+  return sorties
+    .map((x) => x.trim())
+    .filter((x) => x && !x.startsWith("\\") && !/^COPY /.test(x));  // \restrict, \unrestrict, et les COPY traites plus bas
+}
+
+// Les blocs « COPY … FROM stdin » sont une convention de psql : les lignes de
+// données suivent la commande, hors SQL. Un moteur qui ne parle que le SQL ne
+// peut pas les lire. On les traduit en INSERT pour pouvoir rejouer le dump
+// ailleurs que dans psql.
+function extraireCopies(texte) {
+  const sorties = [];
+  const reste = [];
+  const lignes = texte.split("\n");
+  const AS = String.fromCharCode(92);
+  const FIN = AS + ".";
+  const desechapper = (v) => {
+    if (v === AS + "N") return null;
+    return v
+      .split(AS + "r").join("\r")
+      .split(AS + "n").join("\n")
+      .split(AS + "t").join("\t")
+      .split(AS + AS).join(AS);
+  };
+  const citer = (v) => (v === null ? "NULL" : "'" + v.split("'").join("''") + "'");
+
+  for (let i = 0; i < lignes.length; i++) {
+    const entete = /^COPY (\S+) \(([^)]*)\) FROM stdin;/.exec(lignes[i]);
+    if (!entete) { reste.push(lignes[i]); continue; }
+    const [, table, colonnes] = entete;
+    const valeurs = [];
+    let j = i + 1;
+    for (; j < lignes.length && lignes[j] !== FIN; j++) {
+      if (lignes[j] === "") continue;
+      valeurs.push("(" + lignes[j].split("\t").map(desechapper).map(citer).join(", ") + ")");
+    }
+    i = j;
+    // Par paquets : une seule requête de dix mille lignes est plus lente
+    // qu'une dizaine de mille.
+    for (let k = 0; k < valeurs.length; k += 500) {
+      sorties.push(`INSERT INTO ${table} (${colonnes}) VALUES ` + valeurs.slice(k, k + 500).join(", "));
+    }
+  }
+  return { inserts: sorties, sansCopies: reste.join("\n") };
+}
+
+// Les blocs COPY sont retirés du texte avant le découpage : leurs lignes de
+// données ne sont pas du SQL et rendraient l'instruction suivante illisible.
+const { inserts, sansCopies } = extraireCopies(sql);
+
+// « session_replication_role = replica » met les déclencheurs en sommeil le
+// temps du chargement. Sans ça, insérer un produit rejoue le déclencheur de
+// mouvement de stock et fabrique des lignes qui n'étaient pas dans la
+// sauvegarde — on croirait restaurer plus que ce qu'on a sauvegardé.
+// pg_dump obtient le même résultat en créant les déclencheurs après les
+// données ; ici les INSERT arrivent en dernier, d'où cette précaution.
+const instructions = [
+  ...decouper(sansCopies),
+  "SET session_replication_role = replica",
+  ...inserts,
+  "SET session_replication_role = origin",
+];
 
 let passees = 0;
 const refus = new Map();
@@ -79,7 +185,7 @@ console.log(`  ${String(total).padStart(6)}  TOTAL`);
 
 // La preuve qui compte : les vraies boutiques sont-elles là ?
 try {
-  const b = await q(`select name, slug from businesses order by created_at`);
+  const b = await q(`select name, slug from "public"."businesses" order by created_at`);
   console.log(`\nboutiques retrouvées (${b.length}) :`);
   for (const x of b) console.log(`  · ${x.name} — /b/${x.slug}`);
 } catch {

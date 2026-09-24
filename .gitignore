@@ -40,3 +40,10 @@ yarn-error.log*
 
 # ajouté par « npx vercel link » ; .env* est déjà couvert plus haut.
 .vercel
+
+# exports de base : ils contiennent les noms, telephones, clients et
+# commandes des marchands. Ce depot est public — un dump telecharge pour
+# verification ne doit jamais partir avec un « git add -A ».
+*.sql.gz
+*.dump
+dumps/
