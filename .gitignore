@@ -37,3 +37,6 @@ yarn-error.log*
 # (décommente si tu ne veux pas versionner les maquettes)
 # *.dc.html
 # converza-mvp-screens.html
+
+# ajouté par « npx vercel link » ; .env* est déjà couvert plus haut.
+.vercel
