@@ -38,6 +38,18 @@ fois le workflow, le secret, et les dumps.
 
    La bonne contient `pooler.supabase.com` et se termine par `:5432/postgres`.
 
+   **Mieux : n'utilisez pas le mot de passe `postgres`.** Il permet de tout
+   lire *et* de tout détruire. Lancez d'abord `db/role-sauvegarde.sql` dans
+   l'éditeur SQL : il crée un compte `sauvegarde` en lecture seule. Si ce
+   secret fuite un jour, on copie vos données — c'est grave, mais on ne les
+   efface pas, et vous gardez de quoi repartir.
+
+   La chaîne devient alors :
+
+   ```
+   postgresql://sauvegarde.<reference>:<mot-de-passe>@aws-0-<region>.pooler.supabase.com:5432/postgres
+   ```
+
 3. **Enregistrez-la comme secret** dans le dépôt privé : Settings → Secrets and
    variables → Actions → New repository secret.
    Nom : `SUPABASE_DB_URL`. Valeur : la chaîne complète.

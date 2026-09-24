@@ -52,11 +52,16 @@ jobs:
           # comptes et leurs mots de passe chiffrés). Sans « auth », une
           # restauration rendrait les données mais personne ne pourrait se
           # reconnecter.
+          # Les guillemets SIMPLES autour du sh -c sont délibérés : sans eux, le
+          # shell du serveur remplacerait $DB_URL avant de lancer Docker, et le
+          # mot de passe apparaîtrait dans la ligne de commande, visible par tout
+          # processus de la machine. Ici il n'est lu qu'à l'intérieur du conteneur,
+          # qui disparaît aussitôt.
           docker run --rm -e DB_URL postgres:17 \
-            pg_dump "$DB_URL" \
-              --schema=public --schema=auth \
-              --no-owner --no-privileges \
-              --quote-all-identifiers \
+            sh -c 'pg_dump "$DB_URL" \
+                     --schema=public --schema=auth \
+                     --no-owner --no-privileges \
+                     --quote-all-identifiers' \
             | gzip -9 > "dumps/converza_${horodatage}.sql.gz"
 
           taille=$(stat -c%s "dumps/converza_${horodatage}.sql.gz")
