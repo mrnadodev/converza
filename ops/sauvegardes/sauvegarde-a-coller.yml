@@ -1,14 +1,3 @@
-# Sauvegarde automatique de la base CONVERZA.
-#
-# CE FICHIER NE VA PAS DANS CE DÉPÔT-CI : le dépôt CONVERZA est public, donc
-# ses artefacts et ses journaux le sont aussi. Un export de base contient les
-# noms, téléphones, clients et commandes des marchands. Il doit vivre dans un
-# dépôt PRIVÉ, avec le secret qui va avec. Voir README.md à côté.
-#
-# Toutes les six heures : au pire, six heures de commandes perdues au lieu de
-# vingt-quatre. Les dumps sont commités, donc l'historique Git devient la
-# rétention : chaque sauvegarde reste consultable et comparable.
-
 name: Sauvegarde CONVERZA
 
 on:

@@ -15,44 +15,29 @@ fois le workflow, le secret, et les dumps.
 1. **Créez un dépôt privé** sur GitHub, par exemple `converza-sauvegardes`.
    Cochez bien « Private ».
 
-2. **Récupérez la chaîne de connexion** : dashboard Supabase → projet de
-   production → Settings → Database → « Connection string » → onglet **URI**.
-   Elle ressemble à :
+2. **Récupérez le mot de passe de la base** : dashboard Supabase → projet de
+   production → Settings → Database. Si vous ne le connaissez plus, la même
+   page permet de le réinitialiser.
 
-   ```
-   postgresql://postgres.<reference>:<mot-de-passe>@aws-0-<region>.pooler.supabase.com:5432/postgres
-   ```
+   Le workflow ne demande **que le mot de passe**, pas une chaîne complète.
+   Le serveur, le port et l'utilisateur sont écrits en clair en haut du
+   fichier — ce ne sont pas des secrets, et les laisser lisibles évite de
+   deviner quand quelque chose ne va pas.
 
-   Si vous ne connaissez plus le mot de passe, la même page permet de le
-   réinitialiser. Attention : le réinitialiser casse toute autre connexion
-   directe qui l'utiliserait.
-
-   **Prenez bien la bonne des trois chaînes proposées.** C'est ce qui fait
-   échouer la plupart des premières tentatives :
-
-   | Choix | Port | Convient ? |
-   |---|---|---|
-   | Direct connection | 5432 | non — adresse IPv6, les serveurs GitHub sont en IPv4 |
-   | **Session pooler** | 5432 | **oui** — c'est celle-là |
-   | Transaction pooler | 6543 | non — `pg_dump` ne fonctionne pas en mode transaction |
-
-   La bonne contient `pooler.supabase.com` et se termine par `:5432/postgres`.
+   C'est délibéré : une chaîne « postgresql://user:motdepasse@serveur/base »
+   se casse dès que le mot de passe contient `@`, `:`, `/`, `#` ou `%`, et
+   l'erreur renvoyée par PostgreSQL ne dit jamais que c'est la cause.
 
    **Mieux : n'utilisez pas le mot de passe `postgres`.** Il permet de tout
-   lire *et* de tout détruire. Lancez d'abord `db/role-sauvegarde.sql` dans
-   l'éditeur SQL : il crée un compte `sauvegarde` en lecture seule. Si ce
-   secret fuite un jour, on copie vos données — c'est grave, mais on ne les
-   efface pas, et vous gardez de quoi repartir.
+   lire *et* de tout détruire. Lancez `db/role-sauvegarde.sql` dans l'éditeur
+   SQL : il crée un compte `sauvegarde` en lecture seule. Remplacez alors
+   `PGUSER` en haut du workflow par `sauvegarde.<reference>` et mettez le mot
+   de passe de ce compte dans le secret.
 
-   La chaîne devient alors :
-
-   ```
-   postgresql://sauvegarde.<reference>:<mot-de-passe>@aws-0-<region>.pooler.supabase.com:5432/postgres
-   ```
-
-3. **Enregistrez-la comme secret** dans le dépôt privé : Settings → Secrets and
+3. **Enregistrez-le comme secret** dans le dépôt privé : Settings → Secrets and
    variables → Actions → New repository secret.
-   Nom : `SUPABASE_DB_URL`. Valeur : la chaîne complète.
+   Nom : `SUPABASE_DB_PASSWORD`. Valeur : le mot de passe, rien d'autre —
+   ni `postgresql://`, ni `@`, ni nom de serveur.
 
 4. **Copiez `sauvegarde.yml`** dans le dépôt privé, à l'emplacement
    `.github/workflows/sauvegarde.yml`, puis poussez.
