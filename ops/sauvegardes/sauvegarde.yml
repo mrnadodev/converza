@@ -1,0 +1,87 @@
+# Sauvegarde automatique de la base CONVERZA.
+#
+# CE FICHIER NE VA PAS DANS CE DÉPÔT-CI : le dépôt CONVERZA est public, donc
+# ses artefacts et ses journaux le sont aussi. Un export de base contient les
+# noms, téléphones, clients et commandes des marchands. Il doit vivre dans un
+# dépôt PRIVÉ, avec le secret qui va avec. Voir README.md à côté.
+#
+# Toutes les six heures : au pire, six heures de commandes perdues au lieu de
+# vingt-quatre. Les dumps sont commités, donc l'historique Git devient la
+# rétention : chaque sauvegarde reste consultable et comparable.
+
+name: Sauvegarde CONVERZA
+
+on:
+  schedule:
+    # 01h, 07h, 13h et 19h à Port-au-Prince (UTC-4).
+    - cron: "0 5,11,17,23 * * *"
+  workflow_dispatch:      # bouton « Run workflow » pour une sauvegarde à la demande
+
+# Une seule sauvegarde à la fois : deux exécutions concurrentes se
+# marcheraient dessus au moment du commit.
+concurrency:
+  group: sauvegarde
+  cancel-in-progress: false
+
+jobs:
+  sauvegarder:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write     # pour commiter le dump dans ce dépôt privé
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Exporter la base
+        env:
+          DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          set -euo pipefail
+          if [ -z "${DB_URL:-}" ]; then
+            echo "Le secret SUPABASE_DB_URL n'est pas défini. Voir README.md."
+            exit 1
+          fi
+          mkdir -p dumps
+          horodatage=$(date -u +%Y-%m-%d_%Hh%M)
+
+          # pg_dump lancé depuis l'image PostgreSQL 17 : un client plus ancien
+          # que le serveur refuse de s'exécuter, et la version du serveur
+          # Supabase change sans prévenir. Le client 17 accepte les serveurs 15
+          # à 17.
+          #
+          # On exporte « public » (les données des marchands) ET « auth » (les
+          # comptes et leurs mots de passe chiffrés). Sans « auth », une
+          # restauration rendrait les données mais personne ne pourrait se
+          # reconnecter.
+          docker run --rm -e DB_URL postgres:17 \
+            pg_dump "$DB_URL" \
+              --schema=public --schema=auth \
+              --no-owner --no-privileges \
+              --quote-all-identifiers \
+            | gzip -9 > "dumps/converza_${horodatage}.sql.gz"
+
+          taille=$(stat -c%s "dumps/converza_${horodatage}.sql.gz")
+          echo "Sauvegarde : dumps/converza_${horodatage}.sql.gz ($taille octets)"
+
+          # Une sauvegarde vide est pire qu'aucune : elle rassure à tort.
+          if [ "$taille" -lt 10000 ]; then
+            echo "ÉCHEC : l'export fait moins de 10 Ko, la base n'a pas dû être lue."
+            exit 1
+          fi
+
+      - name: Ne garder que les 60 dernières
+        run: |
+          cd dumps
+          ls -1t converza_*.sql.gz | tail -n +61 | xargs -r rm -v
+          echo "$(ls -1 converza_*.sql.gz | wc -l) sauvegardes conservées (environ 15 jours)"
+
+      - name: Commiter
+        run: |
+          git config user.name  "Sauvegarde automatique"
+          git config user.email "actions@github.com"
+          git add dumps
+          if git diff --cached --quiet; then
+            echo "Rien de neuf."
+          else
+            git commit -m "sauvegarde $(date -u +%Y-%m-%d\ %Hh%M) UTC"
+            git push
+          fi
