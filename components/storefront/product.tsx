@@ -67,7 +67,12 @@ export function ProductImage({
     );
   }
   return (
-    <div className="relative h-full w-full overflow-hidden">
+    // Les deux images sont hors du flux : une image restée dans le flux impose
+    // sa propre hauteur au conteneur, et la carte prend alors le format de la
+    // photo au lieu du sien. La grille devient irrégulière dès que deux photos
+    // n'ont pas le même format — ce qui est désormais la règle, puisque les
+    // envois gardent leur format d'origine.
+    <div className="absolute inset-0 h-full w-full overflow-hidden">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={photos[index]}
@@ -82,7 +87,7 @@ export function ProductImage({
         alt={name}
         draggable={false}
         onClick={onZoom ? () => onZoom(photos, index) : undefined}
-        className={`relative h-full w-full object-contain ${onZoom ? "cursor-zoom-in" : ""}`}
+        className={`absolute inset-0 h-full w-full object-contain ${onZoom ? "cursor-zoom-in" : ""}`}
       />
     </div>
   );

@@ -181,7 +181,7 @@ export function CatalogManager({ business, initial, userSession }: { business: B
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={photos[0]} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full scale-125 object-cover blur-2xl" />
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={photos[0]} alt={p.name} className="relative h-full w-full object-contain" />
+                      <img src={photos[0]} alt={p.name} className="absolute inset-0 h-full w-full object-contain" />
                     </>
                   ) : (
                     <span className="text-[11px] font-semibold text-slate-400">{k.noPhoto}</span>

@@ -545,7 +545,7 @@ export function Storefront({
                 return (
                   <div key={i} className={`flex items-center justify-between gap-3 rounded-xl border p-2 text-xs ${darkMode ? "border-slate-700 bg-slate-800/60" : "border-slate-200 bg-slate-50"}`}>
                     <div className="flex min-w-0 items-center gap-2.5">
-                      <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg">
+                      <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg">
                         <ProductImage photos={photos} name={l.name} dark={darkMode} compact />
                       </div>
                       <div className="min-w-0">

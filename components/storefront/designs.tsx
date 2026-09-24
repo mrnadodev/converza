@@ -416,7 +416,7 @@ function PricingColumn({ p, ctx, highlight }: { p: Product; ctx: Ctx; highlight:
           {c.popular}
         </span>
       )}
-      <div className="h-14 w-14 overflow-hidden rounded-2xl">
+      <div className="relative h-14 w-14 overflow-hidden rounded-2xl">
         <ProductImage photos={photosOf(p)} name={p.name} compact onZoom={ctx.onZoom} />
       </div>
       <ProductCategory p={p} className={`text-[10.5px] font-bold uppercase tracking-wide ${neon ? "text-slate-400" : "text-ink-muted"}`} />
@@ -449,7 +449,7 @@ function TableView({ items, ctx }: { items: Product[]; ctx: Ctx }) {
         {items.map((p) => (
           <div key={p.id} className={`grid grid-cols-[1fr_auto] items-center gap-3 border-t px-3.5 py-2.5 md:grid-cols-[1fr_160px_auto] ${dark ? "border-white/10" : "border-slate-100"}`}>
             <div className="flex min-w-0 items-center gap-3">
-              <div className="h-12 w-12 shrink-0 overflow-hidden rounded-lg">
+              <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg">
                 <ProductImage photos={photosOf(p)} name={p.name} compact onZoom={ctx.onZoom} />
               </div>
               <div className="flex min-w-0 flex-col">
