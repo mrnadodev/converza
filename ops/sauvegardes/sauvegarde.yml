@@ -31,15 +31,59 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Vérifier la chaîne de connexion
+        env:
+          DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          # Décrit la FORME de la chaîne, jamais son contenu secret. Sans ça,
+          # une chaîne mal formée ne produit qu'un « could not translate host
+          # name » qui ne dit pas ce qui manque.
+          if [ -z "${DB_URL:-}" ]; then
+            echo "Le secret SUPABASE_DB_URL n'est pas défini dans ce dépôt."
+            exit 1
+          fi
+          echo "longueur : ${#DB_URL} caractères"
+          case "$DB_URL" in
+            postgresql://*|postgres://*) ;;
+            *) echo "PROBLÈME : la chaîne doit commencer par postgresql://" ; exit 1 ;;
+          esac
+
+          corps="${DB_URL#*://}"
+          arobases=$(printf '%s' "$corps" | tr -cd '@' | wc -c)
+          if [ "$arobases" -eq 0 ]; then
+            echo "PROBLÈME : aucun « @ » dans la chaîne."
+            echo "Il manque le mot de passe ET l'adresse du serveur."
+            echo "Forme attendue :"
+            echo "  postgresql://UTILISATEUR:MOTDEPASSE@SERVEUR:5432/postgres"
+            echo "Recopiez la ligne entière depuis Supabase → Connect → Session pooler."
+            exit 1
+          fi
+
+          avant="${corps%@*}"; apres="${corps##*@}"
+          echo "utilisateur : ${avant%%:*}"
+          echo "serveur     : ${apres%%:*}"
+          echo "port/base   : ${apres#*:}"
+          case "${avant}" in
+            *:*) ;;
+            *) echo "PROBLÈME : aucun mot de passe avant le @" ; exit 1 ;;
+          esac
+          case "${apres%%:*}" in
+            *pooler.supabase.com) ;;
+            db.*.supabase.co) echo "PROBLÈME : c'est « Direct connection » (IPv6, injoignable ici). Prenez « Session pooler »." ; exit 1 ;;
+            *) echo "PROBLÈME : le serveur devrait finir par pooler.supabase.com" ; exit 1 ;;
+          esac
+          case "${apres#*:}" in
+            6543/*) echo "PROBLÈME : port 6543 = Transaction pooler, incompatible avec pg_dump. Prenez le port 5432." ; exit 1 ;;
+            5432/*) ;;
+            *) echo "PROBLÈME : port ou base inattendus (attendu 5432/postgres)" ; exit 1 ;;
+          esac
+          echo "La forme est correcte."
+
       - name: Exporter la base
         env:
           DB_URL: ${{ secrets.SUPABASE_DB_URL }}
         run: |
           set -euo pipefail
-          if [ -z "${DB_URL:-}" ]; then
-            echo "Le secret SUPABASE_DB_URL n'est pas défini. Voir README.md."
-            exit 1
-          fi
           mkdir -p dumps
           horodatage=$(date -u +%Y-%m-%d_%Hh%M)
 
