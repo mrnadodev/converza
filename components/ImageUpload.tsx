@@ -117,6 +117,18 @@ export function ImageUpload({
   // bouton sur la même ligne le poussait hors de l'écran.
   const box = shape === "wide" ? "h-28 w-full max-w-[280px]" : "h-24 w-24";
 
+  // Ce qu'on annonce au marchand vient du MÊME test que le traitement appliqué
+  // plus haut. Un texte écrit à la main sur chaque écran d'appel finirait par
+  // décrire un comportement qui a changé ailleurs, sans que rien ne le signale.
+  //
+  // Rien n'est annoncé pour une photo de produit lorsqu'un écran de cadrage
+  // suit : le marchand va voir de ses yeux ce qui sera gardé.
+  const annonce = (() => {
+    if (folder === "covers" || shape === "wide") return c.format.banner(targetWidth ?? 1200, targetHeight ?? 400);
+    if (folder === "products") return c.format.product;
+    return c.format.square(targetWidth ?? targetHeight ?? 800);
+  })();
+
   return (
     <div className="flex flex-wrap items-center gap-3">
       {pending && <PhotoFramer file={pending} onCancel={() => setPending(null)} onFrame={onFramed} onWhole={onWhole} />}
@@ -140,7 +152,9 @@ export function ImageUpload({
             {c.remove}
           </button>
         )}
-        {err && <span className="max-w-[180px] text-[11px] text-[#C0392B]">{err}</span>}
+        {err
+          ? <span className="max-w-[240px] text-[11px] text-[#C0392B]">{err}</span>
+          : <span className="max-w-[240px] text-[11px] leading-snug text-ink-muted">{annonce}</span>}
       </div>
     </div>
   );

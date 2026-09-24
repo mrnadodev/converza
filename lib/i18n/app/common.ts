@@ -38,6 +38,12 @@ export interface CommonCopy {
     tooBig: (mb: number) => string;
     storageOff: string;
     failed: string;
+    /** Ce qui arrivera a l'image, annonce avant l'envoi. */
+    format: {
+      banner: (w: number, h: number) => string;
+      square: (side: number) => string;
+      product: string;
+    };
     frame: {
       title: string;
       hint: string;
@@ -106,6 +112,11 @@ const fr: CommonCopy = {
     tooBig: (mb) => `Image trop lourde (${mb} Mo maximum).`,
     storageOff: "Le stockage des images n'est pas configuré.",
     failed: "L'envoi de l'image a échoué.",
+    format: {
+      banner: (w, h) => `Bandeau panoramique ${w} × ${h}. Le haut et le bas seront rognés : cadrez large.`,
+      square: (side) => `Carré ${side} × ${side}. Votre image est posée entière, jamais rognée.`,
+      product: "La photo garde son format. Vous choisirez le cadrage juste après.",
+    },
     frame: {
       title: "Cadrez votre produit",
       hint: "Glissez la photo pour choisir ce qui reste visible.",
@@ -174,6 +185,11 @@ const ht: CommonCopy = {
     tooBig: (mb) => `Imaj la twò gwo (${mb} Mo maksimòm).`,
     storageOff: "Depo imaj la pa konfigire.",
     failed: "Nou pa rive voye imaj la.",
+    format: {
+      banner: (w, h) => `Bando panoramik ${w} × ${h}. Anlè ak anba ap koupe : kadre laj.`,
+      square: (side) => `Kare ${side} × ${side}. Imaj ou a poze antye, li pa janm koupe.`,
+      product: "Foto a kenbe fòma li. W ap chwazi kadraj la touswit apre.",
+    },
     frame: {
       title: "Kadre pwodwi ou a",
       hint: "Deplase foto a pou chwazi sa ki rete vizib.",
@@ -242,6 +258,11 @@ const en: CommonCopy = {
     tooBig: (mb) => `Image too large (${mb} MB maximum).`,
     storageOff: "Image storage is not configured.",
     failed: "The image could not be uploaded.",
+    format: {
+      banner: (w, h) => `Panoramic banner ${w} × ${h}. Top and bottom will be cropped: frame wide.`,
+      square: (side) => `Square ${side} × ${side}. Your image is placed whole, never cropped.`,
+      product: "The photo keeps its shape. You will choose the framing next.",
+    },
     frame: {
       title: "Frame your product",
       hint: "Drag the photo to choose what stays visible.",
