@@ -11,12 +11,13 @@ next-env.d.ts
 # production
 /build
 
-# env
-.env
-.env*.local
-# base de préproduction : ses clés ne sont pas celles de .env.local
-.env.preprod
-.env.preprod.*
+# env — tout sauf le modèle d'exemple.
+#
+# Une liste nommant les fichiers un par un laisse toujours passer le suivant :
+# .env.staging, créé pour séparer la préproduction, n'y figurait pas et sa clé
+# de service serait partie dans le dépôt au premier « git add -A ».
+.env*
+!.env.local.example
 
 # sauvegardes : elles contiennent les données des marchands (et des pièces
 # d'identité). Elles ne doivent jamais partir dans le dépôt.
