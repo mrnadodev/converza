@@ -73,8 +73,7 @@ jobs:
           docker run --rm \
             -e PGHOST -e PGPORT -e PGUSER -e PGDATABASE -e PGPASSWORD \
             postgres:17 \
-            pg_dump --schema=public \
-                    --table=auth.users --table=auth.identities \
+            pg_dump --schema=public --schema=auth \
                     --no-owner --no-privileges \
                     --quote-all-identifiers \
             | gzip -9 > "dumps/converza_${horodatage}.sql.gz"
