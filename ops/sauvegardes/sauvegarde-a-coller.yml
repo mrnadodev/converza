@@ -20,7 +20,10 @@ concurrency:
 env:
   PGHOST: aws-0-us-west-2.pooler.supabase.com
   PGPORT: "5432"
-  PGUSER: postgres.ftezqvnzaeoqlgqwjxst
+  # Le compte en lecture seule créé par db/role-sauvegarde.sql, et non
+  # « postgres » : si ce secret fuite, on copie les données sans pouvoir
+  # les effacer. Le pooler attend le format <role>.<référence du projet>.
+  PGUSER: sauvegarde.ftezqvnzaeoqlgqwjxst
   PGDATABASE: postgres
 
 jobs:
