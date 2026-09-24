@@ -80,6 +80,7 @@ Write-Host "  1. la supprimer de tous les environnements Vercel"
 Write-Host "  2. la recréer sur Production seule, avec la valeur de $Prod"
 Write-Host "  3. la créer sur Preview seule, avec la valeur de $Staging"
 Write-Host "Les deux nouvelles seront « --no-sensitive », donc modifiables plus tard."
+Write-Host "Le script est rejouable : relancé, il réécrit simplement les valeurs."
 Write-Host ''
 Write-Host 'NE DÉPLOYEZ RIEN avant la fin du script.'
 Write-Host 'Ne sont PAS touchées, et c''est voulu :'
@@ -90,13 +91,21 @@ Write-Host ''
 $reponse = Read-Host 'Continuer ? (tapez oui)'
 if ($reponse -ne 'oui') { Write-Host "Abandon. Rien n'a été touché."; exit 1 }
 
+# Le CLI Vercel pose des questions sans rapport avec la tâche — notamment
+# « Vercel Plugin for Claude Code is not installed. Install it now? » — qui
+# bloquent un script au milieu d'une suppression. CI=1 le rend silencieux.
+$env:CI = '1'
+
 foreach ($v in $Vars) {
     Write-Host ''
     Write-Host "-- $v"
-    # La variable peut ne plus exister : un échec ici n'est pas une erreur.
-    try { & npx vercel env rm $v --yes 2>$null } catch { Write-Host '   (rien à supprimer)' }
-    & npx vercel env add $v production --value (Read-EnvValue $Prod $v)    --no-sensitive --yes
-    & npx vercel env add $v preview    --value (Read-EnvValue $Staging $v) --no-sensitive --yes
+    # Pas de « 2>$null » ici : sous PowerShell 5.1, rediriger la sortie
+    # d'erreur d'un exécutable natif masque justement ses invites, et le
+    # script paraît figé sans qu'on sache pourquoi. La variable peut ne plus
+    # exister : l'échec de la suppression n'est pas une erreur.
+    & npx vercel env rm $v --yes
+    & npx vercel env add $v production --value (Read-EnvValue $Prod $v)    --no-sensitive --force --yes
+    & npx vercel env add $v preview    --value (Read-EnvValue $Staging $v) --no-sensitive --force --yes
 }
 
 Write-Host ''
