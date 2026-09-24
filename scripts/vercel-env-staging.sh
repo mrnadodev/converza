@@ -19,7 +19,10 @@ cd "$(dirname "$0")/.."   # racine du dépôt : .env.local et .env.staging y viv
 
 PROD=".env.local"
 STAGING=".env.staging"
-VARS=(NEXT_PUBLIC_SUPABASE_URL NEXT_PUBLIC_SUPABASE_ANON_KEY SUPABASE_SERVICE_ROLE_KEY ADMIN_EMAILS)
+# Seules les clés propres au projet Supabase changent d'un environnement à
+# l'autre. ADMIN_EMAILS n'en est pas une : la même adresse doit ouvrir la
+# console des deux côtés, donc on la laisse sur « Production and Preview ».
+VARS=(NEXT_PUBLIC_SUPABASE_URL NEXT_PUBLIC_SUPABASE_ANON_KEY SUPABASE_SERVICE_ROLE_KEY)
 
 lire() { # lire <fichier> <clé>
   sed -n "s/^$2=//p" "$1" | head -1 | sed 's/^["'"'"']//; s/["'"'"']$//' | tr -d '\r'
@@ -33,7 +36,6 @@ du projet Supabase de STAGING (Settings → API) :
 NEXT_PUBLIC_SUPABASE_URL=https://xxxxxxxx.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
 SUPABASE_SERVICE_ROLE_KEY=eyJ...
-ADMIN_EMAILS=votre.adresse@exemple.com
 
 Puis relancez ce script.
 MODELE
@@ -68,15 +70,16 @@ fi
 
 cat <<PLAN
 
-Ce script va, pour chacune des quatre variables :
+Ce script va, pour chacune des trois clés Supabase :
   1. la supprimer de tous les environnements Vercel
   2. la recréer sur Production seule, avec la valeur de $PROD
   3. la créer sur Preview seule, avec la valeur de $STAGING
 Les deux nouvelles seront « --no-sensitive », donc modifiables plus tard.
 
 NE DÉPLOYEZ RIEN avant la fin du script.
-NEXT_PUBLIC_SITE_URL et INVITE_SECRET ne sont pas touchées : elles sont
-déjà sur Production seule, et c'est ce qu'il faut.
+Ne sont PAS touchées, et c'est voulu :
+  · NEXT_PUBLIC_SITE_URL et INVITE_SECRET — déjà sur Production seule
+  · ADMIN_EMAILS — même valeur des deux côtés, rien à séparer
 
 PLAN
 read -r -p "Continuer ? (tapez oui) " reponse
@@ -98,6 +101,7 @@ cat <<SUITE
 À vérifier avant de considérer le staging opérationnel :
   · chaque variable apparaît DEUX fois — une Production, une Preview
   · NEXT_PUBLIC_SITE_URL et INVITE_SECRET restent sur Production seule
+  · ADMIN_EMAILS reste sur « Production and Preview »
   · créez un compte sur une URL de preview, puis confirmez que la ligne
     est dans businesses du STAGING et ABSENTE de la production
 SUITE
