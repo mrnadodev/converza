@@ -13,6 +13,8 @@ export interface OrdersCopy {
     owed: (amount: string) => string;
     markPaid: string;
     markPaidConfirm: (name: string, amount: string) => string;
+    /** Posée une seule fois, au passage en « Livrée », si de l'argent reste dû. */
+    collectedOnDelivery: (amount: string) => string;
     advance: (stage: string) => string;
     invoice: string;
     receipt: string;
@@ -83,6 +85,11 @@ const fr: OrdersCopy = {
     owed: (amount) => `Reste ${amount}`,
     markPaid: "Marquer payé",
     markPaidConfirm: (name, amount) => `Enregistrer le paiement de ${amount} pour ${name} ?`,
+    collectedOnDelivery: (amount) =>
+      `Avez-vous reçu les ${amount} à la livraison ?
+
+OK : le paiement est enregistré.
+Annuler : la commande reste à recouvrer.`,
     advance: (stage) => `Passer à : ${stage}`,
     invoice: "Facture",
     receipt: "Reçu",
@@ -168,6 +175,11 @@ const ht: OrdersCopy = {
     owed: (amount) => `Rès ${amount}`,
     markPaid: "Make kòm peye",
     markPaidConfirm: (name, amount) => `Anrejistre pèman ${amount} pou ${name} ?`,
+    collectedOnDelivery: (amount) =>
+      `Èske w resevwa ${amount} lè w te livre a ?
+
+OK : n ap anrejistre pèman an.
+Anile : kòmand lan rete pou rekouvre.`,
     advance: (stage) => `Pase nan : ${stage}`,
     invoice: "Fakti",
     receipt: "Resi",
@@ -253,6 +265,11 @@ const en: OrdersCopy = {
     owed: (amount) => `${amount} due`,
     markPaid: "Mark as paid",
     markPaidConfirm: (name, amount) => `Record a ${amount} payment for ${name}?`,
+    collectedOnDelivery: (amount) =>
+      `Did you receive the ${amount} on delivery?
+
+OK: the payment is recorded.
+Cancel: the order stays to be collected.`,
     advance: (stage) => `Move to: ${stage}`,
     invoice: "Invoice",
     receipt: "Receipt",

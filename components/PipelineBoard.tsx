@@ -185,10 +185,28 @@ export function PipelineBoard(props: PipelineBoardProps) {
         setError(o.errors.move);
       }
     });
+
+    // Livrer, c'est le moment où le marchand considère la vente faite. S'il
+    // reste de l'argent dû, il vient soit de l'encaisser à la porte, soit
+    // d'accorder un crédit — et seul lui le sait. La question est posée une
+    // fois, ici, plutôt que de laisser la commande traîner dans « À recouvrer »
+    // sans que personne ne comprenne pourquoi.
+    if (next === "livre" && card.owedCents > 0 && canMarkPaid) {
+      const montant = formatMoney(card.owedCents, card.currency ?? businessCurrency);
+      if (window.confirm(o.card.collectedOnDelivery(montant))) recordPayment(card);
+    }
   }
 
   function settle(card: PipelineCard) {
     if (!window.confirm(o.card.markPaidConfirm(card.customerName, formatMoney(card.owedCents, card.currency ?? businessCurrency)))) return;
+    recordPayment(card);
+  }
+
+  /**
+   * Enregistre l'encaissement sans redemander. La livraison a déjà posé sa
+   * question : deux boîtes de dialogue d'affilée se cliquent sans être lues.
+   */
+  function recordPayment(card: PipelineCard) {
     const previous = card.owedCents;
     setError(null);
     setCards((cs) => cs.map((x) => (x.id === card.id ? { ...x, owedCents: 0 } : x)));

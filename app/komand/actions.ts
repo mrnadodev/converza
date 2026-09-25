@@ -27,10 +27,20 @@ export async function moveOrderStatus(orderId: string, status: OrderStatus) {
 
   const sb = createClient();
   const patch: Record<string, unknown> = { status };
-  // Le pipeline utilise `konfime_peman` ; `peye` n'est que l'ancien libellé.
-  // Sans les deux, `paid_at` ne serait jamais renseigné et les rapports de
-  // trésorerie resteraient vides.
-  if (status === "konfime_peman" || status === "peye") patch.paid_at = new Date().toISOString();
+  // `paid_at` n'est plus posé ici, et c'est le fond du sujet.
+  //
+  // Déplacer une carte dans « Paiement à confirmer » inscrivait une date de
+  // paiement. Or cette colonne dit l'inverse : le paiement reste à confirmer.
+  // La commande portait donc une date d'encaissement et zéro gourde reçue, et
+  // le marchand la croyait réglée pendant qu'elle restait, à juste titre, dans
+  // « À recouvrer ». Vu en production sur deux commandes, à un mois d'écart.
+  //
+  // L'ancien commentaire craignait des rapports de trésorerie vides. C'était
+  // faux : le journal se remplit depuis `order_payments`, qu'un déclencheur
+  // alimente dès que `amount_paid_cents` change (migration 6). Une date sans
+  // montant n'y a jamais rien écrit.
+  //
+  // L'argent s'enregistre en un seul endroit : markOrderPaid, ci-dessous.
   if (status === "livre") patch.delivered_at = new Date().toISOString();
   if (status === "swivi") patch.followed_up_at = null;
 
