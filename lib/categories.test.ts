@@ -41,6 +41,24 @@ describe("catégories proposées au marchand", () => {
     }
   });
 
+  it("détaille la mode même pour une boutique au type générique", () => {
+    // Une « Boutique en ligne » qui vend des chaussures ne pouvait choisir
+    // qu'un « Vêtements & chaussures » fourre-tout : ni le marchand ni son
+    // client ne savaient si l'article était pour homme, femme ou enfant.
+    const labels = categoriesFor("Boutique en ligne", "fr").map((c) => c.label);
+    expect(labels).toContain("Homme · Chaussures");
+    expect(labels).toContain("Femme · Vêtements");
+    expect(labels).toContain("Enfant · Accessoires");
+    expect(labels, "le fourre-tout ne doit plus être proposé").not.toContain("Vêtements & chaussures");
+    // Les autres rayons du commerce restent là.
+    expect(labels).toContain("Promotions");
+    expect(labels).toContain("Électronique");
+  });
+
+  it("reconnaît encore l'ancien libellé porté par des produits existants", () => {
+    expect(categoryLabel("Vêtements & chaussures", "ht")).toBe("Rad & Soulye");
+  });
+
   it("traduit les catégories des secteurs de services", () => {
     expect(categoriesFor("Agence immobilière", "ht").map((c) => c.label)).toContain("Apatman pou lwe");
     expect(categoriesFor("Garage automobile", "en").map((c) => c.label)).toContain("Engine parts");

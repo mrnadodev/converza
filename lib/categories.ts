@@ -65,7 +65,12 @@ const opt = (key: string, fr: string, ht: string, en: string, ...aliases: string
  */
 const BY_SECTOR: Record<string, CategoryOption[]> = {
   commerce_vente: [
-    opt("mode", "Vêtements & chaussures", "Rad & Soulye", "Clothing & shoes"),
+    // La mode est détaillée ici aussi, pas seulement pour les boutiques dont le
+    // type d'activité contient le mot. Une « Boutique en ligne » qui vend des
+    // chaussures ne pouvait choisir qu'un « Vêtements & chaussures » fourre-tout :
+    // ni le marchand ni son client ne savaient si l'article était pour homme,
+    // femme ou enfant.
+    ...FASHION,
     opt("beaute", "Beauté & parfums", "Bote & Parfen", "Beauty & perfumes"),
     opt("electronique", "Électronique", "Elektronik", "Electronics"),
     opt("accessoires", "Accessoires", "Akseswa", "Accessories"),
@@ -148,7 +153,13 @@ export function categoriesFor(businessType: string | null | undefined, language:
   return verticalOf(businessType).defaultCategories.map((label) => ({ label }));
 }
 
-const ALL: CategoryOption[] = [...FASHION, ...Object.values(BY_SECTOR).flat()];
+/**
+ * Catégories qui ne sont plus proposées mais que des produits portent encore.
+ * Elles restent reconnues pour s'afficher dans la langue du visiteur.
+ */
+const RETIREES: CategoryOption[] = [opt("mode", "Vêtements & chaussures", "Rad & Soulye", "Clothing & shoes")];
+
+const ALL: CategoryOption[] = [...FASHION, ...Object.values(BY_SECTOR).flat(), ...RETIREES];
 
 /**
  * Libellé d'une catégorie enregistrée, dans la langue du visiteur.
