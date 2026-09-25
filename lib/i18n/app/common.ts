@@ -48,6 +48,7 @@ export interface CommonCopy {
       title: string;
       hint: string;
       closer: string;
+      soft: string;
       use: string;
       whole: string;
       cancel: string;
@@ -121,6 +122,7 @@ const fr: CommonCopy = {
       title: "Cadrez votre produit",
       hint: "Glissez la photo pour choisir ce qui reste visible.",
       closer: "Se rapprocher",
+      soft: "À ce niveau de zoom, la photo sera un peu floue sur grand écran.",
       use: "Utiliser ce cadrage",
       whole: "Garder la photo entière",
       cancel: "Annuler",
@@ -194,6 +196,7 @@ const ht: CommonCopy = {
       title: "Kadre pwodwi ou a",
       hint: "Deplase foto a pou chwazi sa ki rete vizib.",
       closer: "Pwoche pi pre",
+      soft: "Ak zoum sa a, foto a ap yon ti jan flou sou gwo ekran.",
       use: "Sèvi ak kadraj sa a",
       whole: "Kite foto a antye",
       cancel: "Anile",
@@ -267,6 +270,7 @@ const en: CommonCopy = {
       title: "Frame your product",
       hint: "Drag the photo to choose what stays visible.",
       closer: "Move closer",
+      soft: "At this zoom, the photo will look soft on a large screen.",
       use: "Use this framing",
       whole: "Keep the whole photo",
       cancel: "Cancel",

@@ -17,7 +17,13 @@ import { COMMON_COPY } from "@/lib/i18n/app/common";
 // le carré est exactement ce qui sera gardé.
 
 const VIEWPORT = 260;
-const MAX_ZOOM = 4;
+const MAX_ZOOM = 6;
+
+// En dessous de cette largeur, le carré retenu est trop petit pour rester net :
+// la carte de vitrine fait jusqu'à 268 px, soit environ 540 points sur un écran
+// dense. Un cadrage de 250 px y serait agrandi deux fois. On ne l'interdit pas
+// — le marchand sait peut-être ce qu'il fait — mais on le dit.
+const NET_MINIMUM = 250;
 
 export function PhotoFramer({
   file,
@@ -98,6 +104,10 @@ export function PhotoFramer({
             }}
           />
         </div>
+
+        {frame.size < NET_MINIMUM && (
+          <p className="rounded-lg bg-amber-50 px-2.5 py-1.5 text-[11.5px] leading-snug text-amber-900">{c.soft}</p>
+        )}
 
         <label className="flex items-center gap-2.5">
           <span className="text-[11.5px] font-semibold text-ink-muted">{c.closer}</span>
