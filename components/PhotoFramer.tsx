@@ -19,11 +19,16 @@ import { COMMON_COPY } from "@/lib/i18n/app/common";
 const VIEWPORT = 260;
 const MAX_ZOOM = 6;
 
-// En dessous de cette largeur, le carré retenu est trop petit pour rester net :
-// la carte de vitrine fait jusqu'à 268 px, soit environ 540 points sur un écran
-// dense. Un cadrage de 250 px y serait agrandi deux fois. On ne l'interdit pas
-// — le marchand sait peut-être ce qu'il fait — mais on le dit.
-const NET_MINIMUM = 250;
+// En dessous de cette largeur, le carré retenu est trop petit pour rester net.
+// La carte de vitrine fait jusqu'à 268 px, soit environ 540 points sur un écran
+// dense : un cadrage de 180 px y est agrandi trois fois.
+//
+// Le seuil a été abaissé de 250 à 180 : à 250, l'avertissement s'allumait dès
+// un zoom de 1,8 sur les photos héritées de l'ancien recadrage (450 px de
+// large), donc presque tout le temps. Un avertissement permanent finit par ne
+// plus rien dire. Il n'interdit rien de toute façon — le marchand sait
+// peut-être ce qu'il fait.
+const NET_MINIMUM = 180;
 
 export function PhotoFramer({
   file,
