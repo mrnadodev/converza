@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -219,8 +219,32 @@ export function PipelineBoard(props: PipelineBoardProps) {
     });
   }
 
+  /**
+   * Annule la commande. Le statut « anile » est exclu de toutes les lectures :
+   * la commande quitte le tableau, l'accueil, « À recouvrer », la caisse, le
+   * journal et les rapports d'un coup. Rien n'est effacé — la ligne reste en
+   * base, ce qui permet de revenir dessus si l'annulation était une erreur.
+   */
+  function cancel(card: PipelineCard) {
+    if (!window.confirm(o.card.cancelConfirm(card.ref))) return;
+    const previous = cards;
+    setError(null);
+    setCards((cs) => cs.filter((x) => x.id !== card.id));
+    startTransition(async () => {
+      const res = await moveOrderStatus(card.id, "anile");
+      if (!res?.ok) {
+        setCards(previous);
+        setError(o.errors.move);
+      }
+    });
+  }
+
   function close(card: PipelineCard) {
-    if (!window.confirm(o.card.archiveConfirm)) return;
+    // Clôturer ne change pas le statut : une commande encore due continuerait
+    // de figurer dans « À recouvrer » alors que sa carte aurait disparu du
+    // tableau. On le dit, plutôt que de le laisser découvrir sur l'accueil.
+    const montant = card.owedCents > 0 ? formatMoney(card.owedCents, card.currency ?? businessCurrency) : null;
+    if (!window.confirm(montant ? o.card.archiveOwedConfirm(montant) : o.card.archiveConfirm)) return;
     setError(null);
     setCards((cs) => cs.filter((x) => x.id !== card.id));
     startTransition(async () => {
@@ -355,6 +379,7 @@ export function PipelineBoard(props: PipelineBoardProps) {
                       onAdvance={() => advance(card)}
                       onSettle={() => settle(card)}
                       onClose={() => close(card)}
+                      onCancel={() => cancel(card)}
                       onInvoice={(type, payMethod) => setActiveModal({ card, type, payMethod })}
                       onPromo={() => setPromoCard(card)}
                     />
@@ -424,6 +449,7 @@ function OrderCard({
   onAdvance,
   onSettle,
   onClose,
+  onCancel,
   onInvoice,
   onPromo,
 }: {
@@ -435,6 +461,7 @@ function OrderCard({
   onAdvance: () => void;
   onSettle: () => void;
   onClose: () => void;
+  onCancel: () => void;
   onInvoice: (type: "invoice" | "receipt", payMethod?: PayMethod) => void;
   onPromo: () => void;
 }) {
@@ -606,6 +633,20 @@ function OrderCard({
           {o.card.advance(c.statuses[PIPELINE_COLUMNS[PIPELINE_COLUMNS.indexOf(card.status) + 1]])}
         </button>
       )}
+
+      {/* Annuler : la seule action qui retire vraiment une commande de partout.
+          « Clôturer » ne fait que retirer la carte du tableau ; la commande
+          reste une créance et continue de réclamer son montant sur l'accueil,
+          sans plus aucune carte pour la régler. Le statut « anile » est, lui,
+          exclu de toutes les lectures — accueil, caisse, journal, rapports.
+          L'action serveur l'acceptait déjà ; il n'y avait aucun bouton. */}
+      <button
+        type="button"
+        onClick={onCancel}
+        className="flex h-7 cursor-pointer items-center justify-center rounded-lg text-[10.5px] font-bold text-ink-faint hover:text-[#C0392B] active:scale-95"
+      >
+        {o.card.cancel}
+      </button>
     </article>
   );
 }

@@ -1,4 +1,4 @@
-import type { Language } from "../translations";
+﻿import type { Language } from "../translations";
 
 export interface OrdersCopy {
   title: string;
@@ -26,6 +26,11 @@ export interface OrdersCopy {
     satisfaction: string;
     archive: string;
     archiveConfirm: string;
+    /** Clôturer ne change pas le statut : une commande due reste une créance. */
+    archiveOwedConfirm: (amount: string) => string;
+    /** Annuler : la seule action qui retire la commande de toutes les vues. */
+    cancel: string;
+    cancelConfirm: (ref: string) => string;
     send: {
       contact: string;
       confirmPayment: string;
@@ -101,6 +106,11 @@ Annuler : la commande reste à recouvrer.`,
     satisfaction: "Satisfaction",
     archive: "Clôturer la commande",
     archiveConfirm: "Clôturer cette commande ? Elle disparaîtra du tableau.",
+    archiveOwedConfirm: (amount) =>
+      `Cette commande doit encore ${amount}.\n\nEn la clôturant, elle quitte le tableau mais reste dans « À recouvrer ».\nPour la retirer de partout, utilisez plutôt « Annuler la commande ».`,
+    cancel: "Annuler la commande",
+    cancelConfirm: (ref) =>
+      `Annuler la commande ${ref} ?\n\nElle disparaîtra du tableau, de « À recouvrer », de la caisse et des rapports. Rien n'est effacé : vous pourrez revenir dessus.`,
     send: {
       contact: "Accuser réception · moyens de paiement",
       confirmPayment: "Confirmer le paiement",
@@ -191,6 +201,11 @@ Anile : kòmand lan rete pou rekouvre.`,
     satisfaction: "Satisfaksyon",
     archive: "Fèmen kòmand la",
     archiveConfirm: "Fèmen kòmand sa a ? L ap disparèt nan tablo a.",
+    archiveOwedConfirm: (amount) =>
+      `Kòmand sa a dwe toujou ${amount}.\n\nSi w fèmen l, l ap kite tablo a men l ap rete nan « Pou rekouvre ».\nPou retire l toupatou, pito sèvi ak « Anile kòmand lan ».`,
+    cancel: "Anile kòmand lan",
+    cancelConfirm: (ref) =>
+      `Anile kòmand ${ref} ?\n\nL ap disparèt nan tablo a, nan « Pou rekouvre », nan kès la ak nan rapò yo. Nou pa efase anyen : ou ka tounen sou li.`,
     send: {
       contact: "Akize resepsyon · mwayen pèman",
       confirmPayment: "Konfime pèman",
@@ -281,6 +296,11 @@ Cancel: the order stays to be collected.`,
     satisfaction: "Satisfaction",
     archive: "Close the order",
     archiveConfirm: "Close this order? It will disappear from the board.",
+    archiveOwedConfirm: (amount) =>
+      `This order still owes ${amount}.\n\nClosing it removes the card from the board but it stays under "To collect".\nTo remove it everywhere, use "Cancel the order" instead.`,
+    cancel: "Cancel the order",
+    cancelConfirm: (ref) =>
+      `Cancel order ${ref}?\n\nIt will disappear from the board, from "To collect", from the till and from reports. Nothing is deleted: you can come back to it.`,
     send: {
       contact: "Acknowledge · payment options",
       confirmPayment: "Confirm the payment",
