@@ -22,13 +22,23 @@ export function Tooltip({
   children,
   side = "bottom",
   className = "",
+  hiddenFrom,
 }: {
   label: string;
   children: ReactNode;
   side?: "top" | "bottom";
   className?: string;
+  /**
+   * Largeur à partir de laquelle la bulle disparaît.
+   *
+   * Une infobulle ne sert que si le bouton n'a pas son nom écrit à côté. La
+   * barre de navigation affiche ses libellés à partir de « lg » : au-delà, la
+   * bulle répéterait un mot déjà lisible.
+   */
+  hiddenFrom?: "sm" | "md" | "lg";
 }) {
   const [visible, setVisible] = useState(false);
+  const masquee = hiddenFrom ? { sm: "sm:hidden", md: "md:hidden", lg: "lg:hidden" }[hiddenFrom] : "";
 
   return (
     <span
@@ -42,7 +52,7 @@ export function Tooltip({
       {visible && (
         <span
           role="presentation"
-          className={`pointer-events-none absolute left-1/2 z-50 -translate-x-1/2 whitespace-nowrap rounded-lg bg-brand px-2.5 py-1 text-[11.5px] font-bold text-white ring-1 ring-white/60 shadow-[0_6px_18px_rgba(0,128,105,0.35)] ${
+          className={`${masquee} pointer-events-none absolute left-1/2 z-50 -translate-x-1/2 whitespace-nowrap rounded-lg bg-brand px-2.5 py-1 text-[11.5px] font-bold text-white ring-1 ring-white/60 shadow-[0_6px_18px_rgba(0,128,105,0.35)] ${
             side === "bottom" ? "top-[calc(100%+6px)]" : "bottom-[calc(100%+6px)]"
           }`}
         >

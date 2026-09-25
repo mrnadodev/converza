@@ -15,7 +15,14 @@ import { paletteFor } from "@/lib/storefront-designs";
 // elle échouait sous Windows).
 export const runtime = "edge";
 export const alt = "Boutique sur CONVERZA";
-export const size = { width: 1200, height: 630 };
+// 600 × 315 plutôt que 1200 × 630, à proportions identiques.
+//
+// La vignette est un PNG, donc sans perte : à pleine taille, une photo de
+// couverture la faisait peser plus d'un mégaoctet, et WhatsApp abandonne une
+// image aussi lourde pour n'afficher qu'un aperçu texte — le marchand
+// partageait un lien nu sans le savoir. Quatre fois moins de pixels, pour une
+// vignette qui ne se regarde jamais plus grande que ça.
+export const size = { width: 600, height: 315 };
 export const contentType = "image/png";
 
 // Les réseaux sociaux relisent rarement la vignette : une heure de cache
@@ -87,7 +94,13 @@ export default async function Image({ params }: { params: { slug: string } }) {
     }
   }
 
-  const [cover, logo] = await Promise.all([inlineImage(coverUrl, 1200, 400), inlineImage(logoUrl, 320, 320)]);
+  // La couverture est demandée en 640 de large, pas en 1200 : l'image de
+  // partage est un PNG, donc sans perte, et une photo en pleine résolution y
+  // pèse plus d'un mégaoctet. WhatsApp abandonne une vignette aussi lourde et
+  // n'affiche plus qu'un aperçu texte. Agrandie à l'affichage, la photo perd
+  // un peu de netteté — invisible à la taille où une vignette se regarde, et
+  // sans commune mesure avec l'absence d'image.
+  const [cover, logo] = await Promise.all([inlineImage(coverUrl, 640, 214), inlineImage(logoUrl, 160, 160)]);
 
   const palette = paletteFor(sector);
   const where = [category, address].filter(Boolean).join(" · ");
@@ -99,7 +112,7 @@ export default async function Image({ params }: { params: { slug: string } }) {
   // Le logo mange une bonne part du bandeau : le nom se resserre pour que le
   // bouton WhatsApp reste entier, quelle que soit la longueur de l’enseigne.
   const room = logo ? name.length + 8 : name.length;
-  const nameSize = room > 26 ? 46 : room > 16 ? 56 : 68;
+  const nameSize = room > 26 ? 23 : room > 16 ? 28 : 34;
 
   const logoBox = (side: number) =>
     logo ? (
@@ -109,65 +122,65 @@ export default async function Image({ params }: { params: { slug: string } }) {
           width: side,
           height: side,
           background: "#FFFFFF",
-          borderRadius: 28,
-          padding: 12,
+          borderRadius: 14,
+          padding: 6,
           flexShrink: 0,
         }}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={logo} alt="" width={side - 24} height={side - 24} style={{ width: side - 24, height: side - 24, objectFit: "contain" }} />
+        <img src={logo} alt="" width={side - 12} height={side - 12} style={{ width: side - 12, height: side - 12, objectFit: "contain" }} />
       </div>
     ) : null;
 
   const cta = (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 14, flexShrink: 0 }}>
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 7, flexShrink: 0 }}>
       <div
         style={{
           display: "flex",
           background: "#25D366",
           color: "#04231A",
-          fontSize: 26,
+          fontSize: 13,
           fontWeight: 800,
-          padding: "14px 26px",
+          padding: "7px 13px",
           borderRadius: 999,
         }}
       >
         Commandez sur WhatsApp
       </div>
-      <div style={{ display: "flex", fontSize: 22, fontWeight: 700, color: "rgba(255,255,255,0.7)" }}>converza</div>
+      <div style={{ display: "flex", fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.7)" }}>converza</div>
     </div>
   );
 
   const identity = (
-    <div style={{ display: "flex", flexDirection: "column", gap: 10, flex: 1, minWidth: 0 }}>
-      <div style={{ display: "flex", fontSize: nameSize, fontWeight: 900, color: "#FFFFFF", lineHeight: 1.05, letterSpacing: -1 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 5, flex: 1, minWidth: 0 }}>
+      <div style={{ display: "flex", fontSize: nameSize, fontWeight: 900, color: "#FFFFFF", lineHeight: 1.05, letterSpacing: -0.5 }}>
         {name}
       </div>
-      {where && <div style={{ display: "flex", fontSize: 28, color: "rgba(255,255,255,0.86)" }}>{where}</div>}
+      {where && <div style={{ display: "flex", fontSize: 14, color: "rgba(255,255,255,0.86)" }}>{where}</div>}
     </div>
   );
 
   return new ImageResponse(
     (
-      <div style={{ display: "flex", flexDirection: "column", width: 1200, height: 630, background: palette.strong, fontFamily: "sans-serif" }}>
+      <div style={{ display: "flex", flexDirection: "column", width: 600, height: 315, background: palette.strong, fontFamily: "sans-serif" }}>
         {cover && (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={cover} alt="" width={1200} height={400} style={{ width: 1200, height: 400, objectFit: "cover" }} />
+          <img src={cover} alt="" width={600} height={200} style={{ width: 600, height: 200, objectFit: "cover" }} />
         )}
         <div
           style={{
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            gap: 32,
-            width: 1200,
-            height: cover ? 230 : 630,
-            padding: cover ? "0 64px" : "0 80px",
+            gap: 16,
+            width: 600,
+            height: cover ? 115 : 315,
+            padding: cover ? "0 32px" : "0 40px",
             background: cover ? palette.strong : `linear-gradient(135deg, ${palette.strong} 0%, ${palette.soft} 100%)`,
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 28, flex: 1, minWidth: 0 }}>
-            {logoBox(cover ? 150 : 200)}
+          <div style={{ display: "flex", alignItems: "center", gap: 14, flex: 1, minWidth: 0 }}>
+            {logoBox(cover ? 75 : 100)}
             {identity}
           </div>
           {cta}

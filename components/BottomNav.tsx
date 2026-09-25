@@ -51,7 +51,7 @@ export function BottomNav({ active, userSession }: { active: NavTab | null; user
             {visible.map((it) => {
               const on = it.key === active;
               return (
-                <Tooltip key={it.key} label={it.label} className="lg:contents">
+                <Tooltip key={it.key} label={it.label} hiddenFrom="lg" className="lg:contents">
                   <Link
                     href={it.href}
                     aria-current={on ? "page" : undefined}

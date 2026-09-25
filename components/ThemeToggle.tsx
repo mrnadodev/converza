@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Tooltip } from "@/components/ui/Tooltip";
 
 export function ThemeToggle({ className }: { className?: string }) {
   const [dark, setDark] = useState(false);
@@ -20,10 +21,12 @@ export function ThemeToggle({ className }: { className?: string }) {
     setDark(next === "dark");
   }
 
+  const nom = dark ? "Mòd klè" : "Mòd fonse";
   return (
+    <Tooltip label={nom}>
     <button
       onClick={toggle}
-      aria-label={dark ? "Mòd klè" : "Mòd fonse"}
+      aria-label={nom}
       className={className ?? "flex h-9 w-9 items-center justify-center rounded-lg text-ink-muted hover:bg-[#F3F6F4]"}
     >
       {dark ? (
@@ -36,5 +39,6 @@ export function ThemeToggle({ className }: { className?: string }) {
         </svg>
       )}
     </button>
+    </Tooltip>
   );
 }

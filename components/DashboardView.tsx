@@ -17,6 +17,7 @@ import { waMeLink } from "@/lib/whatsapp";
 import type { DashboardOrder, SourceRow } from "@/lib/data";
 import type { RolePermissions, UserSession } from "@/lib/rbac";
 import type { Business, OrderStatus, Product } from "@/lib/types";
+import { Tooltip } from "@/components/ui/Tooltip";
 
 export interface DashboardViewProps {
   session: UserSession;
@@ -665,11 +666,14 @@ function BusinessMark({ business }: { business: Business }) {
 
 function HeaderIconLink({ href, label, children }: { href: string; label: string; children: React.ReactNode }) {
   return (
-    <Link href={href} aria-label={label} className="flex h-10 w-10 items-center justify-center rounded-full bg-white/15 transition-colors hover:bg-white/25 active:scale-95">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        {children}
-      </svg>
-    </Link>
+    // Icône seule : l'infobulle est le seul endroit où le nom se lit.
+    <Tooltip label={label}>
+      <Link href={href} aria-label={label} className="flex h-10 w-10 items-center justify-center rounded-full bg-white/15 transition-colors hover:bg-white/25 active:scale-95">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          {children}
+        </svg>
+      </Link>
+    </Tooltip>
   );
 }
 
