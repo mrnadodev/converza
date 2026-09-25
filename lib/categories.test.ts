@@ -5,15 +5,17 @@ import { categoriesFor, categoryLabel, isFashionShop } from "./categories";
 describe("catégories proposées au marchand", () => {
   it("propose Homme, Femme et Enfant à une boutique de vêtements et chaussures", () => {
     const fr = categoriesFor("Boutique de vêtements et chaussures", "fr").map((c) => c.label);
-    expect(fr).toHaveLength(9);
+    expect(fr).toHaveLength(15); // 3 publics × 5 rayons
     expect(fr).toContain("Homme · Chaussures");
     expect(fr).toContain("Femme · Vêtements");
-    expect(fr).toContain("Enfant · Accessoires");
+    expect(fr).toContain("Enfant · Bijoux");
+    expect(fr).toContain("Femme · Sandales");
+    expect(fr).toContain("Homme · Tennis");
   });
 
   it("traduit ces catégories", () => {
     expect(categoriesFor("Boutique de chaussures", "ht").map((c) => c.label)).toContain("Gason · Soulye");
-    expect(categoriesFor("Boutique de chaussures", "en").map((c) => c.label)).toContain("Kids · Accessories");
+    expect(categoriesFor("Boutique de chaussures", "en").map((c) => c.label)).toContain("Kids · Sneakers");
   });
 
   it("reconnaît une boutique de mode, pas une pharmacie", () => {
@@ -48,7 +50,7 @@ describe("catégories proposées au marchand", () => {
     const labels = categoriesFor("Boutique en ligne", "fr").map((c) => c.label);
     expect(labels).toContain("Homme · Chaussures");
     expect(labels).toContain("Femme · Vêtements");
-    expect(labels).toContain("Enfant · Accessoires");
+    expect(labels).toContain("Enfant · Bijoux");
     expect(labels, "le fourre-tout ne doit plus être proposé").not.toContain("Vêtements & chaussures");
     // Les autres rayons du commerce restent là.
     expect(labels).toContain("Promotions");

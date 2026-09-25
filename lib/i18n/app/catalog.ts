@@ -27,7 +27,10 @@ export interface CatalogCopy {
     unit: string;
     unitPlaceholder: string;
     category: string;
+    subcategory: string;
     categoryPlaceholder: string;
+    /** Entree neutre en tete des deux listes de categorie : rien n a encore ete choisi. */
+    categoryPick: string;
     cost: (currency: string) => string;
     costHelp: string;
     margin: (amount: string, pct: number) => string;
@@ -84,7 +87,9 @@ const fr: CatalogCopy = {
     unit: "Unité",
     unitPlaceholder: "douzaine",
     category: "Catégorie",
+    subcategory: "Sous-catégorie",
     categoryPlaceholder: "Alimentation",
+    categoryPick: "Choisir…",
     cost: (currency) => `Prix d'achat (${currency}) — facultatif`,
     costHelp: "Ce que le produit vous coûte. Il sert à calculer votre bénéfice ; vos clients ne le voient jamais.",
     margin: (amount, pct) => `Marge : ${amount} par unité (${pct} %)`,
@@ -141,7 +146,9 @@ const ht: CatalogCopy = {
     unit: "Inite",
     unitPlaceholder: "douzèn",
     category: "Kategori",
+    subcategory: "Sou-kategori",
     categoryPlaceholder: "Manje",
+    categoryPick: "Chwazi…",
     cost: (currency) => `Pri acha (${currency}) — si w vle`,
     costHelp: "Sa pwodwi a koute w. Li sèvi pou kalkile benefis ou ; kliyan ou yo pa janm wè l.",
     margin: (amount, pct) => `Maj : ${amount} pa inite (${pct} %)`,
@@ -198,7 +205,9 @@ const en: CatalogCopy = {
     unit: "Unit",
     unitPlaceholder: "dozen",
     category: "Category",
+    subcategory: "Sub-category",
     categoryPlaceholder: "Food",
+    categoryPick: "Choose…",
     cost: (currency) => `Purchase cost (${currency}) — optional`,
     costHelp: "What the product costs you. It's used to work out your profit; customers never see it.",
     margin: (amount, pct) => `Margin: ${amount} per unit (${pct}%)`,

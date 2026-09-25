@@ -35,9 +35,11 @@ const FASHION: CategoryOption[] = [
   ["enfant", "Enfant", "Timoun", "Kids"],
 ].flatMap(([groupKey, gFr, gHt, gEn]) =>
   [
-    ["chaussures", "Chaussures", "Soulye", "Shoes"],
     ["vetements", "Vêtements", "Rad", "Clothing"],
-    ["accessoires", "Accessoires", "Akseswa", "Accessories"],
+    ["chaussures", "Chaussures", "Soulye", "Shoes"],
+    ["sandales", "Sandales", "Sandal", "Sandals"],
+    ["tennis", "Tennis", "Tenis", "Sneakers"],
+    ["bijoux", "Bijoux", "Bijou", "Jewellery"],
   ].map(([rayon, rFr, rHt, rEn]) => ({
     key: `${groupKey}_${rayon}`,
     group: gFr,
@@ -157,7 +159,12 @@ export function categoriesFor(businessType: string | null | undefined, language:
  * Catégories qui ne sont plus proposées mais que des produits portent encore.
  * Elles restent reconnues pour s'afficher dans la langue du visiteur.
  */
-const RETIREES: CategoryOption[] = [opt("mode", "Vêtements & chaussures", "Rad & Soulye", "Clothing & shoes")];
+const RETIREES: CategoryOption[] = [
+  opt("mode", "Vêtements & chaussures", "Rad & Soulye", "Clothing & shoes"),
+  opt("homme_accessoires", "Homme · Accessoires", "Gason · Akseswa", "Men · Accessories"),
+  opt("femme_accessoires", "Femme · Accessoires", "Fanm · Akseswa", "Women · Accessories"),
+  opt("enfant_accessoires", "Enfant · Accessoires", "Timoun · Akseswa", "Kids · Accessories"),
+];
 
 const ALL: CategoryOption[] = [...FASHION, ...Object.values(BY_SECTOR).flat(), ...RETIREES];
 
@@ -176,4 +183,49 @@ export function categoryLabel(value: string | null | undefined, language: Langua
       (o.aliases ?? []).some((a) => a.toLowerCase() === needle),
   );
   return found ? found.labels[language] ?? raw : raw;
+}
+
+/**
+ * Découpe les catégories en deux niveaux, quand elles en ont.
+ *
+ * La mode se choisit en deux temps : d'abord le public — homme, femme,
+ * enfant —, puis le rayon. Un marchand qui voyait quinze libellés collés dans
+ * une seule liste devait les lire tous pour trouver le sien.
+ *
+ * La valeur enregistrée reste un seul texte (« Homme · Sandales ») : c'est ce
+ * que la base contient déjà, et ce que la vitrine sait regrouper.
+ */
+export function categoryLevels(
+  businessType: string | null | undefined,
+  language: Language,
+): { groups: string[]; rayonsOf: (group: string) => string[] } | null {
+  const options = isFashionShop(businessType) ? FASHION : BY_SECTOR[verticalOf(businessType).id];
+  const groupes = options?.filter((o) => o.group) ?? [];
+  if (groupes.length === 0) return null;
+
+  const parRayon = (o: CategoryOption) => (o.labels[language] ?? o.labels.fr).split(" · ")[1] ?? "";
+  const publics: string[] = [];
+  for (const o of groupes) {
+    const tete = (o.labels[language] ?? o.labels.fr).split(" · ")[0];
+    if (tete && !publics.includes(tete)) publics.push(tete);
+  }
+  return {
+    groups: publics,
+    rayonsOf: (groupe) =>
+      groupes
+        .filter((o) => (o.labels[language] ?? o.labels.fr).startsWith(groupe + " · "))
+        .map(parRayon),
+  };
+}
+
+/** Recompose la valeur enregistrée à partir des deux niveaux. */
+export function joinCategory(group: string, rayon: string): string {
+  return group && rayon ? `${group} · ${rayon}` : group || rayon || "";
+}
+
+/** Sépare une valeur enregistrée en ses deux niveaux. */
+export function splitCategory(value: string | null | undefined, language: Language): { group: string; rayon: string } {
+  const label = categoryLabel(value, language);
+  const i = label.indexOf(" · ");
+  return i < 0 ? { group: label, rayon: "" } : { group: label.slice(0, i), rayon: label.slice(i + 3) };
 }

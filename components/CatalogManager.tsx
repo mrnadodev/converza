@@ -15,7 +15,8 @@ import { verticalOf } from "@/lib/verticals";
 import { saveProduct, deleteProduct, type ProductInput } from "@/app/katalog/actions";
 import type { Business, Product } from "@/lib/types";
 import type { UserSession } from "@/lib/rbac";
-import { categoriesFor, categoryLabel } from "@/lib/categories";
+import { categoriesFor, categoryLabel, categoryLevels, joinCategory, splitCategory } from "@/lib/categories";
+import { Select } from "@/components/ui/Select";
 
 const EMPTY = (currency: "HTG" | "USD"): ProductInput => ({
   name: "",
@@ -39,6 +40,7 @@ export function CatalogManager({ business, initial, userSession }: { business: B
   const { language } = useLanguage();
   const router = useRouter();
   const vertical = verticalOf(business.business_type);
+  const niveaux = categoryLevels(business.business_type, language);
   const canEdit = userSession ? getRolePermissions(userSession).canEditCatalog : true;
   const [form, setForm] = useState<ProductInput | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
@@ -94,6 +96,7 @@ export function CatalogManager({ business, initial, userSession }: { business: B
   }
 
   const set = (patch: Partial<ProductInput>) => setForm((f) => (f ? { ...f, ...patch } : f));
+  const choix = splitCategory(form?.category, language);
 
   // Marge unitaire affichée sous le prix d'achat dès que les deux sont saisis.
   function marginHint(f: ProductInput): string | null {
@@ -219,8 +222,25 @@ export function CatalogManager({ business, initial, userSession }: { business: B
         </div>
       ) : (
         <div className="flex flex-col divide-y divide-[#F0F2F3]">
-          {initial.map((p) => (
+          {initial.map((p) => {
+            const photos = p.photos && p.photos.length > 0 ? p.photos : p.photo_url ? [p.photo_url] : [];
+            return (
             <div key={p.id} className="flex items-center gap-3 bg-white px-4 py-3">
+              {/* La liste servait surtout à retrouver un produit : sans sa photo,
+                  il fallait lire chaque nom. Deux « Chaussures » ne se
+                  distinguaient qu'au prix. */}
+              <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl border border-line bg-slate-50">
+                {photos.length > 0 ? (
+                  <>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={photos[0]} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full scale-125 object-cover blur-xl" />
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={photos[0]} alt={p.name} className="absolute inset-0 h-full w-full object-contain" />
+                  </>
+                ) : (
+                  <span className="flex h-full w-full items-center justify-center text-[9px] font-semibold text-slate-400">{k.noPhoto}</span>
+                )}
+              </div>
               <div className="flex min-w-0 flex-1 flex-col gap-0.5">
                 <div className="flex items-center gap-2">
                   <span className="truncate text-[15px] font-semibold">{p.name}</span>
@@ -245,7 +265,8 @@ export function CatalogManager({ business, initial, userSession }: { business: B
                 </>
               )}
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
@@ -332,14 +353,43 @@ export function CatalogManager({ business, initial, userSession }: { business: B
                 <input value={form.costGdes ?? ""} onChange={(e) => set({ costGdes: e.target.value })} inputMode="decimal" className={inputCls} placeholder="120" />
               </Field>
 
-              <Field label={k.form.category}>
-                <input value={form.category} onChange={(e) => set({ category: e.target.value })} list="cats" className={inputCls} placeholder={k.form.categoryPlaceholder} />
-                <datalist id="cats">
-                  {categoriesFor(business.business_type, language).map((cat) => (
-                    <option key={cat.label} value={cat.label} />
-                  ))}
-                </datalist>
-              </Field>
+              {/* La mode se choisit en deux temps : le public, puis le rayon.
+                  Quinze libellés dans une seule liste obligeaient le marchand à
+                  tous les lire. Les secteurs sans deux niveaux gardent un champ
+                  libre avec suggestions. */}
+              {niveaux ? (
+                <>
+                  <Field label={k.form.category}>
+                    <Select
+                      value={choix.group}
+                      onChange={(e) => set({ category: joinCategory(e.target.value, "") })}
+                      triggerClassName={inputCls}
+                      options={[{ value: "", label: k.form.categoryPick }, ...niveaux.groups.map((g) => ({ value: g, label: g }))]}
+                    />
+                  </Field>
+                  <Field label={k.form.subcategory}>
+                    <Select
+                      value={choix.rayon}
+                      disabled={!choix.group}
+                      onChange={(e) => set({ category: joinCategory(choix.group, e.target.value) })}
+                      triggerClassName={inputCls}
+                      options={[
+                        { value: "", label: k.form.categoryPick },
+                        ...(choix.group ? niveaux.rayonsOf(choix.group) : []).map((r) => ({ value: r, label: r })),
+                      ]}
+                    />
+                  </Field>
+                </>
+              ) : (
+                <Field label={k.form.category}>
+                  <input value={form.category} onChange={(e) => set({ category: e.target.value })} list="cats" className={inputCls} placeholder={k.form.categoryPlaceholder} />
+                  <datalist id="cats">
+                    {categoriesFor(business.business_type, language).map((cat) => (
+                      <option key={cat.label} value={cat.label} />
+                    ))}
+                  </datalist>
+                </Field>
+              )}
 
               {/* L'état du stock (en stock / faible / épuisé) se déduit de la
                   quantité et du seuil : le choisir à la main permettait
