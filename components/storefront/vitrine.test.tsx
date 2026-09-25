@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { INDUSTRY_SECTORS } from "@/lib/verticals";
@@ -81,5 +83,25 @@ describe("section « À la une » de la vitrine", () => {
       return CREOLE.some(([, french]) => html.includes(french));
     });
     expect(shown).toBe(true);
+  });
+});
+
+describe("galerie photo", () => {
+  it("n'est écrite qu'une fois", () => {
+    // Elle ne vivait que dans la carte du catalogue : les seize designs de
+    // vitrine n'affichaient que la première des trois photos du marchand.
+    // Qu'elle reste dans product.tsx, et que personne n'en récrive une.
+    const source = (f: string) => readFileSync(join(__dirname, f), "utf8");
+    expect(source("product.tsx")).toContain("export function ProductGallery");
+    for (const fichier of ["cards.tsx", "designs.tsx"]) {
+      expect(source(fichier), `${fichier} réimplémente le défilement des photos`).not.toMatch(
+        /useState\(0\)[\s\S]{0,400}?photos\.length/,
+      );
+    }
+  });
+
+  it("est branchée sur les cartes de vitrine, pas seulement sur le catalogue", () => {
+    const designs = readFileSync(join(__dirname, "designs.tsx"), "utf8");
+    expect(designs, "les cartes de vitrine doivent montrer les trois photos").toContain("<ProductGallery");
   });
 });

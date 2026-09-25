@@ -1,13 +1,12 @@
 "use client";
 
-import { useState } from "react";
 import type { Product } from "@/lib/types";
 import {
   PriceLabel,
+  ProductGallery,
   ProductImage,
   QtyControl,
   SoldBadge,
-  ChevronIcon,
   photosOf,
   useCopy,
   type CartOps,
@@ -35,48 +34,14 @@ export function GridCard({
 }) {
   const c = useCopy();
   const photos = photosOf(p);
-  const [imgIdx, setImgIdx] = useState(0);
-  const [touchStartX, setTouchStartX] = useState<number | null>(null);
-
-  function handleEnd(clientX: number) {
-    if (touchStartX === null) return;
-    const deltaX = touchStartX - clientX;
-    setTouchStartX(null);
-    if (photos.length < 2) return;
-    if (deltaX > 30) setImgIdx((prev) => (prev + 1) % photos.length);
-    else if (deltaX < -30) setImgIdx((prev) => (prev - 1 + photos.length) % photos.length);
-  }
-
   return (
     <div className={`flex flex-col overflow-hidden rounded-2xl shadow-[0_2px_10px_rgba(17,27,33,0.06)] ring-1 ${dark ? "bg-[#1F2937] text-white ring-gray-700" : "bg-white text-ink ring-line"}`}>
-      <div
-        className="relative aspect-[4/5] w-full select-none"
-        onTouchStart={(e) => setTouchStartX(e.touches[0].clientX)}
-        onTouchEnd={(e) => handleEnd(e.changedTouches[0].clientX)}
-      >
-        <ProductImage photos={photos} name={p.name} dark={dark} onZoom={onZoom} index={imgIdx} />
+      <div className="relative aspect-[4/5] w-full">
+        <ProductGallery photos={photos} name={p.name} dark={dark} onZoom={onZoom} />
 
-        <SoldBadge p={p} className="absolute left-2 top-2 rounded-full bg-white/90 px-2 py-0.5 text-[10.5px] font-bold text-brand shadow-sm" />
+        <SoldBadge p={p} className="absolute left-2 top-2 z-10 rounded-full bg-white/90 px-2 py-0.5 text-[10.5px] font-bold text-brand shadow-sm" />
         {p.stock_state === "fini" && (
-          <span className="absolute right-2 top-2 rounded-full bg-[#FCE4E4] px-2 py-0.5 text-[10.5px] font-bold text-[#C0392B]">{c.soldOut}</span>
-        )}
-
-        {photos.length > 1 && (
-          <>
-            <button onClick={() => setImgIdx((prev) => (prev - 1 + photos.length) % photos.length)} aria-label={c.previous}
-              className="absolute left-1.5 top-1/2 z-10 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full bg-white/85 shadow active:scale-90">
-              <ChevronIcon color="#111B21" dir="left" size={14} />
-            </button>
-            <button onClick={() => setImgIdx((prev) => (prev + 1) % photos.length)} aria-label={c.next}
-              className="absolute right-1.5 top-1/2 z-10 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full bg-white/85 shadow active:scale-90">
-              <ChevronIcon color="#111B21" dir="right" size={14} />
-            </button>
-            <div className="pointer-events-none absolute inset-x-0 bottom-2 z-10 flex justify-center gap-1.5">
-              {photos.map((_, idx) => (
-                <span key={idx} className={`h-1.5 rounded-full transition-all ${idx === imgIdx ? "w-4 bg-brand" : "w-1.5 bg-white/80"}`} />
-              ))}
-            </div>
-          </>
+          <span className="absolute right-2 top-2 z-10 rounded-full bg-[#FCE4E4] px-2 py-0.5 text-[10.5px] font-bold text-[#C0392B]">{c.soldOut}</span>
         )}
       </div>
 

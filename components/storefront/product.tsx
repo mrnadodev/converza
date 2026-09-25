@@ -1,6 +1,6 @@
 "use client";
 
-import type { CSSProperties } from "react";
+import { useState, type CSSProperties } from "react";
 import { formatMoney } from "@/lib/money";
 import type { Product } from "@/lib/types";
 import { categoryLabel } from "@/lib/categories";
@@ -89,6 +89,84 @@ export function ProductImage({
         onClick={onZoom ? () => onZoom(photos, index) : undefined}
         className={`absolute inset-0 h-full w-full object-contain ${onZoom ? "cursor-zoom-in" : ""}`}
       />
+    </div>
+  );
+}
+
+/**
+ * Galerie : la photo courante, et de quoi passer aux suivantes.
+ *
+ * Le marchand peut mettre trois photos par produit. Cette galerie ne vivait
+ * que dans la carte du catalogue complet : sur la vitrine, les seize designs
+ * de secteur n'affichaient que la première. Le marchand photographiait trois
+ * angles que ses clients ne voyaient jamais.
+ *
+ * « controls » règle l'encombrement : les pastilles se posent en bas, donc
+ * elles gênent une carte dont le texte est écrit par-dessus la photo. Ces
+ * cartes-là n'ont que les flèches.
+ */
+export function ProductGallery({
+  photos,
+  name,
+  dark,
+  onZoom,
+  controls = "full",
+}: {
+  photos: string[];
+  name: string;
+  dark?: boolean;
+  onZoom?: (photos: string[], index: number) => void;
+  controls?: "full" | "arrows";
+}) {
+  const c = useCopy();
+  const [index, setIndex] = useState(0);
+  const [depart, setDepart] = useState<number | null>(null);
+
+  const aller = (pas: number) => setIndex((i) => (i + pas + photos.length) % photos.length);
+
+  function finDuGeste(clientX: number) {
+    if (depart === null) return;
+    const ecart = depart - clientX;
+    setDepart(null);
+    if (photos.length < 2) return;
+    // 30 px : en deçà, c'est un appui, pas un glissement.
+    if (ecart > 30) aller(1);
+    else if (ecart < -30) aller(-1);
+  }
+
+  return (
+    <div
+      className="absolute inset-0 select-none"
+      onTouchStart={(e) => setDepart(e.touches[0].clientX)}
+      onTouchEnd={(e) => finDuGeste(e.changedTouches[0].clientX)}
+    >
+      <ProductImage photos={photos} name={name} dark={dark} onZoom={onZoom} index={index} />
+
+      {photos.length > 1 && (
+        <>
+          <button
+            onClick={() => aller(-1)}
+            aria-label={c.previous}
+            className="absolute left-1.5 top-1/2 z-10 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full bg-white/85 shadow active:scale-90"
+          >
+            <ChevronIcon color="#111B21" dir="left" size={14} />
+          </button>
+          <button
+            onClick={() => aller(1)}
+            aria-label={c.next}
+            className="absolute right-1.5 top-1/2 z-10 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full bg-white/85 shadow active:scale-90"
+          >
+            <ChevronIcon color="#111B21" dir="right" size={14} />
+          </button>
+          {controls === "full" && (
+            <div className="pointer-events-none absolute inset-x-0 bottom-2 z-10 flex justify-center gap-1.5">
+              {photos.map((_, i) => (
+                <span key={i} className={`h-1.5 rounded-full transition-all ${i === index ? "w-4 bg-brand" : "w-1.5 bg-white/80"}`} />
+              ))}
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }
