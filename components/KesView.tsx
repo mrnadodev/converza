@@ -13,6 +13,7 @@ import { waMeLink } from "@/lib/whatsapp";
 import { EXPENSE_CATEGORIES, KES_PERIODS, type ExpenseCategory } from "@/lib/kes-period";
 import type { KesData } from "@/lib/kes";
 import { addExpense, deleteExpense, type KesError } from "@/app/kes/actions";
+import { Select } from "@/components/ui/Select";
 
 const EXPENSE_METHODS = ["cash", "moncash", "natcash", "banque", "autre"] as const;
 
@@ -264,23 +265,23 @@ function Expenses({ data }: { data: KesData }) {
             </label>
             <label className="flex flex-col gap-1">
               <span className="text-[11.5px] font-bold text-ink-muted">{k.expense.category}</span>
-              <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value as ExpenseCategory })} className={field}>
+              <Select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value as ExpenseCategory })} triggerClassName={field}>
                 {EXPENSE_CATEGORIES.map((c) => (
                   <option key={c} value={c}>
                     {k.expense.categories[c]}
                   </option>
                 ))}
-              </select>
+              </Select>
             </label>
             <label className="flex flex-col gap-1">
               <span className="text-[11.5px] font-bold text-ink-muted">{k.expense.method}</span>
-              <select value={form.payMethod} onChange={(e) => setForm({ ...form, payMethod: e.target.value })} className={field}>
+              <Select value={form.payMethod} onChange={(e) => setForm({ ...form, payMethod: e.target.value })} triggerClassName={field}>
                 {EXPENSE_METHODS.map((m) => (
                   <option key={m} value={m}>
                     {k.methods[m] ?? m}
                   </option>
                 ))}
-              </select>
+              </Select>
             </label>
           </div>
           <label className="flex flex-col gap-1">

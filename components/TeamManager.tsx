@@ -10,6 +10,7 @@ import { TEAM_COPY } from "@/lib/i18n/app/team";
 import { formatMoney } from "@/lib/money";
 import { getRolePermissions } from "@/lib/rbac";
 import { removeAgent, createInviteLinkAction, setAgentProfile } from "@/app/ekip/actions";
+import { Select } from "@/components/ui/Select";
 
 interface Member {
   id: string;
@@ -196,11 +197,11 @@ export function TeamManager({
                 <div className="flex items-center gap-2 self-end sm:self-center">
                   <label className="flex flex-col">
                     <span className="sr-only">{t.roleOf(m.full_name)}</span>
-                    <select
+                    <Select
                       value={profile ?? ""}
                       disabled={pending}
                       onChange={(e) => changeProfile(m, e.target.value)}
-                      className="h-9 cursor-pointer rounded-xl border border-line bg-white px-2 text-xs font-bold text-ink outline-none focus:border-brand disabled:opacity-50"
+                      triggerClassName="h-9 cursor-pointer rounded-xl border border-line bg-white px-2 text-xs font-bold text-ink outline-none focus:border-brand disabled:opacity-50"
                     >
                       <option value="" disabled>
                         {t.chooseRole}
@@ -210,7 +211,7 @@ export function TeamManager({
                           {c.profiles[key]}
                         </option>
                       ))}
-                    </select>
+                    </Select>
                   </label>
 
                   <button

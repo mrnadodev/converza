@@ -85,7 +85,6 @@ export function LanguageToggle({ variant = "compact", className = "" }: Language
         onClick={() => setIsOpen(!isOpen)}
         className="flex h-9 items-center gap-1.5 rounded-xl border border-line bg-white px-2 py-1 text-xs font-bold text-ink shadow-2xs backdrop-blur-xs transition-all hover:bg-gray-50 active:scale-95 cursor-pointer"
         aria-label="Changer de langue"
-        title={`Langue: ${currentOption.name}`}
       >
         {getFlagIcon(language, "w-5 h-5")}
         {variant === "full" && (

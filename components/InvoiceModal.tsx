@@ -11,6 +11,7 @@ import { formatMoney } from "@/lib/money";
 import { getOrderSecurityCode } from "@/lib/order";
 import { waMeLink } from "@/lib/whatsapp";
 import type { Currency, PayMethod, PipelineCard } from "@/lib/types";
+import { Select } from "@/components/ui/Select";
 
 export interface InvoiceModalProps {
   card: PipelineCard;
@@ -247,25 +248,25 @@ export function InvoiceModal({
         <div className="no-print flex flex-wrap items-center justify-between gap-2 px-0.5 pt-2.5">
           <label className="flex items-center gap-1 text-[11px] font-bold text-ink-muted">
             {v.selectors.payment}
-            <select
+            <Select
               value={payMethod}
               onChange={(e) => setPayMethod(e.target.value as PayMethod)}
-              className="rounded-xl border border-line bg-gray-50 px-2 py-1 text-xs font-bold text-ink outline-none focus:border-brand"
+              triggerClassName="rounded-xl border border-line bg-gray-50 px-2 py-1 text-xs font-bold text-ink outline-none focus:border-brand"
             >
               {(["moncash", "natcash", "banque_locale", "zelle", "crypto_usdt", "kach", "lot"] as const).map((m) => (
                 <option key={m} value={m}>
                   {v.payMethods[m]}
                 </option>
               ))}
-            </select>
+            </Select>
           </label>
 
           <label className="flex items-center gap-1 text-[11px] font-bold text-ink-muted">
             {v.selectors.currency}
-            <select
+            <Select
               value={displayCurrency}
               onChange={(e) => setDisplayCurrency(e.target.value as typeof displayCurrency)}
-              className="rounded-xl border border-line bg-[#E7F7F1] px-2 py-1 text-xs font-bold text-brand outline-none"
+              triggerClassName="rounded-xl border border-line bg-[#E7F7F1] px-2 py-1 text-xs font-bold text-brand outline-none"
             >
               <option value="HTG">{v.currencies.htg}</option>
               <option value="USD" disabled={!canConvert}>
@@ -274,20 +275,20 @@ export function InvoiceModal({
               <option value="BOTH" disabled={!canConvert}>
                 {v.currencies.both}
               </option>
-            </select>
+            </Select>
           </label>
 
           <label className="flex items-center gap-1 text-[11px] font-bold text-ink-muted">
             {v.selectors.format}
-            <select
+            <Select
               value={printMode}
               onChange={(e) => setPrintMode(e.target.value as typeof printMode)}
-              className="rounded-xl border border-line bg-gray-50 px-2 py-1 text-xs font-bold text-ink outline-none"
+              triggerClassName="rounded-xl border border-line bg-gray-50 px-2 py-1 text-xs font-bold text-ink outline-none"
             >
               <option value="thermal_80mm">{v.formats.thermal80}</option>
               <option value="thermal_58mm">{v.formats.thermal58}</option>
               <option value="letter">{v.formats.letter}</option>
-            </select>
+            </Select>
           </label>
         </div>
 

@@ -43,6 +43,7 @@ import type { AdminData, AdminMerchant } from "@/lib/admin-data";
 import type { BankAccountDetails, Plan } from "@/lib/plans";
 import type { DesignLayoutConfig, QrMenuServiceConfig } from "@/lib/platform-config";
 import { DEFAULT_LAYOUT, STOREFRONT_LAYOUTS, isLayoutKey, layoutRule, type LayoutKey } from "@/lib/storefront-layouts";
+import { Select } from "@/components/ui/Select";
 
 type Tab = "overview" | "merchants" | "billing" | "phones" | "qrMenu" | "platform" | "landing" | "security";
 type Runner = (id: string, fn: () => Promise<unknown>) => void;
@@ -552,26 +553,26 @@ function MerchantsTab({
           aria-label={a.merchants.search}
           className="h-11 min-w-[220px] flex-1 rounded-xl border border-line bg-white px-3.5 text-[14px] outline-none focus:border-brand"
         />
-        <Select label={a.merchants.filterPlan} value={planFilter} onChange={setPlanFilter}>
+        <SelectField label={a.merchants.filterPlan} value={planFilter} onChange={setPlanFilter}>
           <option value="all">{a.merchants.allPlans}</option>
           {PLAN_KEYS.map((key) => (
             <option key={key} value={key}>
               {planLabel(key, plans)}
             </option>
           ))}
-        </Select>
-        <Select label={a.merchants.filterStatus} value={statusFilter} onChange={(v) => setStatusFilter(v as typeof statusFilter)}>
+        </SelectField>
+        <SelectField label={a.merchants.filterStatus} value={statusFilter} onChange={(v) => setStatusFilter(v as typeof statusFilter)}>
           <option value="all">{a.merchants.status.all}</option>
           <option value="active">{a.merchants.status.active}</option>
           <option value="expired">{a.merchants.status.expired}</option>
           <option value="free">{a.merchants.status.free}</option>
-        </Select>
-        <Select label={a.merchants.sort} value={sort} onChange={(v) => setSort(v as typeof sort)}>
+        </SelectField>
+        <SelectField label={a.merchants.sort} value={sort} onChange={(v) => setSort(v as typeof sort)}>
           <option value="recent">{a.merchants.sortBy.recent}</option>
           <option value="gmv">{a.merchants.sortBy.gmv}</option>
           <option value="orders">{a.merchants.sortBy.orders}</option>
           <option value="name">{a.merchants.sortBy.name}</option>
-        </Select>
+        </SelectField>
         <button onClick={exportCsv} className="h-11 cursor-pointer rounded-xl border border-line bg-white px-4 text-[13px] font-bold active:scale-95">
           {a.merchants.exportCsv}
         </button>
@@ -606,18 +607,18 @@ function MerchantsTab({
 
                 <label className="flex items-center gap-1.5 text-[11.5px] font-semibold text-ink-muted">
                   <span className="sr-only">{a.merchants.changePlan}</span>
-                  <select
+                  <Select
                     value={m.plan}
                     onChange={(e) => run("plan-" + m.id, () => setPlan(m.id, e.target.value))}
                     disabled={pending && busy === "plan-" + m.id}
-                    className="h-9 cursor-pointer rounded-lg border border-line bg-[#F7F8F9] px-2 text-[12.5px] font-semibold outline-none"
+                    triggerClassName="h-9 cursor-pointer rounded-lg border border-line bg-[#F7F8F9] px-2 text-[12.5px] font-semibold outline-none"
                   >
                     {PLAN_KEYS.map((key) => (
                       <option key={key} value={key}>
                         {planLabel(key, plans)}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                 </label>
               </div>
 
@@ -1144,10 +1145,10 @@ function PlatformPaymentCard({
                     <input value={b.account_number} onChange={(e) => update({ account_number: e.target.value })} className={inputCls} />
                   </Field>
                   <Field label={a.billing.currency}>
-                    <select value={b.currency} onChange={(e) => update({ currency: e.target.value as "HTG" | "USD" })} className={inputCls}>
+                    <Select value={b.currency} onChange={(e) => update({ currency: e.target.value as "HTG" | "USD" })} triggerClassName={inputCls}>
                       <option value="HTG">HTG</option>
                       <option value="USD">USD</option>
-                    </select>
+                    </Select>
                   </Field>
                   <div className="flex items-end gap-2">
                     <Field label={a.billing.accountHolder}>
@@ -1360,18 +1361,18 @@ function QrMenuTab({
                   </div>
                   <span className="text-xs text-ink-faint">/b/{m.slug} · {m.phone_e164 ?? "—"}</span>
                 </div>
-                <select
+                <Select
                   value={m.plan}
                   onChange={(e) => run("plan-" + m.id, () => setPlan(m.id, e.target.value))}
                   disabled={pending && busy === "plan-" + m.id}
-                  className="h-9 cursor-pointer rounded-lg border border-line bg-[#F7F8F9] px-2.5 text-xs font-bold outline-none"
+                  triggerClassName="h-9 cursor-pointer rounded-lg border border-line bg-[#F7F8F9] px-2.5 text-xs font-bold outline-none"
                 >
                   {PLAN_KEYS.map((key) => (
                     <option key={key} value={key}>
                       {planLabel(key, plans)}
                     </option>
                   ))}
-                </select>
+                </Select>
               </div>
 
               <div className="my-3 grid grid-cols-2 gap-2 text-center sm:grid-cols-4">
@@ -1554,16 +1555,16 @@ function PlatformTab({ data, run, pending }: { data: AdminData; run: Runner; pen
                 </div>
                 <label className="flex items-center justify-between gap-2 text-[11.5px] font-bold text-ink-muted">
                   {a.platform.minPlanLabel}
-                  <select
+                  <Select
                     value={isBase ? "gratis" : rule.minPlan}
                     disabled={isBase}
                     onChange={(e) => patch({ minPlanRequired: e.target.value as DesignLayoutConfig["minPlanRequired"] })}
-                    className="h-8 rounded-lg border border-line bg-white px-2 text-xs font-bold text-ink outline-none disabled:opacity-60"
+                    triggerClassName="h-8 rounded-lg border border-line bg-white px-2 text-xs font-bold text-ink outline-none disabled:opacity-60"
                   >
                     {(["gratis", "pro", "premium"] as const).map((k) => (
                       <option key={k} value={k}>{planLabel(k, data.platformPlans ?? [])}</option>
                     ))}
-                  </select>
+                  </Select>
                 </label>
                 {isBase ? (
                   <span className="rounded-lg bg-white py-1.5 text-center text-[11px] font-bold text-ink-muted">{a.platform.alwaysOn}</span>
@@ -1937,7 +1938,6 @@ function PreviewControls({ source, onChange, merchants }: { source: PreviewSourc
                   <button
                     key={k}
                     type="button"
-                    title={label}
                     aria-label={label}
                     aria-pressed={theme === k}
                     onClick={() => onChange({ ...source, theme: k })}
@@ -1954,10 +1954,10 @@ function PreviewControls({ source, onChange, merchants }: { source: PreviewSourc
         {shops.length > 0 && (
           <label className="flex min-w-0 items-center gap-2 text-xs font-bold text-ink-muted">
             {a.platform.shopsGroup}
-            <select
+            <Select
               value={source.kind === "shop" ? source.slug : ""}
               onChange={(e) => (e.target.value ? onChange({ kind: "shop", slug: e.target.value }) : onChange({ kind: "demo", sector: current, theme }))}
-              className="h-8 max-w-[220px] rounded-lg border border-line bg-white px-2 text-xs font-bold text-ink outline-none"
+              triggerClassName="h-8 max-w-[220px] rounded-lg border border-line bg-white px-2 text-xs font-bold text-ink outline-none"
             >
               <option value="">—</option>
               {shops.map((m) => (
@@ -1965,7 +1965,7 @@ function PreviewControls({ source, onChange, merchants }: { source: PreviewSourc
                   {m.name} ({m.products})
                 </option>
               ))}
-            </select>
+            </Select>
           </label>
         )}
       </div>
@@ -2224,37 +2224,37 @@ function CockpitModal({ merchant, onClose, onRefresh }: { merchant: AdminMerchan
                 <input value={form.phone_e164} onChange={(e) => set({ phone_e164: e.target.value })} placeholder="+509…" className={inputCls} />
               </Field>
               <Field label={a.cockpit.structure.sector}>
-                <select value={form.business_type} onChange={(e) => set({ business_type: e.target.value })} className={inputCls}>
+                <Select value={form.business_type} onChange={(e) => set({ business_type: e.target.value })} triggerClassName={inputCls}>
                   {Object.keys(INDUSTRY_SECTORS).map((key) => (
                     <option key={key} value={key}>
                       {sectors[key]?.label ?? key}
                     </option>
                   ))}
-                </select>
+                </Select>
               </Field>
               <Field label={a.cockpit.structure.layout}>
-                <select value={form.layout} onChange={(e) => set({ layout: e.target.value as LayoutKey })} className={inputCls}>
+                <Select value={form.layout} onChange={(e) => set({ layout: e.target.value as LayoutKey })} triggerClassName={inputCls}>
                   {STOREFRONT_LAYOUTS.map((l) => (
                     <option key={l.key} value={l.key}>
                       {designName(designCopy, verticalOf(form.business_type).id, STOREFRONT_LAYOUTS.indexOf(l) as 0 | 1 | 2).name} · {look.images(designFor(verticalOf(form.business_type).id, l.key).slots)}
                     </option>
                   ))}
-                </select>
+                </Select>
               </Field>
               <Field label={a.cockpit.structure.theme}>
-                <select value={form.theme} onChange={(e) => set({ theme: e.target.value })} className={inputCls}>
+                <Select value={form.theme} onChange={(e) => set({ theme: e.target.value })} triggerClassName={inputCls}>
                   {THEME_KEYS.map((key) => (
                     <option key={key} value={key}>
                       {key === SECTOR_THEME ? look.sectorColors : THEMES[key].label}
                     </option>
                   ))}
-                </select>
+                </Select>
               </Field>
               <Field label={a.cockpit.structure.currency}>
-                <select value={form.default_currency} onChange={(e) => set({ default_currency: e.target.value })} className={inputCls}>
+                <Select value={form.default_currency} onChange={(e) => set({ default_currency: e.target.value })} triggerClassName={inputCls}>
                   <option value="HTG">HTG</option>
                   <option value="USD">USD</option>
-                </select>
+                </Select>
               </Field>
               <Field label={a.cockpit.structure.category}>
                 <input value={form.category} onChange={(e) => set({ category: e.target.value })} className={inputCls} />
@@ -2429,17 +2429,17 @@ function Info({ label, value }: { label: string; value: string }) {
   );
 }
 
-function Select({ label, value, onChange, children }: { label: string; value: string; onChange: (v: string) => void; children: React.ReactNode }) {
+function SelectField({ label, value, onChange, children }: { label: string; value: string; onChange: (v: string) => void; children: React.ReactNode }) {
   return (
     <label className="flex items-center gap-1.5 text-[11.5px] font-semibold text-ink-muted">
       <span className="hidden sm:inline">{label}</span>
-      <select
+      <Select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="h-11 cursor-pointer rounded-xl border border-line bg-white px-2 text-[13px] font-bold text-ink outline-none"
+        triggerClassName="h-11 cursor-pointer rounded-xl border border-line bg-white px-2 text-[13px] font-bold text-ink outline-none"
       >
         {children}
-      </select>
+      </Select>
     </label>
   );
 }

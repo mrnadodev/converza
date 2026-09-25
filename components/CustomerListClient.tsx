@@ -410,7 +410,7 @@ function CustomerProfileModal({
                 <div className="flex min-w-0 flex-col">
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-black text-ink">#{card.ref}</span>
-                    <span className="rounded bg-[#E7F7F1] px-1.5 py-0.5 font-mono text-[10px] font-black text-brand" title={k.profile.code}>
+                    <span className="rounded bg-[#E7F7F1] px-1.5 py-0.5 font-mono text-[10px] font-black text-brand">
                       {getOrderSecurityCode(card.ref, card.securityCode)}
                     </span>
                   </div>

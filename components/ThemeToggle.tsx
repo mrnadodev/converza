@@ -24,7 +24,6 @@ export function ThemeToggle({ className }: { className?: string }) {
     <button
       onClick={toggle}
       aria-label={dark ? "Mòd klè" : "Mòd fonse"}
-      title={dark ? "Mòd klè" : "Mòd fonse"}
       className={className ?? "flex h-9 w-9 items-center justify-center rounded-lg text-ink-muted hover:bg-[#F3F6F4]"}
     >
       {dark ? (

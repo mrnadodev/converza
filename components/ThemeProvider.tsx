@@ -48,7 +48,6 @@ export function ThemeToggle() {
     <button
       onClick={toggleTheme}
       className="flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-sm shadow-sm backdrop-blur active:scale-90 transition-transform cursor-pointer"
-      title={theme === "dark" ? "Mode Lumière" : "Mode Sombre"}
       aria-label="Changer le thème"
     >
       {theme === "dark" ? "☀️" : "🌙"}

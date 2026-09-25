@@ -9,6 +9,7 @@ import { LanguageToggle } from "@/components/LanguageToggle";
 import { useLanguage } from "@/components/LanguageContext";
 import { landingCopy } from "@/lib/i18n/landing";
 import { registerMerchant, type RegisterInput } from "@/app/enskri/actions";
+import { Select } from "@/components/ui/Select";
 
 export function RegisterForm({
   finishing = false,
@@ -93,19 +94,19 @@ export function RegisterForm({
           </Field>
 
           <Field label={a.sector}>
-            <select value={selectedSectorKey} onChange={(e) => handleSectorChange(e.target.value as IndustrySectorKey)} className={cls}>
+            <Select value={selectedSectorKey} onChange={(e) => handleSectorChange(e.target.value as IndustrySectorKey)} triggerClassName={cls}>
               {Object.values(INDUSTRY_SECTORS).map((sec) => (
                 <option key={sec.id} value={sec.id}>{sec.label}</option>
               ))}
-            </select>
+            </Select>
           </Field>
 
           <Field label={a.specialty}>
-            <select value={selectedSubType} onChange={(e) => handleSubTypeChange(e.target.value)} className={cls}>
+            <Select value={selectedSubType} onChange={(e) => handleSubTypeChange(e.target.value)} triggerClassName={cls}>
               {currentSector.subTypes.map((sub, idx) => (
                 <option key={idx} value={sub}>{sub}</option>
               ))}
-            </select>
+            </Select>
           </Field>
 
           <Field label={a.employees}>

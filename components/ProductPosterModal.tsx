@@ -8,6 +8,7 @@ import { formatMoney } from "@/lib/money";
 import { themeOf } from "@/lib/themes";
 import { verticalOf } from "@/lib/verticals";
 import type { Business, Product } from "@/lib/types";
+import { Select } from "@/components/ui/Select";
 
 // Affiche produit 9:16 (1080 × 1920) pour stories, statuts et reels.
 //
@@ -386,13 +387,13 @@ export function ProductPosterModal({ business, products, onClose }: { business: 
 
             <label className="flex flex-col gap-1.5">
               <span className={label}>{t.product}</span>
-              <select value={productId} onChange={(e) => setProductId(e.target.value)} className={field}>
+              <Select value={productId} onChange={(e) => setProductId(e.target.value)} triggerClassName={field}>
                 {products.map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.name} — {formatMoney(p.price_cents, p.currency)}
                   </option>
                 ))}
-              </select>
+              </Select>
             </label>
 
             <fieldset className="flex flex-col gap-3 rounded-2xl border border-line p-3.5">

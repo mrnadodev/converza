@@ -21,6 +21,7 @@ import { effectivePlan } from "@/lib/plans";
 import { LayoutThumb } from "@/components/LayoutThumb";
 import { designFor } from "@/lib/storefront-designs";
 import { DESIGN_COPY, designName } from "@/lib/i18n/app/designs";
+import { Select } from "@/components/ui/Select";
 
 type Tab = "store" | "payments" | "delivery" | "look";
 
@@ -172,13 +173,13 @@ export function SettingsForm({ business, designs }: { business: Business; design
                 <input value={f.slogan ?? ""} onChange={(e) => set({ slogan: e.target.value })} className={cls} placeholder={s.store.sloganPlaceholder} />
               </Field>
               <Field label={s.store.type}>
-                <select value={f.business_type} onChange={(e) => set({ business_type: e.target.value })} className={cls}>
+                <Select value={f.business_type} onChange={(e) => set({ business_type: e.target.value })} triggerClassName={cls}>
                   {Object.keys(VERTICALS).map((key) => (
                     <option key={key} value={key}>
                       {sectors[key]?.label ?? key}
                     </option>
                   ))}
-                </select>
+                </Select>
               </Field>
               <div className="grid gap-3 sm:grid-cols-2">
                 <Field label={s.store.phone}>
@@ -284,23 +285,23 @@ export function SettingsForm({ business, designs }: { business: Business; design
                     <div key={idx} className="flex flex-col gap-2 rounded-xl border border-line bg-[#F9FAFB] p-3">
                       <div className="grid gap-2 sm:grid-cols-2">
                         <Field label={s.payments.banks.bank}>
-                          <select value={b.bank} onChange={(e) => setBanks(bankItems.map((x, i) => (i === idx ? { ...x, bank: e.target.value } : x)))} className={cls}>
+                          <Select value={b.bank} onChange={(e) => setBanks(bankItems.map((x, i) => (i === idx ? { ...x, bank: e.target.value } : x)))} triggerClassName={cls}>
                             {HAITI_BANKS.map((name) => (
                               <option key={name} value={name}>
                                 {name}
                               </option>
                             ))}
-                          </select>
+                          </Select>
                         </Field>
                         <Field label={s.payments.banks.currency}>
-                          <select
+                          <Select
                             value={b.currency}
                             onChange={(e) => setBanks(bankItems.map((x, i) => (i === idx ? { ...x, currency: e.target.value as "HTG" | "USD" } : x)))}
-                            className={cls}
+                            triggerClassName={cls}
                           >
                             <option value="HTG">HTG</option>
                             <option value="USD">USD</option>
-                          </select>
+                          </Select>
                         </Field>
                       </div>
                       <div className="grid gap-2 sm:grid-cols-2">
@@ -494,13 +495,13 @@ export function SettingsForm({ business, designs }: { business: Business; design
           <>
             <Card title={s.look.title}>
               <Field label={s.look.theme}>
-                <select value={f.theme} onChange={(e) => set({ theme: e.target.value })} className={cls}>
+                <Select value={f.theme} onChange={(e) => set({ theme: e.target.value })} triggerClassName={cls}>
                   {THEME_KEYS.map((k) => (
                     <option key={k} value={k}>
                       {themeLabel(k)}
                     </option>
                   ))}
-                </select>
+                </Select>
               </Field>
               {/* La couleur choisie s'applique à la bannière, aux cartes et aux boutons. */}
               <div className="flex gap-2">

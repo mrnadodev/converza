@@ -13,6 +13,7 @@ import { effectivePlan, type Plan, type PlatformPaymentInfo } from "@/lib/plans"
 import { planTexts } from "@/lib/plan-texts";
 import type { UserSession } from "@/lib/rbac";
 import type { Business } from "@/lib/types";
+import { Select } from "@/components/ui/Select";
 
 const PAY_METHODS = [
   { key: "moncash", label: "MonCash" },
@@ -175,13 +176,13 @@ export function Subscription({
 
                 <label className="mt-4 flex flex-col gap-1.5">
                   <span className="text-[13px] font-semibold text-ink-soft">{s.method}</span>
-                  <select value={method} onChange={(e) => setMethod(e.target.value)} className={cls}>
+                  <Select value={method} onChange={(e) => setMethod(e.target.value)} triggerClassName={cls}>
                     {methods.map((m) => (
                       <option key={m.key} value={m.key}>
                         {m.label}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                 </label>
 
                 <div className="mt-3 flex flex-col items-center gap-2 rounded-xl bg-[#E7F7F1] p-3 text-center text-[13px] text-[#0B6B57]">

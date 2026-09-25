@@ -24,6 +24,7 @@ import {
 import { getRolePermissions } from "@/lib/rbac";
 import { PIPELINE_COLUMNS, type Currency, type OrderStatus, type PayMethod, type PipelineCard } from "@/lib/types";
 import { waMeLink } from "@/lib/whatsapp";
+import { Select } from "@/components/ui/Select";
 
 // Pastille et accent de couleur par étape : la couleur situe l'étape d'un coup
 // d'œil, le fond des cartes reste blanc pour que le texte se lise.
@@ -228,10 +229,10 @@ export function PipelineBoard(props: PipelineBoardProps) {
               {canFilterByProfile ? (
                 <label className="ml-auto flex items-center gap-2 text-xs font-semibold text-ink-muted">
                   <span className="hidden sm:inline">{o.stageFilter.label}</span>
-                  <select
+                  <Select
                     value={profileFilter}
                     onChange={(e) => setProfileFilter(e.target.value)}
-                    className="h-9 cursor-pointer rounded-xl border border-line bg-white px-2 text-xs font-bold text-ink outline-none"
+                    triggerClassName="h-9 cursor-pointer rounded-xl border border-line bg-white px-2 text-xs font-bold text-ink outline-none"
                   >
                     <option value="all">{o.stageFilter.everything}</option>
                     {Object.keys(PROFILE_COLUMNS).map((key) => (
@@ -239,7 +240,7 @@ export function PipelineBoard(props: PipelineBoardProps) {
                         {c.profiles[key]}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                 </label>
               ) : (
                 <span className="ml-auto text-xs font-semibold text-ink-muted">
@@ -448,7 +449,7 @@ function OrderCard({
       <div className="flex items-center justify-between gap-2">
         <span
           className="flex items-center gap-1 rounded bg-[#E7F7F1] px-1.5 py-0.5 font-mono text-[10.5px] font-black text-brand"
-          title={o.card.securityCode}
+         
         >
           <KeyIcon />
           {getOrderSecurityCode(card.ref, card.securityCode)}

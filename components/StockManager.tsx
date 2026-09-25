@@ -12,6 +12,7 @@ import { recordPurchase, recordStockMovement, type ManualMovementKind, type Stoc
 import { generateSalesReportCSV, triggerSalesReportPDF } from "@/lib/reports";
 import { stockStateFor } from "@/lib/stock_ai";
 import type { Business, PipelineCard, Product } from "@/lib/types";
+import { Select } from "@/components/ui/Select";
 
 export interface PurchaseRow {
   id: string;
@@ -139,15 +140,15 @@ export function StockManager({
           <section className="flex flex-col gap-2 rounded-2xl border border-line bg-white p-3.5">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h2 className="text-xs font-extrabold uppercase text-ink">{s.reports.title}</h2>
-              <select
+              <Select
                 value={timeframe}
                 onChange={(e) => setTimeframe(e.target.value as typeof timeframe)}
-                className="cursor-pointer rounded-lg border border-line bg-gray-100 px-2.5 py-1 text-xs font-extrabold text-ink outline-none"
+                triggerClassName="cursor-pointer rounded-lg border border-line bg-gray-100 px-2.5 py-1 text-xs font-extrabold text-ink outline-none"
               >
                 <option value="week">{s.reports.week}</option>
                 <option value="month">{s.reports.month}</option>
                 <option value="all">{s.reports.all}</option>
-              </select>
+              </Select>
             </div>
             <div className="grid grid-cols-2 gap-2 pt-1">
               <button onClick={downloadCSV} className="flex h-10 cursor-pointer items-center justify-center rounded-xl border border-line bg-[#F7F8F9] text-xs font-bold text-ink active:scale-95">
@@ -539,14 +540,14 @@ function Purchases({
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             <label className="flex flex-col gap-1">
               <span className="text-[11.5px] font-bold text-ink-muted">{s.purchase.supplier}</span>
-              <select value={supplierId} onChange={(e) => setSupplierId(e.target.value)} className={field}>
+              <Select value={supplierId} onChange={(e) => setSupplierId(e.target.value)} triggerClassName={field}>
                 <option value="">{s.purchase.noSupplier}</option>
                 {suppliers.map((sup) => (
                   <option key={sup.id} value={sup.id}>
                     {sup.name}
                   </option>
                 ))}
-              </select>
+              </Select>
             </label>
             {!supplierId && (
               <label className="flex flex-col gap-1">
@@ -559,18 +560,18 @@ function Purchases({
           <div className="flex flex-col gap-2">
             {lines.map((l, i) => (
               <div key={i} className="grid grid-cols-[1fr_auto] gap-2 rounded-xl bg-[#F7F8F9] p-2.5">
-                <select
+                <Select
                   value={l.productId}
                   onChange={(e) => setLine(i, { productId: e.target.value, unitCost: costOf(e.target.value) })}
                   aria-label={s.purchase.product}
-                  className={`${field} col-span-2 bg-white`}
+                  triggerClassName={`${field} col-span-2 bg-white`}
                 >
                   {products.map((p) => (
                     <option key={p.id} value={p.id}>
                       {p.name}
                     </option>
                   ))}
-                </select>
+                </Select>
                 <div className="grid grid-cols-2 gap-2">
                   <label className="flex flex-col gap-1">
                     <span className="text-[11px] font-bold text-ink-muted">{s.purchase.qty}</span>
@@ -609,13 +610,13 @@ function Purchases({
             </label>
             <label className="flex flex-col gap-1">
               <span className="text-[11.5px] font-bold text-ink-muted">{s.purchase.method}</span>
-              <select value={payMethod} onChange={(e) => setPayMethod(e.target.value)} className={field}>
+              <Select value={payMethod} onChange={(e) => setPayMethod(e.target.value)} triggerClassName={field}>
                 {["cash", "moncash", "natcash", "banque", "autre"].map((m) => (
                   <option key={m} value={m}>
                     {KES_COPY[language].methods[m] ?? m}
                   </option>
                 ))}
-              </select>
+              </Select>
             </label>
             <label className="flex flex-col gap-1">
               <span className="text-[11.5px] font-bold text-ink-muted">{s.purchase.date}</span>

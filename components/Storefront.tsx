@@ -21,6 +21,7 @@ import {
 } from "@/components/storefront/product";
 import { FeaturedSection } from "@/components/storefront/designs";
 import { maskPhone, phoneNoticeState } from "@/lib/phone-change";
+import { Select } from "@/components/ui/Select";
 
 import { useTheme } from "@/components/ThemeProvider";
 import { LanguageToggle } from "@/components/LanguageToggle";
@@ -261,7 +262,6 @@ export function Storefront({
               <button
                 onClick={toggleTheme}
                 className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-white/90 shadow-md backdrop-blur transition-transform active:scale-90"
-                title={darkMode ? c.lightMode : c.darkMode}
                 aria-label={darkMode ? c.lightMode : c.darkMode}
               >
                 {darkMode ? <SunIcon /> : <MoonIcon />}
@@ -448,16 +448,18 @@ export function Storefront({
                 >
                   {c.inStockOnly}
                 </button>
-                <select
+                <Select
                   value={sort}
                   onChange={(e) => setSort(e.target.value as typeof sort)}
-                  className="rounded-full bg-white/15 px-3 py-1.5 text-[12.5px] font-semibold text-white outline-none"
-                  aria-label={c.sortPopular}
-                >
-                  <option value="popular" className="text-ink">{c.sortPopular}</option>
-                  <option value="price_up" className="text-ink">{c.sortPriceUp}</option>
-                  <option value="price_down" className="text-ink">{c.sortPriceDown}</option>
-                </select>
+                  ariaLabel={c.sortPopular}
+                  tone="onColor"
+                  className="min-w-[168px]"
+                  options={[
+                    { value: "popular", label: c.sortPopular },
+                    { value: "price_up", label: c.sortPriceUp },
+                    { value: "price_down", label: c.sortPriceDown },
+                  ]}
+                />
               </div>
               <div className="flex items-center gap-1 rounded-xl border border-white/20 bg-black/20 p-1">
                 {(["grid", "list"] as const).map((mode) => (
@@ -580,11 +582,16 @@ export function Storefront({
             {!tableNum && (
               <label className="mt-3 flex flex-col gap-1">
                 <span className="text-[12px] font-semibold text-slate-400">{c.deliveryWhere}</span>
-                <select value={zoneIdx} onChange={(e) => setZoneIdx(Number(e.target.value))} className={fieldCls}>
-                  {zones.map((z, i) => (
-                    <option key={i} value={i}>{z.name} · {z.fee_cents > 0 ? formatMoney(z.fee_cents) : c.free}</option>
-                  ))}
-                </select>
+                <Select
+                  value={String(zoneIdx)}
+                  onChange={(e) => setZoneIdx(Number(e.target.value))}
+                  className="mt-1"
+                  options={zones.map((z, i) => ({
+                    value: String(i),
+                    label: z.name,
+                    hint: z.fee_cents > 0 ? formatMoney(z.fee_cents) : c.free,
+                  }))}
+                />
               </label>
             )}
 

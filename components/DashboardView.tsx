@@ -87,7 +87,6 @@ export function DashboardView(props: DashboardViewProps) {
             <form action={signOut}>
               <button
                 type="submit"
-                title={d.signOutAs(props.userName)}
                 aria-label={d.signOutAs(props.userName)}
                 className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border-2 border-white/35 bg-brand-teal text-sm font-extrabold text-white active:scale-95"
               >
@@ -666,7 +665,7 @@ function BusinessMark({ business }: { business: Business }) {
 
 function HeaderIconLink({ href, label, children }: { href: string; label: string; children: React.ReactNode }) {
   return (
-    <Link href={href} title={label} aria-label={label} className="flex h-10 w-10 items-center justify-center rounded-full bg-white/15 active:scale-95">
+    <Link href={href} aria-label={label} className="flex h-10 w-10 items-center justify-center rounded-full bg-white/15 transition-colors hover:bg-white/25 active:scale-95">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         {children}
       </svg>

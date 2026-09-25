@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Tooltip } from "@/components/ui/Tooltip";
 import { ThemeToggle } from "@/components/ThemeProvider";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { useDict } from "@/components/LanguageContext";
@@ -50,18 +51,18 @@ export function BottomNav({ active, userSession }: { active: NavTab | null; user
             {visible.map((it) => {
               const on = it.key === active;
               return (
-                <Link
-                  key={it.key}
-                  href={it.href}
-                  aria-current={on ? "page" : undefined}
-                  aria-label={it.label}
-                  title={it.label}
-                  className={`flex items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 py-1.5 text-[13px] font-extrabold transition-colors lg:px-3 ${on ? "bg-[#E7F7F1] text-brand" : "text-ink-muted hover:bg-[#F3F6F4]"}`}
-                >
-                  <Icon node={it.icon} on={on} />
-                  {/* Tablette : icônes seules, sinon six onglets débordent. */}
-                  <span className="hidden lg:inline">{it.label}</span>
-                </Link>
+                <Tooltip key={it.key} label={it.label} className="lg:contents">
+                  <Link
+                    href={it.href}
+                    aria-current={on ? "page" : undefined}
+                    aria-label={it.label}
+                    className={`flex items-center gap-1.5 whitespace-nowrap rounded-xl px-2.5 py-1.5 text-[13px] font-extrabold transition-all duration-150 lg:px-3 ${on ? "bg-[#E7F7F1] text-brand shadow-[inset_0_0_0_1px_rgba(0,128,105,0.18)]" : "text-ink-muted hover:bg-[#F3F6F4] hover:text-ink"}`}
+                  >
+                    <Icon node={it.icon} on={on} />
+                    {/* Tablette : icônes seules, sinon six onglets débordent. */}
+                    <span className="hidden lg:inline">{it.label}</span>
+                  </Link>
+                </Tooltip>
               );
             })}
             <div className="ml-1 flex shrink-0 items-center gap-1 border-l border-line pl-1.5">
