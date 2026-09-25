@@ -40,7 +40,7 @@ export const DEFAULT_PLAN_TEXTS: Record<Language, Record<string, PlanText>> = {
     premium: {
       name: "Premium",
       tagline: "Pour vendre sans interruption",
-      features: ["Tout le plan Pro", "Comptes d'équipe illimités", "Assistant de gestion du stock", "Notifications de commande (bientôt)"],
+      features: ["Tout le plan Pro", "Menu QR pour vos tables, jusqu'à 25", "Comptes d'équipe illimités", "Assistant de gestion du stock", "Notifications de commande (bientôt)"],
     },
   },
   ht: {
@@ -62,7 +62,7 @@ export const DEFAULT_PLAN_TEXTS: Record<Language, Record<string, PlanText>> = {
     premium: {
       name: "Premium",
       tagline: "Pou vann san rete",
-      features: ["Tout plan Pro a", "Kont ekip san limit", "Asistan jesyon stòk", "Notifikasyon kòmand (byento)"],
+      features: ["Tout plan Pro a", "Menu QR pou tab yo, jiska 25", "Kont ekip san limit", "Asistan jesyon stòk", "Notifikasyon kòmand (byento)"],
     },
   },
   en: {
@@ -84,7 +84,7 @@ export const DEFAULT_PLAN_TEXTS: Record<Language, Record<string, PlanText>> = {
     premium: {
       name: "Premium",
       tagline: "To sell without interruption",
-      features: ["Everything in Pro", "Unlimited team accounts", "Stock management assistant", "Order notifications (coming soon)"],
+      features: ["Everything in Pro", "QR menu for your tables, up to 25", "Unlimited team accounts", "Stock management assistant", "Order notifications (coming soon)"],
     },
   },
 };

@@ -5,6 +5,10 @@ import { useDict } from "@/components/LanguageContext";
 import { SETTINGS_COPY } from "@/lib/i18n/app/settings";
 import type { Business } from "@/lib/types";
 
+// Les offres annoncent « jusqu'à 25 tables ». Le champ acceptait 50 : ce qu'on
+// vend et ce qu'on livre doivent dire la même chose.
+const MAX_TABLES = 25;
+
 export function TableQrGenerator({ business }: { business: Business }) {
   const q = useDict(SETTINGS_COPY).tables;
   const [tableCount, setTableCount] = useState<number>(10);
@@ -80,9 +84,9 @@ export function TableQrGenerator({ business }: { business: Business }) {
           <input
             type="number"
             min={1}
-            max={50}
+            max={MAX_TABLES}
             value={tableCount}
-            onChange={(e) => setTableCount(Math.max(1, Math.min(50, Number(e.target.value) || 1)))}
+            onChange={(e) => setTableCount(Math.max(1, Math.min(MAX_TABLES, Number(e.target.value) || 1)))}
             className="h-12 w-full rounded-xl border border-line bg-[#F7F8F9] px-3 text-[15px] outline-none focus:border-brand focus:bg-white"
           />
         </label>

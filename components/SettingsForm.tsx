@@ -568,7 +568,9 @@ export function SettingsForm({ business, designs }: { business: Business; design
               </div>
             </Card>
 
-            {plan === "premium" ? (
+            {/* Le menu QR se gagne de deux façons : le plan dédié, ou Premium
+                qui l'inclut. */}
+            {plan === "premium" || plan === "qr_express" ? (
               <TableQrGenerator business={business} />
             ) : (
               <Card title={s.look.qrTitle}>

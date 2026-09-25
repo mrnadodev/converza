@@ -44,9 +44,24 @@ export const DEFAULT_PLANS: Plan[] = [
     features: ["Vitrin piblik", "Katalòg + kòmand WhatsApp", "1 itilizatè", "Zòn livrezon"],
   },
   {
+    // Les chevalets QR par table, sans le reste. Une entrée à petit prix pour
+    // les restaurants : ils découvrent la vitrine, et le suivi des commandes
+    // leur manque vite. Le menu QR est aussi inclus dans Premium.
+    key: "qr_express",
+    name: "Menu QR Express",
+    priceGdes: 1000,
+    tagline: "Pou restoran, ba ak kafeterya",
+    features: [
+      "Tout sa ki nan Gratis",
+      "Chevalè QR, jiska 25 tab",
+      "Kòmand ak nimewo tab la",
+      "Nòt pou kizin nan",
+    ],
+  },
+  {
     key: "pro",
     name: "Pro",
-    priceGdes: 750,
+    priceGdes: 1500,
     tagline: "Pou biznis k ap grandi",
     features: [
       "Tout sa ki nan Gratis",

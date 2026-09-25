@@ -46,8 +46,10 @@ export function LandingPage({
   // une seule fois, et se voit ici comme sur la page Abonnement des marchands.
   const PLAN_ORDER = ["gratis", "pro", "premium"];
   const offers = PLAN_ORDER.map((key) => plans.find((p) => p.key === key)).filter(Boolean) as Plan[];
-  // Le menu QR par table fait partie du Premium : c est son prix qui s affiche.
-  const qrPrice = plans.find((p) => p.key === "premium")?.priceGdes;
+  // Le menu QR se vend seul, et il est aussi inclus dans Premium. C'est son
+  // propre prix qui s'affiche ici : afficher celui de Premium annonçait 2 500
+  // gourdes pour une offre qui en vaut 1 000.
+  const qrPrice = plans.find((p) => p.key === "qr_express")?.priceGdes;
 
   return (
     <div ref={rootRef} style={{ background: "#FFFFFF", color: INK }} className="overflow-x-hidden">

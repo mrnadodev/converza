@@ -214,8 +214,8 @@ const fr: SettingsCopy = {
     images: (n: number) => `${n} images en vitrine`,
     preview: "Aperçu",
     qrTitle: "Menu QR pour les tables",
-    qrPremium: "Le menu QR par table fait partie du plan Premium. Vos clients scannent, commandent depuis leur table, et la commande arrive sur votre WhatsApp.",
-    qrCta: "Voir le plan Premium",
+    qrPremium: "Le menu QR par table s'obtient avec le plan Menu QR Express, ou avec Premium qui l'inclut. Vos clients scannent, commandent depuis leur table, et la commande arrive sur votre WhatsApp.",
+    qrCta: "Voir les offres",
     selected: "Choisie",
   },
   tables: {
@@ -352,8 +352,8 @@ const ht: SettingsCopy = {
     images: (n: number) => `${n} imaj nan vitrin`,
     preview: "Apèsi",
     qrTitle: "Menu QR pou tab yo",
-    qrPremium: "Menu QR pa tab la nan plan Premium nan. Kliyan yo eskane, yo kòmande depi sou tab la, epi kòmand lan rive sou WhatsApp ou.",
-    qrCta: "Gade plan Premium nan",
+    qrPremium: "Menu QR pa tab la vini ak plan Menu QR Express la, oswa ak Premium ki gen li ladan. Kliyan yo eskane, yo kòmande depi sou tab la, epi kòmand lan rive sou WhatsApp ou.",
+    qrCta: "Gade òf yo",
     selected: "Chwazi",
   },
   tables: {
@@ -490,8 +490,8 @@ const en: SettingsCopy = {
     images: (n: number) => `${n} images on the storefront`,
     preview: "Preview",
     qrTitle: "QR menu for tables",
-    qrPremium: "The per-table QR menu is part of the Premium plan. Your customers scan, order from their table, and the order lands on your WhatsApp.",
-    qrCta: "See the Premium plan",
+    qrPremium: "The per-table QR menu comes with the Menu QR Express plan, or with Premium which includes it. Your customers scan, order from their table, and the order lands on your WhatsApp.",
+    qrCta: "See the plans",
     selected: "Selected",
   },
   tables: {
