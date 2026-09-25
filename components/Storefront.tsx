@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { formatMoney } from "@/lib/money";
 import { waMeLink } from "@/lib/whatsapp";
@@ -109,6 +109,8 @@ export function Storefront({
   const [customerPhone, setCustomerPhone] = useState("");
   const [sending, setSending] = useState(false);
   const [sendFailed, setSendFailed] = useState(false);
+  const [phoneError, setPhoneError] = useState(false);
+  const phoneRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const p = new URLSearchParams(window.location.search);
@@ -138,10 +140,23 @@ export function Storefront({
   const message = [baseMessage, ...extra].join("\n");
   const orderHref = waMeLink(business.phone_e164 ?? "", message);
 
+  // Sans numéro, la commande arrive chez le marchand sans personne au bout :
+  // pas de fiche client, pas de confirmation, pas de relance si elle reste
+  // impayée. C'est ainsi qu'une créance de plusieurs milliers de gourdes s'est
+  // retrouvée « à relancer en personne ». À table, le client est devant le
+  // marchand : on ne lui demande rien.
+  const phoneMissing = !tableNum && customerPhone.trim().length === 0;
+
   const handleSendOrder = async (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (count === 0) return;
     e.preventDefault();
     if (sending) return;
+    if (phoneMissing) {
+      setPhoneError(true);
+      phoneRef.current?.focus();
+      phoneRef.current?.scrollIntoView({ block: "center", behavior: "smooth" });
+      return;
+    }
     setSending(true);
     setSendFailed(false);
 
@@ -569,10 +584,30 @@ export function Storefront({
                 <input value={customerName} onChange={(e) => setCustomerName(e.target.value)} autoComplete="name" className={fieldCls} />
               </label>
               <label className="flex flex-col gap-1">
-                <span className="text-[12px] font-semibold text-slate-400">{c.yourWhatsapp} <span className="font-normal">({c.optional})</span></span>
-                <input value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} inputMode="tel" autoComplete="tel" placeholder="3712 4488" className={fieldCls} />
+                <span className="text-[12px] font-semibold text-slate-400">
+                  {c.yourWhatsapp} {tableNum && <span className="font-normal">({c.optional})</span>}
+                </span>
+                <input
+                  ref={phoneRef}
+                  value={customerPhone}
+                  onChange={(e) => {
+                    setCustomerPhone(e.target.value);
+                    if (phoneError) setPhoneError(false);
+                  }}
+                  inputMode="tel"
+                  autoComplete="tel"
+                  placeholder="3712 4488"
+                  aria-invalid={phoneError}
+                  className={`${fieldCls} ${phoneError ? "border-[#C0392B] ring-1 ring-[#C0392B]" : ""}`}
+                />
               </label>
             </div>
+
+            {!tableNum && (
+              <p className={`mt-1.5 text-[11.5px] ${phoneError ? "font-semibold text-[#C0392B]" : "text-slate-400"}`}>
+                {phoneError ? c.phoneRequired : c.phoneWhy}
+              </p>
+            )}
 
             <label className="mt-3 flex flex-col gap-1">
               <span className="text-[12px] font-semibold text-slate-400">{c.note} <span className="font-normal">({c.optional})</span></span>

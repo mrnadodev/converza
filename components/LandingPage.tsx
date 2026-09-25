@@ -11,6 +11,11 @@ import { paletteFor } from "@/lib/storefront-designs";
 import { useScrollReveal, useScrolledPast } from "@/components/useScrollReveal";
 import { planTexts } from "@/lib/plan-texts";
 import type { Plan } from "@/lib/plans";
+import { INDUSTRY_SECTORS, SECTOR_COUNT, TRADE_COUNT } from "@/lib/verticals";
+
+// Ordre d'affichage des secteurs : celui de lib/verticals.ts, qui va du plus
+// courant au plus spécialisé. Rien à maintenir ici.
+const SECTORS = Object.values(INDUSTRY_SECTORS);
 
 // Page d'accueil publique.
 //
@@ -383,6 +388,43 @@ export function LandingPage({
             </div>
           ))}
         </div>
+      </section>
+
+      {/* ══════════ ONZE SECTEURS ══════════ */}
+      {/* La première question d'un visiteur n'est pas « combien ça coûte »
+          mais « est-ce que c'est pour moi ». La page répondait par un seul
+          exemple, le restaurant, alors que onze métiers sont déjà configurés.
+          La liste se construit sur lib/verticals.ts : un secteur ajouté
+          apparaît ici sans qu'on y touche. */}
+      <section id="secteurs" className="mx-auto w-full max-w-[1240px] px-5 pb-20 sm:px-8 lg:px-12 lg:pb-28">
+        <div data-reveal className="flex flex-col gap-4 pb-10 lg:pb-12">
+          <Eyebrow>{c.sectors.eyebrow}</Eyebrow>
+          <H2>{c.sectors.title}</H2>
+          <p className="max-w-[640px] text-[16px] leading-[1.64] text-[#47605A] lg:text-[17.5px]">{c.sectors.body}</p>
+        </div>
+        <div className="grid gap-3.5 sm:grid-cols-2 lg:grid-cols-3">
+          {SECTORS.map((sector, i) => (
+            <div
+              key={sector.id}
+              data-reveal
+              className="cvz-lift flex items-center gap-4 rounded-[16px] border px-5 py-4"
+              style={{ ["--reveal-delay" as string]: `${(i % 3) * 80}ms`, borderColor: "#E6ECEA" }}
+            >
+              <span aria-hidden="true" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-[21px]" style={{ background: "#E7F7F1" }}>
+                {sector.icon}
+              </span>
+              <span className="flex min-w-0 flex-col">
+                <span className="text-[16px] font-bold leading-[1.3] tracking-[-0.3px]">{c.sectors.names[sector.id]}</span>
+                <span className="text-[13.5px] text-[#6B837D]">
+                  {sector.subTypes.length === 1 ? c.sectors.trade : c.sectors.trades.replace("{n}", String(sector.subTypes.length))}
+                </span>
+              </span>
+            </div>
+          ))}
+        </div>
+        <p data-reveal className="pt-8 text-center text-[14.5px] font-semibold text-[#47605A]">
+          {c.sectors.count.replace("{secteurs}", String(SECTOR_COUNT)).replace("{metiers}", String(TRADE_COUNT))}
+        </p>
       </section>
 
       {/* ══════════ RESTAURANTS ══════════ */}

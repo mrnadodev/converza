@@ -62,6 +62,40 @@ function dateStr(language: Language): string {
  * Les libellés suivent la langue choisie par le marchand : le rapport n'était
  * disponible qu'en créole, quelle que soit la langue de l'application.
  */
+/**
+ * Colonnes du rapport, écrites une fois pour les deux sorties.
+ *
+ * Le CSV et la version imprimable sont le même rapport. Ils avaient pourtant
+ * dérivé : les commandes affichaient l'étape avant le détail d'un côté, après
+ * de l'autre, et le résumé imprimé cachait deux des six chiffres du CSV. Un
+ * marchand qui ouvrait les deux devait relire les en-têtes à chaque fois.
+ *
+ * Les deux fonctions lisent désormais ces tableaux, dans cet ordre. Ajouter
+ * une colonne ici l'ajoute aux deux sorties, ou à aucune.
+ */
+export function reportColumns(r: ReportCopy) {
+  return {
+    products: [
+      r.products.name,
+      r.products.category,
+      r.products.unitPrice,
+      r.products.currency,
+      r.products.remaining,
+      r.products.sold,
+      r.products.state,
+    ],
+    orders: [
+      r.orders.ref,
+      r.orders.customer,
+      r.orders.phone,
+      r.orders.items,
+      r.orders.stage,
+      r.orders.total,
+      r.orders.owed,
+    ],
+  };
+}
+
 export function generateSalesReportCSV(
   cards: PipelineCard[],
   products: Product[],
@@ -88,19 +122,7 @@ export function generateSalesReportCSV(
   lines.push("");
 
   lines.push(csvCell(r.products.title(products.length)));
-  lines.push(
-    [
-      r.products.name,
-      r.products.category,
-      r.products.unitPrice,
-      r.products.currency,
-      r.products.remaining,
-      r.products.sold,
-      r.products.state,
-    ]
-      .map(csvCell)
-      .join(";"),
-  );
+  lines.push(reportColumns(r).products.map(csvCell).join(";"));
   for (const p of products) {
     lines.push(
       [
@@ -118,9 +140,7 @@ export function generateSalesReportCSV(
 
   lines.push(csvCell(r.orders.title(cards.length)));
   lines.push(
-    [r.orders.ref, r.orders.customer, r.orders.phone, r.orders.stage, r.orders.items, r.orders.total, r.orders.owed]
-      .map(csvCell)
-      .join(";"),
+    reportColumns(r).orders.map(csvCell).join(";"),
   );
   for (const c of cards) {
     lines.push(
@@ -128,8 +148,8 @@ export function generateSalesReportCSV(
         csvCell(`#${c.ref}`),
         csvCell(c.customerName),
         csvCell(c.phone_e164),
-        csvCell(statuses[c.status] ?? c.status),
         csvCell(c.itemsSummary || r.orders.itemsFallback),
+        csvCell(statuses[c.status] ?? c.status),
         csvCell(formatMoney(c.totalCents)),
         csvCell(formatMoney(c.owedCents)),
       ].join(";"),
@@ -152,6 +172,7 @@ export function triggerSalesReportPDF(
   const r: ReportCopy = REPORT_COPY[language] ?? REPORT_COPY.fr;
   const statuses = (COMMON_COPY[language] ?? COMMON_COPY.fr).statuses;
   const t = totalsOf(cards, products);
+  const cols = reportColumns(r);
 
   const printWin = window.open("", "_blank");
   if (!printWin) return;
@@ -170,7 +191,8 @@ export function triggerSalesReportPDF(
           h1 { font-size: 22px; margin-bottom: 4px; color: #008069; }
           h3 { font-size: 15px; margin: 24px 0 8px; }
           .sub { font-size: 13px; color: #667781; margin-bottom: 20px; }
-          .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+          .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
+          h3.first { margin-top: 0; }
           .card { background: #F7F8F9; border: 1px solid #E9EDEF; border-radius: 12px; padding: 12px; }
           .card-title { font-size: 11px; text-transform: uppercase; color: #667781; font-weight: bold; }
           .card-val { font-size: 18px; font-weight: 800; color: #111B21; margin-top: 4px; }
@@ -189,24 +211,20 @@ export function triggerSalesReportPDF(
         <h1>${esc(r.title(businessName))}</h1>
         <div class="sub">${esc(r.period(r.periods[timeframe], dateStr(language)))}</div>
 
+        <h3 class="first">${esc(r.summary.title)}</h3>
         <div class="grid">
           <div class="card"><div class="card-title">${esc(r.summary.revenue)}</div><div class="card-val">${esc(formatMoney(t.revenueCents))}</div></div>
           <div class="card"><div class="card-title">${esc(r.summary.paid)}</div><div class="card-val" style="color:#008069">${esc(formatMoney(t.paidCents))}</div></div>
           <div class="card"><div class="card-title">${esc(r.summary.owed)}</div><div class="card-val" style="color:#B25E09">${esc(formatMoney(t.owedCents))}</div></div>
           <div class="card"><div class="card-title">${esc(r.summary.stockValue)}</div><div class="card-val">${esc(formatMoney(t.stockValueCents))}</div></div>
+          <div class="card"><div class="card-title">${esc(r.summary.orders)}</div><div class="card-val">${esc(cards.length)}</div></div>
+          <div class="card"><div class="card-title">${esc(r.summary.lowStock)}</div><div class="card-val" style="${t.lowStockCount > 0 ? "color:#B25E09" : ""}">${esc(t.lowStockCount)}</div></div>
         </div>
 
         <h3>${esc(r.products.title(products.length))}</h3>
         <table>
           <thead>
-            <tr>
-              <th>${esc(r.products.name)}</th>
-              <th>${esc(r.products.category)}</th>
-              <th>${esc(r.products.unitPrice)}</th>
-              <th>${esc(r.products.remaining)}</th>
-              <th>${esc(r.products.sold)}</th>
-              <th>${esc(r.products.state)}</th>
-            </tr>
+            <tr>${cols.products.map((h) => `<th>${esc(h)}</th>`).join("")}</tr>
           </thead>
           <tbody>
             ${products
@@ -215,7 +233,8 @@ export function triggerSalesReportPDF(
               <tr>
                 <td><strong>${esc(p.name)}</strong></td>
                 <td>${esc(p.category || r.products.other)}</td>
-                <td>${esc((p.price_cents / 100).toFixed(2))} ${esc(p.currency)}</td>
+                <td>${esc((p.price_cents / 100).toFixed(2))}</td>
+                <td>${esc(p.currency)}</td>
                 <td><strong>${esc(p.stock_qty ?? 0)}</strong></td>
                 <td>${esc(p.sold_count ?? 0)}</td>
                 <td><span class="badge ${stockBadge(p)}">${esc(r.products.states[p.stock_state])}</span></td>
@@ -228,15 +247,7 @@ export function triggerSalesReportPDF(
         <h3>${esc(r.orders.title(cards.length))}</h3>
         <table>
           <thead>
-            <tr>
-              <th>${esc(r.orders.ref)}</th>
-              <th>${esc(r.orders.customer)}</th>
-              <th>${esc(r.orders.phone)}</th>
-              <th>${esc(r.orders.items)}</th>
-              <th>${esc(r.orders.stage)}</th>
-              <th>${esc(r.orders.total)}</th>
-              <th>${esc(r.orders.owed)}</th>
-            </tr>
+            <tr>${cols.orders.map((h) => `<th>${esc(h)}</th>`).join("")}</tr>
           </thead>
           <tbody>
             ${cards

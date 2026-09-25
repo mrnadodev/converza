@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useRef, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { closeOrder, confirmDeliveryWithCode, markOrderPaid, moveOrderStatus, setCourier } from "@/app/komand/actions";
 import { InvoiceModal } from "@/components/InvoiceModal";
 import { LanguageToggle } from "@/components/LanguageToggle";
@@ -96,6 +97,36 @@ export function PipelineBoard(props: PipelineBoardProps) {
   const m = MESSAGE_COPY[language] ?? MESSAGE_COPY.fr;
 
   const [cards, setCards] = useState<PipelineCard[]>(initial);
+  const router = useRouter();
+
+  // La page Commandes n'était lue qu'une fois. Next garde ensuite l'écran déjà
+  // rendu dans le cache du routeur, et une commande arrivée de la vitrine —
+  // donc depuis le téléphone d'un client, sans jamais passer par cet onglet —
+  // n'apparaissait qu'au bout de plusieurs minutes. Le marchand la voyait
+  // pourtant déjà sur l'accueil : deux écrans, deux vérités.
+  //
+  // On redemande au serveur à l'ouverture de l'écran, puis chaque fois que le
+  // marchand y revient. Pas de relève périodique : sur un forfait mobile,
+  // une requête par minute toute la journée se paie en données.
+  useEffect(() => {
+    router.refresh();
+    const auRetour = () => {
+      if (document.visibilityState === "visible") router.refresh();
+    };
+    document.addEventListener("visibilitychange", auRetour);
+    window.addEventListener("focus", auRetour);
+    return () => {
+      document.removeEventListener("visibilitychange", auRetour);
+      window.removeEventListener("focus", auRetour);
+    };
+  }, [router]);
+
+  // Le serveur a répondu : on adopte ses cartes. Sans cela `cards` resterait
+  // figé sur le tout premier rendu et le rafraîchissement ne se verrait pas.
+  useEffect(() => {
+    setCards(initial);
+  }, [initial]);
+
   const [activeModal, setActiveModal] = useState<{ card: PipelineCard; type: "invoice" | "receipt"; payMethod?: PayMethod } | null>(null);
   const [promoCard, setPromoCard] = useState<PipelineCard | null>(null);
   const [owedOnly, setOwedOnly] = useState(false);

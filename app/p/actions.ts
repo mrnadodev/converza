@@ -180,9 +180,18 @@ export async function createStorefrontOrderAction({
 
   // Fiche client. Sans elle, le marchand reçoit une commande mais aucun
   // contact rattaché : ni relance de dette, ni historique, ni segmentation —
-  // c'est-à-dire la moitié des fonctions déjà construites. Les coordonnées
-  // restent facultatives pour ne pas alourdir la commande.
+  // c'est-à-dire la moitié des fonctions déjà construites.
+  //
+  // Le numéro était facultatif. Résultat en production : des commandes livrées
+  // à crédit, sans fiche et sans moyen de relancer. Il est désormais exigé pour
+  // toute commande à livrer ou à retirer. Une commande à table fait exception :
+  // le client est devant le marchand, et il paie sur place.
+  //
+  // La règle est ici autant que dans la page : la page peut être contournée.
   const customerId = await upsertCustomer(admin, businessId, customerName, customerPhone);
+  if (!cleanTable && !customerId) {
+    return { ok: false, error: "Nimewo WhatsApp la obligatwa" };
+  }
 
   // `ref` est unique par business : on laisse la contrainte trancher et on
   // retente, plutôt que d'espérer qu'un tirage sur 4 chiffres ne collisionne pas.

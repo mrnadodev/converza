@@ -4,7 +4,7 @@
 // NEXT_PUBLIC_SUPABASE_* sont présentes.
 
 import { createClient } from "@/lib/supabase/server";
-import { DEBT_STATUSES } from "@/lib/dunning";
+import { DEBT_STATUSES, isSettled } from "@/lib/dunning";
 import { pickShowcase, type ShowcaseMerchant } from "@/lib/showcase";
 import { createPublicClient } from "@/lib/supabase/public";
 import {
@@ -149,8 +149,17 @@ function countByStatus(orders: { status: OrderStatus }[]): Partial<Record<OrderS
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function computeFunnel(orders: any[], leads: number) {
-  // Une commande est payée dès que le paiement est confirmé, donc à partir de « sou_wout ».
-  const paid = orders.filter((o) => ["peye", "sou_wout", "livre", "swivi"].includes(o.status)).length;
+  // « Payée » veut dire que l'argent est rentré, pas que la commande a avancé.
+  //
+  // On comptait ici tout ce qui était parti en livraison. Or la vente à crédit
+  // est la norme : une commande livrée et jamais réglée était comptée comme
+  // encaissée, et l'entonnoir contredisait « À recouvrer » affiché juste
+  // au-dessus, sur la même page, à partir des mêmes commandes.
+  //
+  // On lit donc ce que lit le reste du tableau de bord : le montant reçu.
+  // Le statut « peye » compte aussi, pour les commandes réglées par un chemin
+  // qui n'inscrit pas le montant.
+  const paid = orders.filter((o) => isSettled(o.status, orderTotalOf(o), Number(o.amount_paid_cents ?? 0))).length;
   const delivered = orders.filter((o) => ["livre", "swivi"].includes(o.status)).length;
   return { leads, orders: orders.length, paid, delivered };
 }

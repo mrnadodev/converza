@@ -14,6 +14,23 @@ import type { OrderStatus } from "./types";
 
 export const DEBT_STATUSES: OrderStatus[] = ["metod_peman", "konfime_peman", "sou_wout", "livre", "swivi"];
 
+/**
+ * Une commande est réglée quand l'argent est rentré — pas quand elle a avancé.
+ *
+ * Cette règle vit ici, contre DEBT_STATUSES, parce que les deux se répondent :
+ * une commande réglée ne doit jamais apparaître dans les créances, et une
+ * créance ne doit jamais être comptée comme un encaissement. Quand les deux
+ * définitions vivaient dans deux fichiers, le tableau de bord affichait une
+ * commande « payée » dans l'entonnoir et « à recouvrer » dix lignes plus haut.
+ *
+ * Le statut « peye » compte pour lui-même : certaines commandes sont marquées
+ * réglées sans que le montant soit inscrit.
+ */
+export function isSettled(status: OrderStatus, totalCents: number, amountPaidCents: number): boolean {
+  if (status === "peye") return true;
+  return totalCents > 0 && amountPaidCents >= totalCents;
+}
+
 /** Au-delà, la dette est ancienne : plus elle vieillit, moins elle rentre. */
 export const OLD_DAYS = 14;
 /** En deçà, on laisse le client respirer. */

@@ -7,6 +7,8 @@ import type { Language } from "./translations";
 // des libellés d'interface courts. Les mélanger rendrait les deux pénibles à
 // relire.
 
+import type { IndustrySectorKey } from "../verticals";
+
 export interface AuthCopy {
   signInTitle: string;
   signInSubtitle: string;
@@ -97,6 +99,29 @@ export interface LandingCopy {
     eyebrow: string;
     title: string;
     items: { title: string; body: string }[];
+  };
+  sectors: {
+    eyebrow: string;
+    title: string;
+    body: string;
+    /**
+     * Les onze secteurs, dans la langue du visiteur. Le type les exige tous :
+     * un douzième secteur ajouté à lib/verticals.ts casse la compilation tant
+     * qu'il n'est pas nommé dans les trois langues — plutôt que d'apparaître
+     * en français sur une page créole.
+     */
+    names: Record<IndustrySectorKey, string>;
+    /**
+     * « 11 secteurs · 75 métiers ». Les nombres viennent de lib/verticals.ts et
+     * sont substitués à {secteurs} et {metiers} au rendu.
+     *
+     * Ce sont des chaînes, pas des fonctions : la console d'administration
+     * réécrit ces textes et les clone avec structuredClone, qui refuse une
+     * fonction. Aucun champ de LandingCopy ne doit en contenir.
+     */
+    count: string;
+    trades: string;
+    trade: string;
   };
   resto: {
     eyebrow: string;
@@ -252,6 +277,27 @@ const fr: LandingCopy = {
       { title: "Comptes pour l'équipe", body: "Caisse, ventes, livraison, service client. Chacun ne voit que ce qui le concerne." },
       { title: "Rapports de vente", body: "Chiffre de la semaine, sommes à recouvrer, meilleurs produits, export Excel." },
     ],
+  },
+  sectors: {
+    eyebrow: "Pour qui",
+    title: "Onze secteurs, un seul outil",
+    body: "CONVERZA ne se contente pas de changer de couleur : la vitrine, le vocabulaire, les catégories et les rôles de l'équipe s'ajustent au métier que vous exercez.",
+    names: {
+      commerce_vente: "Commerce & Vente",
+      restauration: "Restauration & Alimentation",
+      immobilier: "Immobilier & Gestion",
+      automobile: "Automobile & Services",
+      sante_bienetre: "Santé & Bien-être",
+      beaute_services: "Beauté & Services personnels",
+      education: "Éducation & Formation",
+      services_pros: "Services professionnels",
+      construction: "Construction & Habitat",
+      digital_tech: "Digital & Technologie",
+      grossistes_distribution: "Grossistes & Distribution",
+    },
+    count: "{secteurs} secteurs · {metiers} métiers déjà configurés",
+    trades: "{n} métiers",
+    trade: "1 métier",
   },
   resto: {
     eyebrow: "Pour les restaurants",
@@ -425,6 +471,27 @@ const ht: LandingCopy = {
       { title: "Rapò vant", body: "Chif semèn nan, lajan pou rekouvre, pi bon pwodwi, ekspòtasyon Excel." },
     ],
   },
+  sectors: {
+    eyebrow: "Pou ki moun",
+    title: "Onz sektè, yon sèl zouti",
+    body: "CONVERZA pa jis chanje koulè : vitrin nan, mo yo, kategori yo ak wòl ekip la ajiste yo ak metye w ap fè a.",
+    names: {
+      commerce_vente: "Komès & Vant",
+      restauration: "Restoran & Manje",
+      immobilier: "Kay & Jesyon",
+      automobile: "Machin & Sèvis",
+      sante_bienetre: "Sante & Byennèt",
+      beaute_services: "Bote & Sèvis pèsonèl",
+      education: "Edikasyon & Fòmasyon",
+      services_pros: "Sèvis pwofesyonèl",
+      construction: "Konstriksyon & Kay",
+      digital_tech: "Dijital & Teknoloji",
+      grossistes_distribution: "Gwosis & Distribisyon",
+    },
+    count: "{secteurs} sektè · {metiers} metye deja konfigire",
+    trades: "{n} metye",
+    trade: "1 metye",
+  },
   resto: {
     eyebrow: "Pou restoran yo",
     title: "Menu QR Express, yon òf apa",
@@ -596,6 +663,27 @@ const en: LandingCopy = {
       { title: "Team accounts", body: "Till, sales, delivery, customer service. Each person sees only their own work." },
       { title: "Sales reports", body: "Weekly revenue, amounts to collect, best sellers, Excel export." },
     ],
+  },
+  sectors: {
+    eyebrow: "Who it is for",
+    title: "Eleven sectors, one tool",
+    body: "CONVERZA does more than change colour: the storefront, the wording, the categories and the team roles all adjust to the trade you actually practise.",
+    names: {
+      commerce_vente: "Retail & Sales",
+      restauration: "Food & Restaurants",
+      immobilier: "Property & Management",
+      automobile: "Automotive & Services",
+      sante_bienetre: "Health & Wellbeing",
+      beaute_services: "Beauty & Personal services",
+      education: "Education & Training",
+      services_pros: "Professional services",
+      construction: "Construction & Housing",
+      digital_tech: "Digital & Technology",
+      grossistes_distribution: "Wholesale & Distribution",
+    },
+    count: "{secteurs} sectors · {metiers} trades already set up",
+    trades: "{n} trades",
+    trade: "1 trade",
   },
   resto: {
     eyebrow: "For restaurants",

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { collectDebts, owedTotalOf, type DunningOrder } from "./dunning";
+import { collectDebts, isSettled, owedTotalOf, type DunningOrder } from "./dunning";
 import type { OrderStatus } from "./types";
 
 const now = new Date("2026-09-19T12:00:00Z");
@@ -89,5 +89,40 @@ describe("créances à recouvrer", () => {
   it("le total du tableau de bord suit la même règle", () => {
     const orders = [order({ owedCents: 30_000 }), order({ id: "o2", status: "demand_acha", owedCents: 900_000 })];
     expect(owedTotalOf(orders, now)).toBe(30_000);
+  });
+});
+
+describe("une commande réglée n'est jamais une créance", () => {
+  // Le tableau de bord affichait la même commande « payée » dans l'entonnoir
+  // et « à recouvrer » dix lignes plus haut. Les deux lectures sont ici,
+  // côte à côte, pour qu'elles ne puissent plus diverger.
+  const vendue = (status: OrderStatus, total: number, paye: number) => ({
+    id: "o1", ref: "CMD-1", status, customerName: "Client",
+    customerPhone: null, totalCents: total, owedCents: Math.max(total - paye, 0),
+    created_at: new Date().toISOString(),
+  });
+
+  it("une livraison à crédit est due, pas encaissée", () => {
+    const o = vendue("livre", 1_800_000, 0);
+    expect(isSettled(o.status, o.totalCents, 0)).toBe(false);
+    expect(collectDebts([o]).count).toBe(1);
+  });
+
+  it("une livraison réglée est encaissée, et ne se relance plus", () => {
+    const o = vendue("livre", 1_800_000, 1_800_000);
+    expect(isSettled(o.status, o.totalCents, 1_800_000)).toBe(true);
+    expect(collectDebts([o]).count).toBe(0);
+  });
+
+  it("aucun statut ne peut être à la fois encaissé et dû", () => {
+    const statuses: OrderStatus[] = ["demand_acha", "kontak", "metod_peman", "konfime_peman", "sou_wout", "livre", "swivi", "pou_konfime", "peye"];
+    for (const status of statuses) {
+      for (const paye of [0, 500_000, 1_000_000]) {
+        const o = vendue(status, 1_000_000, paye);
+        const encaisse = isSettled(status, o.totalCents, paye);
+        const due = collectDebts([o]).count > 0;
+        expect(encaisse && due, `${status} payé ${paye}`).toBe(false);
+      }
+    }
   });
 });

@@ -53,6 +53,9 @@ export interface StorefrontCopy {
   confirmSend: string;
   sending: string;
   orderFailed: string;
+  /** Le marchand ne peut ni confirmer, ni livrer, ni relancer sans numéro. */
+  phoneRequired: string;
+  phoneWhy: string;
   sendAnyway: string;
   scheduleVisit: string;
   previewBanner: string;
@@ -126,6 +129,8 @@ const fr: StorefrontCopy = {
   confirmSend: "Envoyer la commande sur WhatsApp",
   sending: "Enregistrement…",
   orderFailed: "La commande n'a pas pu être enregistrée. Envoyez-la quand même sur WhatsApp : le marchand la verra.",
+  phoneRequired: "Entrez votre numéro WhatsApp pour que le marchand puisse confirmer votre commande.",
+  phoneWhy: "Le marchand vous écrit sur ce numéro pour confirmer et livrer.",
   sendAnyway: "Envoyer quand même",
   scheduleVisit: "Demander une visite",
   previewBanner: "Aperçu de la mise en page — rien n'est enregistré",
@@ -210,6 +215,8 @@ const ht: StorefrontCopy = {
   confirmSend: "Voye kòmand lan sou WhatsApp",
   sending: "N ap anrejistre…",
   orderFailed: "Nou pa rive anrejistre kòmand lan. Voye l kanmenm sou WhatsApp : machann lan ap wè l.",
+  phoneRequired: "Mete nimewo WhatsApp ou pou machann lan ka konfime kòmand ou.",
+  phoneWhy: "Machann lan ap ekri w sou nimewo sa a pou konfime epi livre.",
   sendAnyway: "Voye l kanmenm",
   scheduleVisit: "Mande yon vizit",
   previewBanner: "Apèsi mizanpaj la — anyen pa anrejistre",
@@ -294,6 +301,8 @@ const en: StorefrontCopy = {
   confirmSend: "Send the order on WhatsApp",
   sending: "Saving…",
   orderFailed: "The order could not be saved. Send it on WhatsApp anyway — the merchant will see it.",
+  phoneRequired: "Enter your WhatsApp number so the merchant can confirm your order.",
+  phoneWhy: "The merchant writes to this number to confirm and deliver.",
   sendAnyway: "Send anyway",
   scheduleVisit: "Request a visit",
   previewBanner: "Layout preview — nothing is saved",

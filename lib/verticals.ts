@@ -303,3 +303,18 @@ export function verticalOf(type: string | null | undefined): IndustrySectorConfi
 
   return INDUSTRY_SECTORS.commerce_vente;
 }
+
+/**
+ * Combien de secteurs et de métiers CONVERZA couvre réellement.
+ *
+ * Ces deux nombres sont annoncés sur la page d'accueil. Les écrire à la main
+ * dans le texte aurait garanti qu'ils deviennent faux au premier secteur
+ * ajouté : ils se comptent donc ici, sur la seule liste qui fait foi.
+ */
+export const SECTOR_COUNT = Object.keys(INDUSTRY_SECTORS).length;
+export const TRADE_COUNT = Object.values(INDUSTRY_SECTORS).reduce((n, s) => n + s.subTypes.length, 0);
+
+/** Nom du secteur sans son émoji : la page d'accueil pose l'icône à part. */
+export function sectorName(s: IndustrySectorConfig): string {
+  return s.label.replace(s.icon, "").trim();
+}
