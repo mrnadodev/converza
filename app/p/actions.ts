@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -95,7 +95,10 @@ export async function createStorefrontOrderAction({
   customerName?: string | null;
   customerPhone?: string | null;
   source?: string | null;
-}): Promise<{ ok: true; ref: string; orderId: string; securityCode: string } | { ok: false; error: string }> {
+}): Promise<
+  | { ok: true; ref: string; orderId: string; securityCode: string; trackingToken: string | null }
+  | { ok: false; error: string }
+> {
   const admin = createAdminClient();
   if (!admin) {
     return { ok: false, error: "Base de données non disponible" };
@@ -196,6 +199,7 @@ export async function createStorefrontOrderAction({
   // `ref` est unique par business : on laisse la contrainte trancher et on
   // retente, plutôt que d'espérer qu'un tirage sur 4 chiffres ne collisionne pas.
   let orderId: string | null = null;
+  let trackingToken: string | null = null;
   let ref = "";
   for (let attempt = 0; attempt < 5 && !orderId; attempt++) {
     ref = `CMD-${Date.now().toString(36).toUpperCase().slice(-5)}${Math.floor(Math.random() * 36 ** 2)
@@ -217,10 +221,14 @@ export async function createStorefrontOrderAction({
         source: cleanSource,
         security_code: securityCode,
       })
-      .select("id")
+      // Le jeton de suivi est posé par la base (migration 6). On le relit ici
+      // pour le rendre au client : c'est ce qui lui permet de savoir où en est
+      // sa commande sans avoir à réécrire au marchand.
+      .select("id, tracking_token")
       .single();
     if (data) {
       orderId = data.id;
+      trackingToken = (data as { tracking_token?: string | null }).tracking_token ?? null;
       break;
     }
     if (error && error.code !== "23505") {
@@ -245,5 +253,5 @@ export async function createStorefrontOrderAction({
   revalidatePath("/komand");
   revalidatePath("/admin");
 
-  return { ok: true, ref, orderId, securityCode };
+  return { ok: true, ref, orderId, securityCode, trackingToken };
 }

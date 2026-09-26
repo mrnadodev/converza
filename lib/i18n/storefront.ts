@@ -1,4 +1,4 @@
-import type { Language } from "./translations";
+﻿import type { Language } from "./translations";
 
 // Textes de la vitrine publique, celle que voient les clients des marchands.
 //
@@ -56,6 +56,20 @@ export interface StorefrontCopy {
   /** Le marchand ne peut ni confirmer, ni livrer, ni relancer sans numéro. */
   phoneRequired: string;
   phoneWhy: string;
+  /**
+   * Accuse de reception. La commande est enregistree, mais le client ne le
+   * sait pas : il voit un message parti, puis rien. Sans reponse rapide il
+   * ecrit ailleurs, et la vente est perdue alors qu elle etait prise.
+   */
+  received: {
+    title: string;
+    body: (business: string) => string;
+    ref: string;
+    code: string;
+    hours: string;
+    track: string;
+    back: string;
+  };
   sendAnyway: string;
   scheduleVisit: string;
   previewBanner: string;
@@ -131,6 +145,16 @@ const fr: StorefrontCopy = {
   orderFailed: "La commande n'a pas pu être enregistrée. Envoyez-la quand même sur WhatsApp : le marchand la verra.",
   phoneRequired: "Entrez votre numéro WhatsApp pour que le marchand puisse confirmer votre commande.",
   phoneWhy: "Le marchand vous écrit sur ce numéro pour confirmer et livrer.",
+  received: {
+    title: "Commande reçue ✓",
+    body: (business) =>
+      `${business} a bien reçu votre commande. Vous serez contacté sur WhatsApp pour la confirmation et la livraison.`,
+    ref: "Référence",
+    code: "Code de retrait",
+    hours: "Horaires",
+    track: "Suivre ma commande",
+    back: "Retour à la boutique",
+  },
   sendAnyway: "Envoyer quand même",
   scheduleVisit: "Demander une visite",
   previewBanner: "Aperçu de la mise en page — rien n'est enregistré",
@@ -217,6 +241,16 @@ const ht: StorefrontCopy = {
   orderFailed: "Nou pa rive anrejistre kòmand lan. Voye l kanmenm sou WhatsApp : machann lan ap wè l.",
   phoneRequired: "Mete nimewo WhatsApp ou pou machann lan ka konfime kòmand ou.",
   phoneWhy: "Machann lan ap ekri w sou nimewo sa a pou konfime epi livre.",
+  received: {
+    title: "Kòmand resevwa ✓",
+    body: (business) =>
+      `${business} byen resevwa kòmand ou an. Y ap kontakte w sou WhatsApp pou konfime epi livre.`,
+    ref: "Referans",
+    code: "Kòd pou pran l",
+    hours: "Lè yo louvri",
+    track: "Swiv kòmand mwen",
+    back: "Tounen nan boutik la",
+  },
   sendAnyway: "Voye l kanmenm",
   scheduleVisit: "Mande yon vizit",
   previewBanner: "Apèsi mizanpaj la — anyen pa anrejistre",
@@ -303,6 +337,16 @@ const en: StorefrontCopy = {
   orderFailed: "The order could not be saved. Send it on WhatsApp anyway — the merchant will see it.",
   phoneRequired: "Enter your WhatsApp number so the merchant can confirm your order.",
   phoneWhy: "The merchant writes to this number to confirm and deliver.",
+  received: {
+    title: "Order received ✓",
+    body: (business) =>
+      `${business} has received your order. You will be contacted on WhatsApp for confirmation and delivery.`,
+    ref: "Reference",
+    code: "Pickup code",
+    hours: "Opening hours",
+    track: "Track my order",
+    back: "Back to the shop",
+  },
   sendAnyway: "Send anyway",
   scheduleVisit: "Request a visit",
   previewBanner: "Layout preview — nothing is saved",

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
@@ -109,6 +109,8 @@ export function Storefront({
   const [customerPhone, setCustomerPhone] = useState("");
   const [sending, setSending] = useState(false);
   const [sendFailed, setSendFailed] = useState(false);
+  /** Accusé de réception affiché après l'enregistrement d'une commande. */
+  const [confirmation, setConfirmation] = useState<{ ref: string; token: string | null; code: string | null } | null>(null);
   const [phoneError, setPhoneError] = useState(false);
   const phoneRef = useRef<HTMLInputElement>(null);
 
@@ -182,7 +184,18 @@ export function Storefront({
         source,
       });
       if (result?.ok) {
+        // WhatsApp s'ouvre dans l'onglet réservé plus haut ; celui-ci reste sur
+        // la vitrine et affiche l'accusé de réception.
+        //
+        // C'est tout l'objet de cet écran : la commande est enregistrée, mais
+        // le client ne le sait pas. Il voit un message parti, puis rien. S'il
+        // n'a pas de réponse dans le quart d'heure, il écrit ailleurs — et la
+        // vente est perdue alors qu'elle était prise. On lui dit donc tout de
+        // suite qu'elle est reçue, sous quel numéro, et où la suivre.
         goTo(waMeLink(business.phone_e164 ?? "", [message, c.message.ref(result.ref)].join("\n")));
+        setConfirmation({ ref: result.ref, token: result.trackingToken ?? null, code: result.securityCode ?? null });
+        setCart({});
+        setSending(false);
         return;
       }
       // Échec d'enregistrement : on ne perd pas la vente pour autant, le
@@ -531,8 +544,59 @@ export function Storefront({
         )}
       </div>
 
+      {/* Accusé de réception.
+          Il passe devant tout le reste : c'est la seule chose que le client
+          doit voir une fois sa commande partie. */}
+      {confirmation && (
+        <div className="fixed inset-0 z-50 mx-auto flex max-w-xl flex-col justify-end md:max-w-2xl">
+          <div className="absolute inset-0 bg-black/60" />
+          <div className={`relative max-h-[92dvh] overflow-y-auto rounded-t-[28px] px-5 pb-8 pt-6 shadow-2xl ${darkMode ? "border-t border-slate-700 bg-[#1F2937] text-white" : "border-t border-line bg-white text-ink"}`}>
+            <div className="flex flex-col items-center gap-2 text-center">
+              <span className="flex h-14 w-14 items-center justify-center rounded-full bg-[#D1FAE5]">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#065F46" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M20 6 9 17l-5-5" />
+                </svg>
+              </span>
+              <h2 className="text-[19px] font-extrabold">{c.received.title}</h2>
+              <p className={`max-w-sm text-[13.5px] leading-relaxed ${darkMode ? "text-slate-300" : "text-ink-muted"}`}>
+                {c.received.body(business.name)}
+              </p>
+            </div>
+
+            <div className={`mt-4 flex flex-col gap-2 rounded-2xl p-3.5 ${darkMode ? "bg-slate-800" : "bg-[#F7F8F9]"}`}>
+              <Ligne dark={darkMode} label={c.received.ref} valeur={confirmation.ref} />
+              {confirmation.code && <Ligne dark={darkMode} label={c.received.code} valeur={confirmation.code} />}
+              {business.hours && <Ligne dark={darkMode} label={c.received.hours} valeur={business.hours} />}
+            </div>
+
+            {/* Le lien de suivi remplace la question « où en est ma commande ? » :
+                le client la voit avancer sans avoir à réécrire. */}
+            {confirmation.token && (
+              <a
+                href={`/suivi/${confirmation.token}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-3 flex h-12 items-center justify-center rounded-2xl bg-brand-green text-[15px] font-extrabold text-white active:scale-[0.98]"
+              >
+                {c.received.track}
+              </a>
+            )}
+
+            <button
+              onClick={() => {
+                setConfirmation(null);
+                setCheckoutOpen(false);
+              }}
+              className={`mt-2 flex h-12 w-full items-center justify-center rounded-2xl text-[14px] font-bold ${darkMode ? "bg-slate-700 text-white" : "bg-[#EEF2F1] text-ink"}`}
+            >
+              {c.received.back}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Vérification avant envoi */}
-      {checkoutOpen && count > 0 && (
+      {checkoutOpen && count > 0 && !confirmation && (
         <div className="fixed inset-0 z-40 mx-auto flex max-w-xl flex-col justify-end md:max-w-2xl">
           <div className="absolute inset-0 bg-black/60" onClick={() => setCheckoutOpen(false)} />
           <div className={`relative max-h-[92dvh] overflow-y-auto rounded-t-[28px] px-5 pb-8 pt-4 shadow-2xl ${darkMode ? "border-t border-slate-700 bg-[#1F2937] text-white" : "border-t border-line bg-white text-ink"}`}>
@@ -755,4 +819,14 @@ function FacebookIcon({ dark }: { dark?: boolean }) {
 function TiktokIcon({ dark }: { dark?: boolean }) {
   const color = dark ? "#FFFFFF" : "#111B21";
   return <svg width="20" height="20" viewBox="0 0 24 24" fill={color} aria-hidden="true"><path d="M16 3c.3 2 1.6 3.6 3.6 3.9v2.8c-1.3.1-2.6-.3-3.6-1v5.9a5.6 5.6 0 1 1-5.6-5.6c.3 0 .6 0 .9.1v2.9a2.7 2.7 0 1 0 1.9 2.6V3z" /></svg>;
+}
+
+/** Une ligne « libellé — valeur » de l'accusé de réception. */
+function Ligne({ dark, label, valeur }: { dark: boolean; label: string; valeur: string }) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <span className={`text-[12.5px] ${dark ? "text-slate-400" : "text-ink-muted"}`}>{label}</span>
+      <span className="text-[13.5px] font-extrabold">{valeur}</span>
+    </div>
+  );
 }
