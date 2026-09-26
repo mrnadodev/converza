@@ -31,6 +31,12 @@ export interface SupplierRow {
   name: string;
   phone: string | null;
   note: string | null;
+  /**
+   * Visible par les autres boutiques de CONVERZA. Faux par défaut : un carnet
+   * d'adresses fournisseurs est un actif concurrentiel, et le partage est un
+   * choix explicite, fournisseur par fournisseur.
+   */
+  shared: boolean;
   /** Dernière réception enregistrée, pour savoir qui travaille encore avec nous. */
   lastReceivedOn: string | null;
   purchaseCount: number;
@@ -811,6 +817,7 @@ function Suppliers({
   const [nom, setNom] = useState("");
   const [tel, setTel] = useState("");
   const [note, setNote] = useState("");
+  const [partage, setPartage] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
 
   // Ce qu'il faut racheter : épuisé d'abord, puis stock faible. La quantité
@@ -832,6 +839,7 @@ function Suppliers({
     setNom(sup?.name ?? "");
     setTel(sup?.phone ?? "");
     setNote(sup?.note ?? "");
+    setPartage(sup?.shared ?? false);
     setErreur(null);
     setOuvert(true);
   }
@@ -840,7 +848,7 @@ function Suppliers({
     if (!nom.trim()) return;
     setErreur(null);
     start(async () => {
-      const res = await saveSupplier({ id: edite?.id ?? null, name: nom, phone: tel, note });
+      const res = await saveSupplier({ id: edite?.id ?? null, name: nom, phone: tel, note, shared: partage });
       if (res.ok) {
         setOuvert(false);
         router.refresh();
@@ -911,11 +919,19 @@ function Suppliers({
                   </span>
                   {sup.note && <span className="mt-0.5 text-[11.5px] leading-snug text-ink-soft">{sup.note}</span>}
                 </div>
-                {sup.purchaseCount > 0 && (
-                  <span className="shrink-0 rounded-full bg-[#F3F6F4] px-2 py-0.5 text-[10.5px] font-bold text-ink-muted">
-                    {s.suppliers.deliveries(sup.purchaseCount)}
-                  </span>
-                )}
+                <span className="flex shrink-0 items-center gap-1.5">
+                  {/* Ce qui est exposé doit se voir sans ouvrir la fiche. */}
+                  {sup.shared && (
+                    <span className="rounded-full bg-[#E7F7F1] px-2 py-0.5 text-[10.5px] font-extrabold text-brand">
+                      {s.suppliers.shared}
+                    </span>
+                  )}
+                  {sup.purchaseCount > 0 && (
+                    <span className="rounded-full bg-[#F3F6F4] px-2 py-0.5 text-[10.5px] font-bold text-ink-muted">
+                      {s.suppliers.deliveries(sup.purchaseCount)}
+                    </span>
+                  )}
+                </span>
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
@@ -960,6 +976,23 @@ function Suppliers({
             <span className="text-[11.5px] font-bold text-ink-muted">{s.suppliers.note}</span>
             <input value={note} onChange={(e) => setNote(e.target.value)} maxLength={300} placeholder={s.suppliers.notePlaceholder} className="h-10 rounded-xl border border-line px-3 text-[13px] outline-none" />
           </label>
+
+          {/* Décochée par défaut, et jamais cochée à la place du marchand : le
+              numéro d'un fournisseur appartient à la relation entre eux deux,
+              pas à CONVERZA. */}
+          <label className="flex cursor-pointer items-start gap-2.5 rounded-xl bg-[#F7F8F9] p-3">
+            <input
+              type="checkbox"
+              checked={partage}
+              onChange={(e) => setPartage(e.target.checked)}
+              className="mt-0.5 h-4 w-4 shrink-0 accent-[#008069]"
+            />
+            <span className="flex flex-col">
+              <span className="text-[12.5px] font-bold text-ink">{s.suppliers.share}</span>
+              <span className="text-[11.5px] leading-snug text-ink-muted">{s.suppliers.shareHint}</span>
+            </span>
+          </label>
+
           <div className="grid grid-cols-2 gap-2">
             <button onClick={() => setOuvert(false)} className="h-10 cursor-pointer rounded-xl border border-line text-xs font-bold text-ink active:scale-95">
               {c.actions.cancel}

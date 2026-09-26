@@ -139,6 +139,14 @@ export async function saveSupplier(input: {
   name: string;
   phone: string;
   note: string;
+  /**
+   * Rendre ce fournisseur visible aux autres boutiques de CONVERZA.
+   *
+   * Faux par defaut, et jamais decide a la place du marchand : un carnet
+   * d adresses fournisseurs est un actif concurrentiel, et le numero saisi ici
+   * appartient a la relation entre ce marchand et ce fournisseur.
+   */
+  shared?: boolean;
 }): Promise<{ ok: true; id: string } | { ok: false; error: SupplierError }> {
   if (!hasSupabase()) return { ok: true, id: "demo" };
 
@@ -156,32 +164,40 @@ export async function saveSupplier(input: {
   const admin = createAdminClient();
   if (!admin) return { ok: false, error: "failed" };
 
+  // `shared` arrive avec la migration 11. Tant qu elle n est pas passee, la
+  // colonne n existe pas : plutot que de refuser l enregistrement, on reessaie
+  // sans elle. Le fournisseur est alors simplement prive, ce qui est de toute
+  // facon la valeur par defaut.
+  const champs = { name, phone_e164: phone, note };
+  const avecPartage = { ...champs, shared: input.shared === true };
+  const colonneAbsente = (e: { code?: string; message: string }) =>
+    e.code === "42703" || /shared/.test(e.message);
+
   // Le filtre business_id borne l ecriture : un identifiant d une autre
   // boutique ne modifie rien, meme s il est devine.
   if (input.id) {
-    const { data, error } = await admin
-      .from("suppliers")
-      .update({ name, phone_e164: phone, note })
-      .eq("id", input.id)
-      .eq("business_id", me.businessId)
-      .select("id")
-      .maybeSingle();
+    const modifier = (valeurs: Record<string, unknown>) =>
+      admin.from("suppliers").update(valeurs).eq("id", input.id!).eq("business_id", me.businessId).select("id").maybeSingle();
+
+    let { data, error } = await modifier(avecPartage);
+    if (error && colonneAbsente(error)) ({ data, error } = await modifier(champs));
     if (error) return { ok: false, error: error.code === "23505" ? "duplicate" : /suppliers/.test(error.message) ? "migration" : "failed" };
     if (!data) return { ok: false, error: "forbidden" };
     revalidatePath("/stok");
     return { ok: true, id: data.id };
   }
 
-  const { data, error } = await admin
-    .from("suppliers")
-    .insert({ business_id: me.businessId, name, phone_e164: phone, note })
-    .select("id")
-    .single();
+  const creer = (valeurs: Record<string, unknown>) =>
+    admin.from("suppliers").insert({ business_id: me.businessId, ...valeurs }).select("id").single();
+
+  let { data, error } = await creer(avecPartage);
+  if (error && colonneAbsente(error)) ({ data, error } = await creer(champs));
   if (error) {
     if (error.code === "23505") return { ok: false, error: "duplicate" };
     await logAppError({ scope: "stock.supplier", message: error.message, businessId: me.businessId });
     return { ok: false, error: /suppliers/.test(error.message) ? "migration" : "failed" };
   }
+  if (!data) return { ok: false, error: "failed" };
   revalidatePath("/stok");
   return { ok: true, id: data.id };
 }

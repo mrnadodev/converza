@@ -53,14 +53,24 @@ export default async function StockPage() {
 async function loadPurchases(): Promise<{ rows: PurchaseRow[]; suppliers: SupplierRow[]; available: boolean }> {
   if (!hasSupabase()) return { rows: [], suppliers: [], available: false };
   const sb = createClient();
-  const [{ data, error }, { data: suppliers }, { data: achats }] = await Promise.all([
+  // `shared` arrive avec la migration 11. Tant qu'elle n'est pas passée, la
+  // demander ferait échouer toute la lecture et viderait l'annuaire : on
+  // relit alors sans elle, et tous les fournisseurs restent privés.
+  const lireFournisseurs = async () => {
+    const complet = await sb.from("suppliers").select("id, name, phone_e164, note, shared").order("name");
+    if (!complet.error) return complet.data;
+    const simple = await sb.from("suppliers").select("id, name, phone_e164, note").order("name");
+    return simple.data;
+  };
+
+  const [{ data, error }, suppliers, { data: achats }] = await Promise.all([
     sb
       .from("purchases")
       .select("id, total_cents, paid_cents, currency, received_on, note, suppliers(name), purchase_items(qty, unit_cost_cents, products(name))")
       .order("received_on", { ascending: false })
       .order("created_at", { ascending: false })
       .limit(30),
-    sb.from("suppliers").select("id, name, phone_e164, note").order("name"),
+    lireFournisseurs(),
     // Dernière réception par fournisseur : sans elle, l'annuaire ne dit pas
     // lesquels travaillent encore avec la boutique.
     sb.from("purchases").select("supplier_id, received_on, total_cents"),
@@ -101,6 +111,7 @@ async function loadPurchases(): Promise<{ rows: PurchaseRow[]; suppliers: Suppli
       name: sup.name,
       phone: sup.phone_e164 ?? null,
       note: sup.note ?? null,
+      shared: "shared" in sup ? Boolean(sup.shared) : false,
       lastReceivedOn: vu?.date ?? null,
       purchaseCount: vu?.count ?? 0,
       totalCents: vu?.total ?? 0,

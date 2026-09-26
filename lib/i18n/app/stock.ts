@@ -51,6 +51,10 @@ export interface StockCopy {
     forbidden: string;
     invalid: string;
     migration: string;
+    /** Partage volontaire d'un fournisseur avec les autres boutiques. */
+    share: string;
+    shareHint: string;
+    shared: string;
   };
   auto: string;
   movement: {
@@ -151,6 +155,9 @@ const fr: StockCopy = {
     forbidden: "Votre rôle ne permet pas de gérer les fournisseurs.",
     invalid: "Le nom du fournisseur est obligatoire.",
     migration: "L'annuaire des fournisseurs n'est pas encore activé sur cette boutique.",
+    share: "Partager avec les autres boutiques CONVERZA",
+    shareHint: "Son nom, son numéro et ce qu'il livre deviennent visibles par les autres marchands. Votre boutique n'est pas nommée. Vous pouvez revenir dessus à tout moment.",
+    shared: "Partagé",
     failed: "L'enregistrement a échoué. Réessayez.",
   },
   auto: "Les ventes confirmées retirent le stock automatiquement ; une commande annulée le remet.",
@@ -262,6 +269,9 @@ const ht: StockCopy = {
     forbidden: "Wòl ou pa pèmèt ou jere founisè yo.",
     invalid: "Non founisè a obligatwa.",
     migration: "Lis founisè yo poko aktive sou boutik sa a.",
+    share: "Pataje ak lòt boutik CONVERZA yo",
+    shareHint: "Non li, nimewo li ak sa l livre ap vizib pou lòt machann yo. Boutik ou pa parèt. Ou ka chanje lide nenpòt lè.",
+    shared: "Pataje",
     failed: "Nou pa rive anrejistre. Eseye ankò.",
   },
   auto: "Vant ki konfime yo retire stòk la otomatikman ; yon kòmand ki anile remèt li.",
@@ -373,6 +383,9 @@ const en: StockCopy = {
     forbidden: "Your role does not allow managing suppliers.",
     invalid: "The supplier name is required.",
     migration: "The supplier directory is not enabled on this shop yet.",
+    share: "Share with other CONVERZA shops",
+    shareHint: "Their name, number and what they deliver become visible to other merchants. Your shop is not named. You can undo this at any time.",
+    shared: "Shared",
     failed: "Saving failed. Please try again.",
   },
   auto: "Confirmed sales remove stock automatically; a cancelled order puts it back.",

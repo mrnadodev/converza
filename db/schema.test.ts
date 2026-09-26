@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+﻿import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { PGlite } from "@electric-sql/pglite";
 import { beforeAll, describe, expect, it } from "vitest";
@@ -60,7 +60,7 @@ describe("montage d'une base à partir de zéro", () => {
 
   it("aboutit à la version de base attendue", async () => {
     const [v] = await rows<{ v: string }>(`select value->>'migration' as v from platform_settings where key='db_version'`);
-    expect(v?.v).toBe("10");
+    expect(v?.v).toBe("11");
   });
 
   it("crée les tables dont l'application se sert", async () => {
@@ -119,7 +119,7 @@ describe("db/staging-complet.sql", () => {
     const [v] = (await neuve.query<{ v: string }>(
       `select value->>'migration' as v from platform_settings where key='db_version'`,
     )).rows;
-    expect(v?.v, "le fichier assemblé est-il à jour ? npm run staging-sql").toBe("10");
+    expect(v?.v, "le fichier assemblé est-il à jour ? npm run staging-sql").toBe("11");
 
     const tables = (await neuve.query<{ n: number }>(
       `select count(*)::int as n from pg_class c join pg_namespace nsp on nsp.oid=c.relnamespace
