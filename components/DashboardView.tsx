@@ -1,12 +1,14 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
 import { ProductPosterModal } from "@/components/ProductPosterModal";
 import { BottomNav } from "@/components/BottomNav";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { useDict } from "@/components/LanguageContext";
 import { signOut } from "@/app/login/actions";
+import { markOrderPaid, moveOrderStatus } from "@/app/komand/actions";
 import { COMMON_COPY } from "@/lib/i18n/app/common";
 import { DASHBOARD_COPY } from "@/lib/i18n/app/dashboard";
 import { formatMoney } from "@/lib/money";
@@ -123,7 +125,7 @@ export function DashboardView(props: DashboardViewProps) {
                   <Metric label={d.metrics.inProgress} value={String(inProgress)} />
                   <Metric label={d.metrics.toCollect} value={formatMoney(stats.owedCents)} tone={stats.owedCents > 0 ? "owed" : undefined} />
                 </section>
-                <Collect orders={recentOrders} shopName={business.name} />
+                <Collect orders={recentOrders} shopName={business.name} permissions={permissions} />
                 <RecentOrders orders={recentOrders.slice(0, 5)} />
                 <Funnel funnel={funnel} />
                 <Sources sources={props.sources} />
@@ -197,11 +199,49 @@ function StoreActions({ slug, canMakePoster, onPoster }: { slug: string; canMake
  * Créances à recouvrer, les plus anciennes d'abord. Le tableau de bord
  * affichait un montant sans dire de qui il venait : impossible d'agir dessus.
  */
-function Collect({ orders, shopName }: { orders: DashboardOrder[]; shopName: string }) {
+function Collect({
+  orders,
+  shopName,
+  permissions,
+}: {
+  orders: DashboardOrder[];
+  shopName: string;
+  permissions: RolePermissions;
+}) {
   const d = useDict(DASHBOARD_COPY);
   const c = useDict(COMMON_COPY);
-  const summary = collectDebts(orders);
+  const router = useRouter();
+  const [, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+
+  // Commandes traitées à l'instant. Le panneau est rendu à partir des données
+  // du serveur : sans cette liste, la ligne resterait affichée jusqu'au
+  // rafraîchissement, et le marchand cliquerait deux fois.
+  const [traitees, setTraitees] = useState<string[]>([]);
+
+  // Même règle que sur le tableau des commandes : toucher à l'argent est
+  // réservé aux profils qui tiennent la caisse ou le recouvrement.
+  const peutAgir =
+    permissions.canViewFinancialTurnover ||
+    permissions.allowedPipelineColumns.includes("konfime_peman") ||
+    permissions.allowedPipelineColumns.includes("swivi");
+
+  const summary = collectDebts(orders.filter((o) => !traitees.includes(o.id)));
   if (summary.count === 0) return null;
+
+  function agir(id: string, action: () => Promise<{ ok?: boolean } | undefined>) {
+    setError(null);
+    setTraitees((t) => [...t, id]);
+    startTransition(async () => {
+      const res = await action();
+      if (res?.ok) {
+        router.refresh();
+      } else {
+        setTraitees((t) => t.filter((x) => x !== id));
+        setError(d.dunning.actionFailed);
+      }
+    });
+  }
 
   const shown = summary.debts.slice(0, 5);
   const rest = summary.count - shown.length;
@@ -228,16 +268,28 @@ function Collect({ orders, shopName }: { orders: DashboardOrder[]; shopName: str
 
       <ul className="flex flex-col divide-y divide-line">
         {shown.map((debt) => (
-          <li key={debt.id} className="flex items-center justify-between gap-3 py-2.5">
-            <div className="flex min-w-0 flex-col">
-              <span className="truncate text-[13.5px] font-bold text-ink">{debt.customerName || c.customerFallback}</span>
-              <span className="text-[11.5px] text-ink-muted">
-                {debt.ref} · {d.dunning.age(debt.ageDays)}
-              </span>
+          <li key={debt.id} className="flex flex-col gap-2 py-2.5">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex min-w-0 flex-col">
+                <span className="truncate text-[13.5px] font-bold text-ink">{debt.customerName || c.customerFallback}</span>
+                <span className="text-[11.5px] text-ink-muted">
+                  {debt.ref} · {d.dunning.age(debt.ageDays)}
+                </span>
+              </div>
+              <div className="flex shrink-0 items-center gap-2">
+                <span className={`rounded-full px-2 py-0.5 text-[10.5px] font-black ${tone[debt.tier]}`}>{d.dunning.tiers[debt.tier]}</span>
+                <span className="text-[13.5px] font-extrabold tabular-nums text-ink">{formatMoney(debt.owedCents)}</span>
+              </div>
             </div>
-            <div className="flex shrink-0 items-center gap-2">
-              <span className={`rounded-full px-2 py-0.5 text-[10.5px] font-black ${tone[debt.tier]}`}>{d.dunning.tiers[debt.tier]}</span>
-              <span className="text-[13.5px] font-extrabold tabular-nums text-ink">{formatMoney(debt.owedCents)}</span>
+
+            {/* Les actions sur leur propre ligne. Sur un téléphone, trois
+                boutons ne tiennent pas à côté du nom et du montant.
+
+                Une créance sans numéro n'offrait qu'une étiquette morte,
+                « Aucun numéro » : le marchand voyait la dette sans pouvoir
+                rien en faire, et devait aller la chercher dans le tableau des
+                commandes. Encaisser et annuler se font ici. */}
+            <div className="flex items-center justify-end gap-2">
               {debt.reachable ? (
                 <a
                   href={waMeLink(
@@ -258,10 +310,38 @@ function Collect({ orders, shopName }: { orders: DashboardOrder[]; shopName: str
               ) : (
                 <span className="rounded-lg bg-[#F3F6F4] px-2.5 py-1.5 text-[11.5px] font-bold text-ink-faint">{d.dunning.noPhone}</span>
               )}
+
+              {peutAgir && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const nom = debt.customerName || c.customerFallback;
+                      if (!window.confirm(d.dunning.settleConfirm(nom, formatMoney(debt.owedCents)))) return;
+                      agir(debt.id, () => markOrderPaid(debt.id));
+                    }}
+                    className="cursor-pointer rounded-lg border border-brand/40 bg-[#E7F7F1] px-2.5 py-1.5 text-[11.5px] font-extrabold text-brand active:scale-95"
+                  >
+                    {d.dunning.settle}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!window.confirm(d.dunning.cancelConfirm(debt.ref))) return;
+                      agir(debt.id, () => moveOrderStatus(debt.id, "anile"));
+                    }}
+                    className="cursor-pointer rounded-lg px-2 py-1.5 text-[11.5px] font-bold text-ink-faint hover:text-[#C0392B] active:scale-95"
+                  >
+                    {d.dunning.cancel}
+                  </button>
+                </>
+              )}
             </div>
           </li>
         ))}
       </ul>
+
+      {error && <p className="text-[12px] font-semibold text-[#C0392B]">{error}</p>}
 
       <div className="flex items-center justify-between gap-3 text-[11.5px] text-ink-muted">
         <span>{summary.unreachable > 0 ? d.dunning.unreachable(summary.unreachable) : ""}</span>

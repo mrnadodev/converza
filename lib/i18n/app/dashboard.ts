@@ -10,6 +10,13 @@ export interface DashboardCopy {
     age: (days: number) => string;
     remind: string;
     noPhone: string;
+    /** Encaisser depuis le panneau : une dette se règle là où elle s'affiche. */
+    settle: string;
+    settleConfirm: (name: string, amount: string) => string;
+    /** Annuler : la commande quitte toutes les vues, sans rien effacer. */
+    cancel: string;
+    cancelConfirm: (ref: string) => string;
+    actionFailed: string;
     unreachable: (n: number) => string;
     more: (n: number) => string;
     message: (p: { name: string; ref: string; owed: string; shop: string }) => string;
@@ -79,6 +86,12 @@ const fr: DashboardCopy = {
     age: (d) => (d === 0 ? "aujourd'hui" : `${d} jour${d > 1 ? "s" : ""}`),
     remind: "Relancer",
     noPhone: "Aucun numéro",
+    settle: "Encaisser",
+    settleConfirm: (name, amount) => `Enregistrer le paiement de ${amount} pour ${name} ?`,
+    cancel: "Annuler",
+    cancelConfirm: (ref) =>
+      `Annuler la commande ${ref} ?\n\nElle disparaîtra d'ici, du tableau des commandes, de la caisse et des rapports. Rien n'est effacé : vous pourrez revenir dessus.`,
+    actionFailed: "L'opération n'a pas pu être enregistrée. Réessayez.",
     unreachable: (n) => `${n} créance${n > 1 ? "s" : ""} sans numéro : à relancer en personne.`,
     more: (n) => `et ${n} autre${n > 1 ? "s" : ""}`,
     message: ({ name, ref, owed, shop }) =>
@@ -190,6 +203,12 @@ const ht: DashboardCopy = {
     age: (d) => (d === 0 ? "jodi a" : `${d} jou`),
     remind: "Relanse",
     noPhone: "Pa gen nimewo",
+    settle: "Anrejistre pèman",
+    settleConfirm: (name, amount) => `Anrejistre pèman ${amount} pou ${name} ?`,
+    cancel: "Anile",
+    cancelConfirm: (ref) =>
+      `Anile kòmand ${ref} ?\n\nL ap disparèt isit la, nan tablo kòmand yo, nan kès la ak nan rapò yo. Nou pa efase anyen : ou ka tounen sou li.`,
+    actionFailed: "Nou pa rive anrejistre operasyon an. Eseye ankò.",
     unreachable: (n) => `${n} dèt san nimewo : fòk ou wè moun nan an pèsòn.`,
     more: (n) => `ak ${n} lòt`,
     message: ({ name, ref, owed, shop }) =>
@@ -301,6 +320,12 @@ const en: DashboardCopy = {
     age: (d) => (d === 0 ? "today" : `${d} day${d > 1 ? "s" : ""}`),
     remind: "Remind",
     noPhone: "No number",
+    settle: "Record payment",
+    settleConfirm: (name, amount) => `Record a ${amount} payment for ${name}?`,
+    cancel: "Cancel",
+    cancelConfirm: (ref) =>
+      `Cancel order ${ref}?\n\nIt will disappear from here, from the orders board, from the till and from reports. Nothing is deleted: you can come back to it.`,
+    actionFailed: "The action could not be saved. Please try again.",
     unreachable: (n) => `${n} debt${n > 1 ? "s" : ""} with no phone number: chase in person.`,
     more: (n) => `and ${n} more`,
     message: ({ name, ref, owed, shop }) =>
