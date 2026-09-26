@@ -1,8 +1,9 @@
-import { formatMoney } from "./money";
+﻿import { formatMoney } from "./money";
 import { COMMON_COPY } from "./i18n/app/common";
 import { REPORT_COPY, type ReportCopy } from "./i18n/app/reports";
 import type { Language } from "./i18n/translations";
 import type { PipelineCard, Product } from "./types";
+import { buildWorkbook, type Cell, type CellStyle } from "./xlsx";
 
 /**
  * Prépare une valeur pour une cellule CSV. Le préfixe `'` neutralise
@@ -94,6 +95,107 @@ export function reportColumns(r: ReportCopy) {
       r.orders.owed,
     ],
   };
+}
+
+/**
+ * Rapport ventes et stock au format Excel, dessiné comme la version imprimable.
+ *
+ * Il partait en CSV. Un CSV ne porte que du texte : ouvert dans Excel il
+ * arrivait empilé dans une seule colonne, points-virgules et guillemets à nu,
+ * parce que le séparateur attendu dépend des réglages régionaux du poste. À
+ * côté du rapport imprimé, la comparaison était sans appel.
+ *
+ * Les montants sont ici de vrais nombres, pas des chaînes : le marchand peut
+ * les additionner, les trier, les filtrer. C'est ce qu'on vient chercher dans
+ * un tableur, et c'est ce qu'un CSV de texte formaté interdisait.
+ */
+export function generateSalesReportXLSX(
+  cards: PipelineCard[],
+  products: Product[],
+  timeframe: Timeframe = "month",
+  businessName = "",
+  language: Language = "fr",
+): Uint8Array<ArrayBuffer> {
+  const r: ReportCopy = REPORT_COPY[language] ?? REPORT_COPY.fr;
+  const statuses = (COMMON_COPY[language] ?? COMMON_COPY.fr).statuses;
+  const t = totalsOf(cards, products);
+  const cols = reportColumns(r);
+
+  const rows: (Cell | null)[][] = [];
+  const merges: number[] = [];
+  const vide = () => rows.push([]);
+  const texte = (v: string, s: CellStyle) => {
+    merges.push(rows.length);
+    rows.push([{ v, s }]);
+  };
+
+  texte(r.title(businessName), "title");
+  texte(r.period(r.periods[timeframe], dateStr(language)), "sub");
+  vide();
+
+  // 1. Résumé — les six tuiles de la version imprimable, sur deux rangées de
+  // trois : libellé au-dessus, valeur en dessous, comme les cartes imprimées.
+  texte(r.summary.title, "section");
+  const tuiles: [string, number, CellStyle][] = [
+    [r.summary.revenue, t.revenueCents / 100, "cardValue"],
+    [r.summary.paid, t.paidCents / 100, "cardValueGreen"],
+    [r.summary.owed, t.owedCents / 100, "cardValueAmber"],
+    [r.summary.stockValue, t.stockValueCents / 100, "cardValue"],
+    [r.summary.orders, cards.length, "cardCount"],
+    [r.summary.lowStock, t.lowStockCount, t.lowStockCount > 0 ? "cardCountAmber" : "cardCount"],
+  ];
+  for (let i = 0; i < tuiles.length; i += 3) {
+    const rangee = tuiles.slice(i, i + 3);
+    rows.push(rangee.flatMap(([label]) => [{ v: label, s: "cardLabel" as CellStyle }, null]));
+    rows.push(rangee.flatMap(([, valeur, style]) => [{ v: valeur, s: style }, null]));
+    vide();
+  }
+
+  // 2. Produits et stock
+  texte(r.products.title(products.length), "section");
+  rows.push(cols.products.map((h) => ({ v: h, s: "header" as CellStyle })));
+  const etat: Record<string, CellStyle> = {
+    fini: "badgeDanger",
+    ba_stok: "badgeWarning",
+    en_stok: "badgeSuccess",
+  };
+  for (const p of products) {
+    rows.push([
+      { v: p.name, s: "cellBold" },
+      { v: p.category || r.products.other, s: "cell" },
+      { v: p.price_cents / 100, s: "money" },
+      { v: p.currency, s: "cell" },
+      { v: p.stock_qty ?? 0, s: "count" },
+      { v: p.sold_count ?? 0, s: "count" },
+      { v: r.products.states[p.stock_state], s: etat[p.stock_state] ?? "cell" },
+    ]);
+  }
+  vide();
+
+  // 3. Commandes
+  texte(r.orders.title(cards.length), "section");
+  rows.push(cols.orders.map((h) => ({ v: h, s: "header" as CellStyle })));
+  for (const c of cards) {
+    rows.push([
+      { v: `#${c.ref}`, s: "cellBold" },
+      { v: c.customerName, s: "cellBold" },
+      { v: c.phone_e164, s: "cell" },
+      { v: c.itemsSummary || r.orders.itemsFallback, s: "cellItems" },
+      { v: statuses[c.status] ?? c.status, s: "cell" },
+      { v: c.totalCents / 100, s: "moneyBold" },
+      { v: c.owedCents / 100, s: c.owedCents > 0 ? "cardValueAmber" : "money" },
+    ]);
+  }
+
+  return buildWorkbook({
+    // Nom de l'onglet : celui de la boutique. C'est ce que le marchand
+    // reconnaît, et ça reste juste quelles que soient les sections du rapport.
+    // Excel refuse au-delà de 31 caractères et n'accepte pas : \ / ? * [ ]
+    name: (businessName.replace(/[\\/?*[\]:]/g, " ").trim() || r.periods[timeframe]).slice(0, 31),
+    widths: [30, 24, 14, 10, 14, 10, 16],
+    rows,
+    mergesFullWidth: merges,
+  });
 }
 
 export function generateSalesReportCSV(

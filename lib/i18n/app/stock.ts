@@ -1,4 +1,4 @@
-import type { Language } from "../translations";
+﻿import type { Language } from "../translations";
 import type { StockMovementError } from "@/app/stok/actions";
 
 type MovementKind = "vente" | "annulation" | "entree" | "perte" | "correction";
@@ -8,7 +8,7 @@ export interface StockCopy {
   subtitle: string;
   valuation: { title: string; total: string; products: (n: number) => string };
   alerts: { text: (n: number) => string; see: string };
-  reports: { title: string; week: string; month: string; all: string; csv: string; pdf: string };
+  reports: { title: string; week: string; month: string; all: string; /** Bouton du rapport tableur : .xlsx depuis qu'un CSV s'ouvrait en une seule colonne. */ csv: string; pdf: string };
   search: string;
   filters: { all: (n: number) => string; low: (n: number) => string; out: (n: number) => string };
   quantity: string;
@@ -79,7 +79,7 @@ const fr: StockCopy = {
     week: "Cette semaine",
     month: "Ce mois-ci",
     all: "Depuis le début",
-    csv: "Télécharger (CSV)",
+    csv: "Télécharger (Excel)",
     pdf: "Version imprimable",
   },
   search: "Rechercher un produit…",
@@ -162,7 +162,7 @@ const ht: StockCopy = {
     week: "Semèn sa a",
     month: "Mwa sa a",
     all: "Depi nan konmansman",
-    csv: "Telechaje (CSV)",
+    csv: "Telechaje (Excel)",
     pdf: "Vèsyon pou enprime",
   },
   search: "Chèche yon pwodwi…",
@@ -245,7 +245,7 @@ const en: StockCopy = {
     week: "This week",
     month: "This month",
     all: "All time",
-    csv: "Download (CSV)",
+    csv: "Download (Excel)",
     pdf: "Printable version",
   },
   search: "Search for a product…",

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useState, useTransition } from "react";
@@ -9,7 +9,7 @@ import { STOCK_COPY } from "@/lib/i18n/app/stock";
 import { KES_COPY } from "@/lib/i18n/app/kes";
 import { formatMoney } from "@/lib/money";
 import { recordPurchase, recordStockMovement, type ManualMovementKind, type StockMovementError } from "@/app/stok/actions";
-import { generateSalesReportCSV, triggerSalesReportPDF } from "@/lib/reports";
+import { generateSalesReportXLSX, triggerSalesReportPDF } from "@/lib/reports";
 import { stockStateFor } from "@/lib/stock_ai";
 import type { Business, PipelineCard, Product } from "@/lib/types";
 import { Select } from "@/components/ui/Select";
@@ -92,12 +92,18 @@ export function StockManager({
     router.refresh();
   }
 
-  function downloadCSV() {
-    const blob = new Blob([generateSalesReportCSV(cards, products, timeframe, business.name, language)], { type: "text/csv;charset=utf-8;" });
+  // Le rapport part en .xlsx et non plus en CSV : un CSV arrivait dans Excel
+  // empilé dans une seule colonne, sans couleur ni largeur, et ses montants
+  // étaient du texte impossible à additionner.
+  function downloadExcel() {
+    const bytes = generateSalesReportXLSX(cards, products, timeframe, business.name, language);
+    const blob = new Blob([bytes], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `rapport-ventes-${business.name.replace(/\s+/g, "-").toLowerCase()}-${timeframe}.csv`;
+    link.download = `rapport-ventes-${business.name.replace(/\s+/g, "-").toLowerCase()}-${timeframe}.xlsx`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -151,7 +157,7 @@ export function StockManager({
               </Select>
             </div>
             <div className="grid grid-cols-2 gap-2 pt-1">
-              <button onClick={downloadCSV} className="flex h-10 cursor-pointer items-center justify-center rounded-xl border border-line bg-[#F7F8F9] text-xs font-bold text-ink active:scale-95">
+              <button onClick={downloadExcel} className="flex h-10 cursor-pointer items-center justify-center rounded-xl border border-line bg-[#F7F8F9] text-xs font-bold text-ink active:scale-95">
                 {s.reports.csv}
               </button>
               <button
