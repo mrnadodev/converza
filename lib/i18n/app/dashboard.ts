@@ -1,4 +1,7 @@
-import type { Language } from "../translations";
+﻿import type { Language } from "../translations";
+
+/** 7 → « 07 ». Une horloge qui saute d'une largeur à chaque minute agace. */
+const pad = (n: number) => String(n).padStart(2, "0");
 
 export interface DashboardCopy {
   dunning: {
@@ -25,6 +28,21 @@ export interface DashboardCopy {
   search: string;
   signOutAs: (name: string) => string;
   days: string[];
+  /**
+   * Date et heure vivantes, en haut du tableau de bord.
+   *
+   * Les noms sont écrits ici plutôt que confiés à `Intl` : le créole n'est pas
+   * une locale que les navigateurs connaissent, et un marchand aurait vu
+   * « Thursday » sur une application en créole. Les trois langues se
+   * comportent donc de la même façon, sur n'importe quel téléphone.
+   */
+  clock: {
+    /** Sept noms, dimanche d'abord : c'est l'ordre de Date.getDay(). */
+    weekdays: string[];
+    months: string[];
+    date: (p: { weekday: string; day: number; month: string; year: number }) => string;
+    time: (p: { h: number; m: number; s: number }) => string;
+  };
   metrics: {
     weekSales: string;
     trend: (pct: number) => string;
@@ -101,6 +119,13 @@ const fr: DashboardCopy = {
   search: "Rechercher un client…",
   signOutAs: (name) => `Se déconnecter (${name})`,
   days: ["L", "M", "M", "J", "V", "S", "D"],
+  clock: {
+    weekdays: ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"],
+    months: ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"],
+    // Le premier du mois s'écrit « 1er » en français, et lui seul.
+    date: ({ weekday, day, month, year }) => `${weekday} ${day === 1 ? "1er" : day} ${month} ${year}`,
+    time: ({ h, m, s }) => `${pad(h)}:${pad(m)}:${pad(s)}`,
+  },
   metrics: {
     weekSales: "Ventes de la semaine",
     trend: (pct) => `${pct > 0 ? "+" : ""}${pct} % vs sem. dernière`,
@@ -218,6 +243,12 @@ const ht: DashboardCopy = {
   search: "Chèche yon kliyan…",
   signOutAs: (name) => `Dekonekte (${name})`,
   days: ["L", "M", "M", "J", "V", "S", "D"],
+  clock: {
+    weekdays: ["dimanch", "lendi", "madi", "mèkredi", "jedi", "vandredi", "samdi"],
+    months: ["janvye", "fevriye", "mas", "avril", "me", "jen", "jiyè", "out", "septanm", "oktòb", "novanm", "desanm"],
+    date: ({ weekday, day, month, year }) => `${weekday} ${day} ${month} ${year}`,
+    time: ({ h, m, s }) => `${pad(h)}:${pad(m)}:${pad(s)}`,
+  },
   metrics: {
     weekSales: "Vant semèn nan",
     trend: (pct) => `${pct > 0 ? "+" : ""}${pct} % sou semèn pase`,
@@ -335,6 +366,13 @@ const en: DashboardCopy = {
   search: "Search for a customer…",
   signOutAs: (name) => `Sign out (${name})`,
   days: ["M", "T", "W", "T", "F", "S", "S"],
+  clock: {
+    weekdays: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+    months: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+    date: ({ weekday, day, month, year }) => `${weekday}, ${month} ${day}, ${year}`,
+    // L'anglais compte les heures sur douze, avec AM et PM.
+    time: ({ h, m, s }) => `${((h + 11) % 12) + 1}:${pad(m)}:${pad(s)} ${h < 12 ? "AM" : "PM"}`,
+  },
   metrics: {
     weekSales: "Sales this week",
     trend: (pct) => `${pct > 0 ? "+" : ""}${pct}% vs last week`,

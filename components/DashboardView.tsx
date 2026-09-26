@@ -6,6 +6,7 @@ import { useState, useTransition } from "react";
 import { ProductPosterModal } from "@/components/ProductPosterModal";
 import { BottomNav } from "@/components/BottomNav";
 import { LanguageToggle } from "@/components/LanguageToggle";
+import { LiveClock } from "@/components/LiveClock";
 import { useDict } from "@/components/LanguageContext";
 import { signOut } from "@/app/login/actions";
 import { markOrderPaid, moveOrderStatus } from "@/app/komand/actions";
@@ -98,6 +99,13 @@ export function DashboardView(props: DashboardViewProps) {
             </form>
           </div>
         </div>
+        {/* La date occupe sa propre ligne, sur toute la largeur.
+            Glissée sous le nom de la boutique, elle partageait une colonne
+            déjà disputée par l'avatar et trois boutons : sur un écran de
+            375 points elle se réduisait à « V. », sans jour ni date — c'est-
+            à-dire exactement ce qu'on venait afficher. */}
+        <LiveClock className="text-[12.5px] text-[#B9F5E4]" />
+
         <Link href={searchHref} className="flex items-center gap-2 rounded-xl bg-white/15 px-3.5 py-2.5 text-[#D6F5EC] transition-colors hover:bg-white/20">
           <SearchIcon />
           <span className="text-sm">{d.search}</span>
