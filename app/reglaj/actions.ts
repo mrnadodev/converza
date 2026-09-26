@@ -40,6 +40,15 @@ export interface BusinessInput {
   delivery_zones: DeliveryZone[];
   /** Refus d'apparaître sur la page d'accueil de CONVERZA (migration 9). */
   showcase_opt_out?: boolean;
+  /**
+   * Inscription à l'annuaire public (migration 11), vraie par défaut.
+   *
+   * Distincte de `showcase_opt_out` : l'une place la boutique sur la page
+   * d'accueil, devant de futurs marchands ; l'autre la rend trouvable par un
+   * acheteur qui cherche un produit. Les confondre aurait forcé un choix que
+   * le marchand n'a pas à faire.
+   */
+  listed?: boolean;
 }
 
 function parseUsdRate(raw: string | number | null | undefined): number | null {
@@ -160,6 +169,18 @@ export async function updateBusiness(input: BusinessInput) {
       console.warn("showcase_opt_out:", showcaseError.message);
     }
     revalidatePath("/accueil");
+  }
+
+  if (typeof input.listed === "boolean") {
+    const { error: listedError } = await sb
+      .from("businesses")
+      .update({ listed: input.listed })
+      .eq("id", member.business_id);
+    // Colonne absente : la migration 11 n'est pas passée, le choix attendra.
+    if (listedError && !/listed|column|schema cache/i.test(listedError.message)) {
+      console.warn("listed:", listedError.message);
+    }
+    revalidatePath("/boutik");
   }
 
   revalidatePath("/reglaj");

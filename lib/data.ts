@@ -1,4 +1,4 @@
-// Couche d'accès aux données.
+﻿// Couche d'accès aux données.
 // Marche en MODE DÉMO (données de lib/demo.ts) tant que Supabase n'est pas
 // configuré, puis bascule automatiquement sur Supabase dès que les variables
 // NEXT_PUBLIC_SUPABASE_* sont présentes.
@@ -613,4 +613,110 @@ export async function getStorefront(
     .order("name");
 
   return { business: business as Business, products: (products ?? []) as Product[] };
+}
+
+// ---------------------------------------------------------------------------
+// Annuaire public des boutiques
+//
+// CONVERZA donnait un lien a partager, mais n exposait nulle part. Un marchand
+// qui n est pas sur Facebook n etait decouvert par personne. L annuaire repond
+// a la seule question qui compte pour un acheteur : « qui vend ce produit ? ».
+//
+// Il se construit sur ce qui est deja public — les vitrines et leurs produits
+// visibles — et n ajoute aucune donnee. Les boutiques y figurent par defaut,
+// avec retrait possible depuis les Parametres.
+// ---------------------------------------------------------------------------
+
+export interface DirectoryHit {
+  productId: string;
+  productName: string;
+  category: string | null;
+  priceCents: number;
+  currency: string;
+  photoUrl: string | null;
+  businessName: string;
+  businessSlug: string;
+  businessAddress: string | null;
+  businessType: string | null;
+}
+
+export interface DirectoryShop {
+  id: string;
+  name: string;
+  slug: string;
+  businessType: string | null;
+  address: string | null;
+  logoUrl: string | null;
+  productCount: number;
+}
+
+/** `available` est faux tant que la migration 11 n a pas cree les vues. */
+export async function searchDirectory(query: string): Promise<{ hits: DirectoryHit[]; available: boolean }> {
+  const sb = createPublicClient();
+  if (!sb) return { hits: [], available: false };
+
+  const q = query.trim();
+  if (!q) return { hits: [], available: true };
+
+  // `%` et `_` sont des jokers pour ILIKE : sans echappement, une recherche
+  // contenant « % » remonterait tout le catalogue de toutes les boutiques.
+  const motif = `%${q.replace(/[%_\\]/g, (c) => `\\${c}`)}%`;
+
+  const { data, error } = await sb
+    .from("public_directory_products")
+    .select("id, name, category, price_cents, currency, photo_url, business_name, business_slug, business_address, business_type")
+    .or(`name.ilike.${motif},category.ilike.${motif}`)
+    .limit(60);
+
+  if (error) return { hits: [], available: false };
+
+  return {
+    available: true,
+    hits: (data ?? []).map((p) => ({
+      productId: p.id,
+      productName: p.name,
+      category: p.category,
+      priceCents: Number(p.price_cents),
+      currency: p.currency,
+      photoUrl: p.photo_url,
+      businessName: p.business_name,
+      businessSlug: p.business_slug,
+      businessAddress: p.business_address,
+      businessType: p.business_type,
+    })),
+  };
+}
+
+/** Les boutiques inscrites, avec leur nombre de produits visibles. */
+export async function listDirectoryShops(): Promise<{ shops: DirectoryShop[]; available: boolean }> {
+  const sb = createPublicClient();
+  if (!sb) return { shops: [], available: false };
+
+  const { data, error } = await sb
+    .from("public_directory_businesses")
+    .select("id, name, slug, business_type, address, logo_url")
+    .order("name")
+    .limit(300);
+  if (error) return { shops: [], available: false };
+
+  const ids = (data ?? []).map((b) => b.id);
+  const { data: produits } = ids.length
+    ? await sb.from("products").select("business_id").eq("is_active", true).in("business_id", ids).limit(5000)
+    : { data: [] };
+
+  const compte = new Map<string, number>();
+  for (const p of produits ?? []) compte.set(p.business_id, (compte.get(p.business_id) ?? 0) + 1);
+
+  return {
+    available: true,
+    shops: (data ?? []).map((b) => ({
+      id: b.id,
+      name: b.name,
+      slug: b.slug,
+      businessType: b.business_type,
+      address: b.address,
+      logoUrl: b.logo_url,
+      productCount: compte.get(b.id) ?? 0,
+    })),
+  };
 }

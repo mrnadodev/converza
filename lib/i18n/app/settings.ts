@@ -1,4 +1,4 @@
-import type { Language } from "../translations";
+﻿import type { Language } from "../translations";
 
 export interface SettingsCopy {
   title: string;
@@ -29,6 +29,8 @@ export interface SettingsCopy {
     languageHint: string;
     social: string;
     showcase: { title: string; label: string; hint: string };
+    /** Annuaire public : on cherche un produit, on trouve la boutique. */
+    directory: { label: string; hint: string; link: string };
   };
   payments: {
     title: string;
@@ -128,6 +130,11 @@ const fr: SettingsCopy = {
       title: "Page d'accueil de CONVERZA",
       label: "Présenter ma boutique parmi celles qui vendent",
       hint: "Votre nom, votre logo et un lien vers votre vitrine, sur la page que voient les futurs commerçants. Rien d'autre que ce que votre vitrine montre déjà.",
+    },
+    directory: {
+      label: "Apparaître dans l'annuaire CONVERZA",
+      hint: "Quand quelqu'un cherche un produit que vous vendez, votre boutique apparaît et il ouvre votre vitrine. C'est la façon d'être découvert sans être sur les réseaux sociaux.",
+      link: "Voir l'annuaire",
     },
   },
   payments: {
@@ -267,6 +274,11 @@ const ht: SettingsCopy = {
       label: "Montre boutik mwen pami sa k ap vann yo",
       hint: "Non w, logo w ak yon lyen sou vitrin ou, sou paj futur machann yo wè a. Anyen pase sa vitrin ou deja montre.",
     },
+    directory: {
+      label: "Parèt nan anyè CONVERZA a",
+      hint: "Lè yon moun chèche yon pwodwi ou vann, boutik ou parèt epi l ouvri vitrin ou. Se konsa moun dekouvri w san w pa bezwen sou rezo sosyal yo.",
+      link: "Gade anyè a",
+    },
   },
   payments: {
     title: "Kijan kliyan yo peye w",
@@ -404,6 +416,11 @@ const en: SettingsCopy = {
       title: "CONVERZA home page",
       label: "Feature my shop among those already selling",
       hint: "Your name, your logo and a link to your storefront, on the page future merchants see. Nothing beyond what your storefront already shows.",
+    },
+    directory: {
+      label: "Appear in the CONVERZA directory",
+      hint: "When someone searches for a product you sell, your shop shows up and they open your storefront. This is how you get found without being on social media.",
+      link: "See the directory",
     },
   },
   payments: {

@@ -48,6 +48,9 @@ export async function updateSession(request: NextRequest) {
     path === "/kondisyon" ||
     path === "/konfidansyalite" ||
     path.startsWith("/b/") ||
+    // L'annuaire s'adresse à des acheteurs qui n'ont aucun compte : le
+    // protéger reviendrait à demander de s'inscrire pour chercher un produit.
+    path === "/boutik" ||
     // Suivi de commande envoyé au client, qui n'a pas de compte.
     path.startsWith("/suivi/") ||
     path.startsWith("/api") ||

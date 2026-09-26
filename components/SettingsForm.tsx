@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useState, useTransition } from "react";
@@ -73,6 +73,9 @@ export function SettingsForm({ business, designs }: { business: Business; design
     delivery_zones: business.delivery_zones ?? [],
     // Pas de colonne (migration 9 pas encore jouée) : la boutique n'a pas refusé.
     showcase_opt_out: business.showcase_opt_out === true,
+    // Inscrit par defaut : un annuaire a moitie vide ne sert personne, et la
+    // vitrine est deja publique. La colonne arrive avec la migration 11.
+    listed: business.listed !== false,
   });
   const [bankItems, setBankItems] = useState<BankAccountItem[]>(() => parseBankAccounts(business.bank_accounts ?? ""));
   const [newZoneName, setNewZoneName] = useState("");
@@ -249,6 +252,26 @@ export function SettingsForm({ business, designs }: { business: Business; design
                 <span className="flex flex-col gap-0.5">
                   <span className="text-[13.5px] font-bold text-ink">{s.store.showcase.label}</span>
                   <span className="text-[12px] leading-snug text-ink-muted">{s.store.showcase.hint}</span>
+                </span>
+              </label>
+
+              {/* Deux visibilités publiques, deux cases : la première place la
+                  boutique sur la page d'accueil — une vitrine pour les futurs
+                  marchands — la seconde la rend trouvable par un acheteur qui
+                  cherche un produit. Les confondre aurait forcé un choix. */}
+              <label className="flex cursor-pointer items-start gap-3 border-t border-line pt-4">
+                <input
+                  type="checkbox"
+                  checked={f.listed}
+                  onChange={(e) => set({ listed: e.target.checked })}
+                  className="mt-0.5 h-5 w-5 shrink-0 accent-[#008069]"
+                />
+                <span className="flex flex-col gap-0.5">
+                  <span className="text-[13.5px] font-bold text-ink">{s.store.directory.label}</span>
+                  <span className="text-[12px] leading-snug text-ink-muted">{s.store.directory.hint}</span>
+                  <a href="/boutik" target="_blank" rel="noopener noreferrer" className="pt-0.5 text-[12px] font-bold text-brand">
+                    {s.store.directory.link} →
+                  </a>
                 </span>
               </label>
             </Card>

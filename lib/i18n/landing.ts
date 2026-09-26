@@ -1,4 +1,4 @@
-import type { Language } from "./translations";
+﻿import type { Language } from "./translations";
 
 // Textes de la page d'accueil publique.
 //
@@ -41,6 +41,8 @@ export interface LandingCopy {
   nav: {
     product: string;
     restaurants: string;
+    /** Annuaire public : on cherche un produit, on trouve la boutique. */
+    directory: string;
     pricing: string;
     help: string;
     signIn: string;
@@ -194,6 +196,7 @@ const fr: LandingCopy = {
   nav: {
     product: "Produit",
     restaurants: "Restaurants",
+    directory: "Trouver un produit",
     pricing: "Tarifs",
     help: "Aide",
     signIn: "Se connecter",
@@ -387,6 +390,7 @@ const ht: LandingCopy = {
   nav: {
     product: "Pwodwi",
     restaurants: "Restoran",
+    directory: "Chèche yon pwodwi",
     pricing: "Pri",
     help: "Èd",
     signIn: "Konekte",
@@ -580,6 +584,7 @@ const en: LandingCopy = {
   nav: {
     product: "Product",
     restaurants: "Restaurants",
+    directory: "Find a product",
     pricing: "Pricing",
     help: "Help",
     signIn: "Sign in",

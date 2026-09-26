@@ -86,6 +86,9 @@ export function LandingPage({
               <nav className="hidden items-center gap-7 lg:flex">
                 <a href="#produit" className="text-[14.5px] font-semibold text-[#A9C4BC] transition-colors hover:text-white">{c.nav.product}</a>
                 <a href="#restaurants" className="text-[14.5px] font-semibold text-[#A9C4BC] transition-colors hover:text-white">{c.nav.restaurants}</a>
+                {/* Seul lien de la barre qui quitte la page : l'annuaire
+                    s'adresse aux acheteurs, pas aux futurs marchands. */}
+                <Link href="/boutik" className="text-[14.5px] font-semibold text-[#A9C4BC] transition-colors hover:text-white">{c.nav.directory}</Link>
                 <a href="#tarifs" className="text-[14.5px] font-semibold text-[#A9C4BC] transition-colors hover:text-white">{c.nav.pricing}</a>
                 <a href="#questions" className="text-[14.5px] font-semibold text-[#A9C4BC] transition-colors hover:text-white">{c.nav.help}</a>
               </nav>
