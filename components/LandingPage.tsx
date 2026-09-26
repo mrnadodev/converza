@@ -13,6 +13,7 @@ import { planTexts } from "@/lib/plan-texts";
 import type { Plan } from "@/lib/plans";
 import { INDUSTRY_SECTORS, SECTOR_COUNT, TRADE_COUNT } from "@/lib/verticals";
 import { Wordmark } from "@/components/Wordmark";
+import { BackToTop } from "@/components/BackToTop";
 
 // Ordre d'affichage des secteurs : celui de lib/verticals.ts, qui va du plus
 // courant au plus spécialisé. Rien à maintenir ici.
@@ -579,26 +580,14 @@ export function LandingPage({
             />
             <FooterCol title={c.footer.languageCol} links={["Français", "Kreyòl", "English"]} />
           </div>
-          {/* La signature de la marque, et le retour à l'accueil.
-              Le pied de page menait partout sauf en haut : un visiteur arrivé
-              par un lien profond n'avait aucun chemin vers la page d'accueil. */}
+          {/* La signature de la marque.
+              Le retour en haut était ici, en bouton : il fallait avoir fini de
+              descendre pour s'en servir. Il est devenu la flèche flottante,
+              disponible tout du long. */}
           <div className="mt-9 flex flex-col gap-4 border-t pt-9" style={{ borderColor: "rgba(255,255,255,0.1)" }}>
-            <div className="flex flex-col items-center gap-3 text-center sm:flex-row sm:justify-between sm:text-left">
-              <span className="text-[13.5px] font-semibold text-[#7D9A92]">
-                <Wordmark className="font-extrabold text-white" /> · {c.footer.slogan}
-              </span>
-              {/* Remonte en haut de cette page, et non vers « / ».
-                  Un marchand connecté qui cliquait sur « / » atterrissait sur
-                  son tableau de bord : le bouton le sortait du site au lieu de
-                  l'y ramener. */}
-              <a
-                href="#haut"
-                className="flex h-10 shrink-0 items-center rounded-xl border px-4 text-[13px] font-bold text-white transition-colors hover:bg-white/10"
-                style={{ borderColor: "rgba(255,255,255,0.22)" }}
-              >
-                {c.footer.home}
-              </a>
-            </div>
+            <span className="text-center text-[13.5px] font-semibold text-[#7D9A92] sm:text-left">
+              <Wordmark className="font-extrabold text-white" /> · {c.footer.slogan}
+            </span>
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <span className="text-[13px] text-[#5E7E75]">{c.footer.rights}</span>
               <span className="text-[13px] text-[#5E7E75]">{c.footer.city}</span>
@@ -606,6 +595,8 @@ export function LandingPage({
           </div>
         </div>
       </footer>
+
+      <BackToTop label={c.footer.home} />
     </div>
   );
 }

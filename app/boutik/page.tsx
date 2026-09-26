@@ -1,7 +1,8 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import type { Metadata } from "next";
 import { listDirectoryShops, searchDirectory } from "@/lib/data";
 import { formatMoney } from "@/lib/money";
+import { BackToTop } from "@/components/BackToTop";
 
 // Annuaire public des boutiques CONVERZA.
 //
@@ -68,6 +69,10 @@ export default async function AnnuairePage({ searchParams }: { searchParams?: { 
           <Boutiques shops={annuaire?.shops ?? []} />
         )}
       </div>
+
+      {/* Les résultats peuvent tenir sur plusieurs écrans : la même flèche que
+          sur la page d'accueil évite de remonter à la main pour rechercher. */}
+      <BackToTop label="Haut de page" />
     </main>
   );
 }
