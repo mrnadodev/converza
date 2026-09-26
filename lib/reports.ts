@@ -97,19 +97,115 @@ export function reportColumns(r: ReportCopy) {
   };
 }
 
+
 /**
- * Rapport ventes et stock au format Excel, dessiné comme la version imprimable.
+ * Portée d'un rapport. Les deux ne s'adressent pas aux mêmes personnes.
+ *
+ * L'inventaire ne dit rien du chiffre d'affaires ni des clients ; le rapport
+ * de ventes ne dit rien du stock. Un seul fichier mélangeait les deux, si bien
+ * que l'application masquait les chiffres financiers au stockiste à l'écran
+ * puis les lui remettait dans un téléchargement, avec le nom et le numéro de
+ * chaque client. Chaque portée a désormais son droit (voir lib/rbac.ts).
+ */
+export type ReportScope = "stock" | "sales";
+
+interface ReportPlan {
+  titre: string;
+  /** Tuiles du résumé : libellé, valeur, style. */
+  tuiles: [string, number, CellStyle][];
+  sections: { titre: string; colonnes: string[]; lignes: (Cell | null)[][] }[];
+}
+
+const ETAT_STOCK: Record<string, CellStyle> = {
+  fini: "badgeDanger",
+  ba_stok: "badgeWarning",
+  en_stok: "badgeSuccess",
+};
+
+/**
+ * Contenu du rapport, indépendant du format.
+ *
+ * Le tableur et la version imprimable lisent ce même plan : c'est ce qui
+ * garantit qu'ils montrent la même chose, dans le même ordre, sous le même
+ * titre — et qu'une section réservée ne puisse pas réapparaître dans l'un
+ * après avoir été retirée de l'autre.
+ */
+function planReport(
+  scope: ReportScope,
+  cards: PipelineCard[],
+  products: Product[],
+  businessName: string,
+  language: Language,
+): ReportPlan {
+  const r: ReportCopy = REPORT_COPY[language] ?? REPORT_COPY.fr;
+  const statuses = (COMMON_COPY[language] ?? COMMON_COPY.fr).statuses;
+  const t = totalsOf(cards, products);
+  const cols = reportColumns(r);
+  const n = (i: number, titre: string) => `${i}. ${titre}`;
+
+  if (scope === "stock") {
+    return {
+      titre: r.stockTitle(businessName),
+      tuiles: [
+        [r.summary.stockValue, t.stockValueCents / 100, "cardValue"],
+        [r.summary.lowStock, t.lowStockCount, t.lowStockCount > 0 ? "cardCountAmber" : "cardCount"],
+      ],
+      sections: [
+        {
+          titre: n(2, `${r.productsSection} (${products.length})`),
+          colonnes: cols.products,
+          lignes: products.map((p) => [
+            { v: p.name, s: "cellBold" },
+            { v: p.category || r.products.other, s: "cell" },
+            { v: p.price_cents / 100, s: "money" },
+            { v: p.currency, s: "cell" },
+            { v: p.stock_qty ?? 0, s: "count" },
+            { v: p.sold_count ?? 0, s: "count" },
+            { v: r.products.states[p.stock_state], s: ETAT_STOCK[p.stock_state] ?? "cell" },
+          ]),
+        },
+      ],
+    };
+  }
+
+  return {
+    titre: r.salesTitle(businessName),
+    tuiles: [
+      [r.summary.revenue, t.revenueCents / 100, "cardValue"],
+      [r.summary.paid, t.paidCents / 100, "cardValueGreen"],
+      [r.summary.owed, t.owedCents / 100, "cardValueAmber"],
+      [r.summary.orders, cards.length, "cardCount"],
+    ],
+    sections: [
+      {
+        titre: n(2, `${r.ordersSection} (${cards.length})`),
+        colonnes: cols.orders,
+        lignes: cards.map((c) => [
+          { v: `#${c.ref}`, s: "cellBold" },
+          { v: c.customerName, s: "cellBold" },
+          { v: c.phone_e164, s: "cell" },
+          { v: c.itemsSummary || r.orders.itemsFallback, s: "cellItems" },
+          { v: statuses[c.status] ?? c.status, s: "cell" },
+          { v: c.totalCents / 100, s: "moneyBold" },
+          { v: c.owedCents / 100, s: c.owedCents > 0 ? "cardValueAmber" : "money" },
+        ]),
+      },
+    ],
+  };
+}
+
+/**
+ * Rapport au format Excel, dessiné comme la version imprimable.
  *
  * Il partait en CSV. Un CSV ne porte que du texte : ouvert dans Excel il
  * arrivait empilé dans une seule colonne, points-virgules et guillemets à nu,
- * parce que le séparateur attendu dépend des réglages régionaux du poste. À
- * côté du rapport imprimé, la comparaison était sans appel.
+ * parce que le séparateur attendu dépend des réglages régionaux du poste.
  *
- * Les montants sont ici de vrais nombres, pas des chaînes : le marchand peut
- * les additionner, les trier, les filtrer. C'est ce qu'on vient chercher dans
- * un tableur, et c'est ce qu'un CSV de texte formaté interdisait.
+ * Les montants sont ici de vrais nombres : le marchand peut les additionner,
+ * les trier, les filtrer. C'est ce qu'on vient chercher dans un tableur.
  */
-export function generateSalesReportXLSX(
+export function generateReportXLSX(
+  scope: ReportScope,
   cards: PipelineCard[],
   products: Product[],
   timeframe: Timeframe = "month",
@@ -117,9 +213,7 @@ export function generateSalesReportXLSX(
   language: Language = "fr",
 ): Uint8Array<ArrayBuffer> {
   const r: ReportCopy = REPORT_COPY[language] ?? REPORT_COPY.fr;
-  const statuses = (COMMON_COPY[language] ?? COMMON_COPY.fr).statuses;
-  const t = totalsOf(cards, products);
-  const cols = reportColumns(r);
+  const plan = planReport(scope, cards, products, businessName, language);
 
   const rows: (Cell | null)[][] = [];
   const merges: number[] = [];
@@ -129,68 +223,30 @@ export function generateSalesReportXLSX(
     rows.push([{ v, s }]);
   };
 
-  texte(r.title(businessName), "title");
+  texte(plan.titre, "title");
   texte(r.period(r.periods[timeframe], dateStr(language)), "sub");
   vide();
 
-  // 1. Résumé — les six tuiles de la version imprimable, sur deux rangées de
-  // trois : libellé au-dessus, valeur en dessous, comme les cartes imprimées.
-  texte(r.summary.title, "section");
-  const tuiles: [string, number, CellStyle][] = [
-    [r.summary.revenue, t.revenueCents / 100, "cardValue"],
-    [r.summary.paid, t.paidCents / 100, "cardValueGreen"],
-    [r.summary.owed, t.owedCents / 100, "cardValueAmber"],
-    [r.summary.stockValue, t.stockValueCents / 100, "cardValue"],
-    [r.summary.orders, cards.length, "cardCount"],
-    [r.summary.lowStock, t.lowStockCount, t.lowStockCount > 0 ? "cardCountAmber" : "cardCount"],
-  ];
-  for (let i = 0; i < tuiles.length; i += 3) {
-    const rangee = tuiles.slice(i, i + 3);
+  // Résumé : les tuiles de la version imprimable, par rangées de trois, libellé
+  // au-dessus et valeur en dessous — comme les cartes imprimées.
+  texte(`1. ${scope === "stock" ? r.stockSummary : r.salesSummary}`, "section");
+  for (let i = 0; i < plan.tuiles.length; i += 3) {
+    const rangee = plan.tuiles.slice(i, i + 3);
     rows.push(rangee.flatMap(([label]) => [{ v: label, s: "cardLabel" as CellStyle }, null]));
     rows.push(rangee.flatMap(([, valeur, style]) => [{ v: valeur, s: style }, null]));
     vide();
   }
 
-  // 2. Produits et stock
-  texte(r.products.title(products.length), "section");
-  rows.push(cols.products.map((h) => ({ v: h, s: "header" as CellStyle })));
-  const etat: Record<string, CellStyle> = {
-    fini: "badgeDanger",
-    ba_stok: "badgeWarning",
-    en_stok: "badgeSuccess",
-  };
-  for (const p of products) {
-    rows.push([
-      { v: p.name, s: "cellBold" },
-      { v: p.category || r.products.other, s: "cell" },
-      { v: p.price_cents / 100, s: "money" },
-      { v: p.currency, s: "cell" },
-      { v: p.stock_qty ?? 0, s: "count" },
-      { v: p.sold_count ?? 0, s: "count" },
-      { v: r.products.states[p.stock_state], s: etat[p.stock_state] ?? "cell" },
-    ]);
-  }
-  vide();
-
-  // 3. Commandes
-  texte(r.orders.title(cards.length), "section");
-  rows.push(cols.orders.map((h) => ({ v: h, s: "header" as CellStyle })));
-  for (const c of cards) {
-    rows.push([
-      { v: `#${c.ref}`, s: "cellBold" },
-      { v: c.customerName, s: "cellBold" },
-      { v: c.phone_e164, s: "cell" },
-      { v: c.itemsSummary || r.orders.itemsFallback, s: "cellItems" },
-      { v: statuses[c.status] ?? c.status, s: "cell" },
-      { v: c.totalCents / 100, s: "moneyBold" },
-      { v: c.owedCents / 100, s: c.owedCents > 0 ? "cardValueAmber" : "money" },
-    ]);
+  for (const section of plan.sections) {
+    texte(section.titre, "section");
+    rows.push(section.colonnes.map((h) => ({ v: h, s: "header" as CellStyle })));
+    for (const ligne of section.lignes) rows.push(ligne);
+    vide();
   }
 
   return buildWorkbook({
     // Nom de l'onglet : celui de la boutique. C'est ce que le marchand
-    // reconnaît, et ça reste juste quelles que soient les sections du rapport.
-    // Excel refuse au-delà de 31 caractères et n'accepte pas : \ / ? * [ ]
+    // reconnaît. Excel refuse au-delà de 31 caractères et rejette : \ / ? * [ ]
     name: (businessName.replace(/[\\/?*[\]:]/g, " ").trim() || r.periods[timeframe]).slice(0, 31),
     widths: [30, 24, 14, 10, 14, 10, 16],
     rows,
@@ -261,8 +317,16 @@ export function generateSalesReportCSV(
   return "﻿" + lines.join("\r\n");
 }
 
-/** Ouvre la version imprimable (PDF via l'impression du navigateur). */
-export function triggerSalesReportPDF(
+
+/**
+ * Ouvre la version imprimable (PDF via l'impression du navigateur).
+ *
+ * Elle lit le même plan que le tableur : l'inventaire et le rapport de ventes
+ * y montrent donc exactement les mêmes sections, dans le même ordre. Une
+ * section retirée d'un format ne peut pas subsister dans l'autre.
+ */
+export function triggerReportPDF(
+  scope: ReportScope,
   cards: PipelineCard[],
   products: Product[],
   timeframe: Timeframe = "month",
@@ -272,29 +336,73 @@ export function triggerSalesReportPDF(
   if (typeof window === "undefined") return;
 
   const r: ReportCopy = REPORT_COPY[language] ?? REPORT_COPY.fr;
-  const statuses = (COMMON_COPY[language] ?? COMMON_COPY.fr).statuses;
-  const t = totalsOf(cards, products);
-  const cols = reportColumns(r);
+  const plan = planReport(scope, cards, products, businessName, language);
 
   const printWin = window.open("", "_blank");
   if (!printWin) return;
 
-  const stockBadge = (p: Product) =>
-    p.stock_state === "fini" ? "badge-danger" : p.stock_state === "ba_stok" ? "badge-warning" : "badge-success";
+  // Une valeur négative ou due s'écrit en ambre, comme sur l'écran d'accueil.
+  const teinte = (style: CellStyle) =>
+    style === "cardValueGreen" ? "color:#008069" : style.includes("Amber") ? "color:#B25E09" : "";
+  const nombre = (v: number, style: CellStyle) =>
+    style.startsWith("cardCount") ? String(v) : v.toLocaleString(language === "en" ? "en-US" : "fr-FR");
+
+  const tuiles = plan.tuiles
+    .map(
+      ([label, valeur, style]) =>
+        `<div class="card"><div class="card-title">${esc(label)}</div><div class="card-val" style="${teinte(style)}">${esc(nombre(valeur, style))}</div></div>`,
+    )
+    .join("");
+
+  const sections = plan.sections
+    .map(
+      (section) => `
+        <h3>${esc(section.titre)}</h3>
+        <table>
+          <thead><tr>${section.colonnes.map((h) => `<th>${esc(h)}</th>`).join("")}</tr></thead>
+          <tbody>
+            ${section.lignes
+              .map(
+                (ligne) =>
+                  `<tr>${ligne
+                    .map((cellule) => {
+                      if (!cellule) return "<td></td>";
+                      const s = cellule.s ?? "cell";
+                      const brut = cellule.v;
+                      if (typeof brut === "number") {
+                        return `<td style="${teinte(s)};${s === "moneyBold" ? "font-weight:bold" : ""}">${esc(nombre(brut, s))}</td>`;
+                      }
+                      const texte = esc(String(brut ?? ""));
+                      if (s.startsWith("badge")) {
+                        const ton =
+                          s === "badgeDanger" ? "badge-danger" : s === "badgeWarning" ? "badge-warning" : "badge-success";
+                        return `<td><span class="badge ${ton}">${texte}</span></td>`;
+                      }
+                      if (s === "cellItems") return `<td class="items-cell">${texte}</td>`;
+                      if (s === "cellBold") return `<td><strong>${texte}</strong></td>`;
+                      return `<td>${texte}</td>`;
+                    })
+                    .join("")}</tr>`,
+              )
+              .join("")}
+          </tbody>
+        </table>`,
+    )
+    .join("");
 
   printWin.document.write(`
     <!DOCTYPE html>
     <html lang="${esc(language)}">
       <head>
         <meta charset="utf-8" />
-        <title>${esc(r.title(businessName))}</title>
+        <title>${esc(plan.titre)}</title>
         <style>
           body { font-family: 'Segoe UI', system-ui, sans-serif; padding: 24px; color: #111B21; background: #fff; }
           h1 { font-size: 22px; margin-bottom: 4px; color: #008069; }
           h3 { font-size: 15px; margin: 24px 0 8px; }
+          h3.first { margin-top: 0; }
           .sub { font-size: 13px; color: #667781; margin-bottom: 20px; }
           .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
-          h3.first { margin-top: 0; }
           .card { background: #F7F8F9; border: 1px solid #E9EDEF; border-radius: 12px; padding: 12px; }
           .card-title { font-size: 11px; text-transform: uppercase; color: #667781; font-weight: bold; }
           .card-val { font-size: 18px; font-weight: 800; color: #111B21; margin-top: 4px; }
@@ -310,64 +418,13 @@ export function triggerSalesReportPDF(
         </style>
       </head>
       <body>
-        <h1>${esc(r.title(businessName))}</h1>
+        <h1>${esc(plan.titre)}</h1>
         <div class="sub">${esc(r.period(r.periods[timeframe], dateStr(language)))}</div>
 
-        <h3 class="first">${esc(r.summary.title)}</h3>
-        <div class="grid">
-          <div class="card"><div class="card-title">${esc(r.summary.revenue)}</div><div class="card-val">${esc(formatMoney(t.revenueCents))}</div></div>
-          <div class="card"><div class="card-title">${esc(r.summary.paid)}</div><div class="card-val" style="color:#008069">${esc(formatMoney(t.paidCents))}</div></div>
-          <div class="card"><div class="card-title">${esc(r.summary.owed)}</div><div class="card-val" style="color:#B25E09">${esc(formatMoney(t.owedCents))}</div></div>
-          <div class="card"><div class="card-title">${esc(r.summary.stockValue)}</div><div class="card-val">${esc(formatMoney(t.stockValueCents))}</div></div>
-          <div class="card"><div class="card-title">${esc(r.summary.orders)}</div><div class="card-val">${esc(cards.length)}</div></div>
-          <div class="card"><div class="card-title">${esc(r.summary.lowStock)}</div><div class="card-val" style="${t.lowStockCount > 0 ? "color:#B25E09" : ""}">${esc(t.lowStockCount)}</div></div>
-        </div>
+        <h3 class="first">${esc(`1. ${scope === "stock" ? r.stockSummary : r.salesSummary}`)}</h3>
+        <div class="grid">${tuiles}</div>
 
-        <h3>${esc(r.products.title(products.length))}</h3>
-        <table>
-          <thead>
-            <tr>${cols.products.map((h) => `<th>${esc(h)}</th>`).join("")}</tr>
-          </thead>
-          <tbody>
-            ${products
-              .map(
-                (p) => `
-              <tr>
-                <td><strong>${esc(p.name)}</strong></td>
-                <td>${esc(p.category || r.products.other)}</td>
-                <td>${esc((p.price_cents / 100).toFixed(2))}</td>
-                <td>${esc(p.currency)}</td>
-                <td><strong>${esc(p.stock_qty ?? 0)}</strong></td>
-                <td>${esc(p.sold_count ?? 0)}</td>
-                <td><span class="badge ${stockBadge(p)}">${esc(r.products.states[p.stock_state])}</span></td>
-              </tr>`,
-              )
-              .join("")}
-          </tbody>
-        </table>
-
-        <h3>${esc(r.orders.title(cards.length))}</h3>
-        <table>
-          <thead>
-            <tr>${cols.orders.map((h) => `<th>${esc(h)}</th>`).join("")}</tr>
-          </thead>
-          <tbody>
-            ${cards
-              .map(
-                (c) => `
-              <tr>
-                <td><strong>#${esc(c.ref)}</strong></td>
-                <td><strong>${esc(c.customerName)}</strong></td>
-                <td>${esc(c.phone_e164)}</td>
-                <td class="items-cell">${esc(c.itemsSummary || r.orders.itemsFallback)}</td>
-                <td><span class="badge">${esc(statuses[c.status] ?? c.status)}</span></td>
-                <td><strong>${esc(formatMoney(c.totalCents))}</strong></td>
-                <td style="${c.owedCents > 0 ? "color:#B25E09;font-weight:bold;" : ""}">${esc(formatMoney(c.owedCents))}</td>
-              </tr>`,
-              )
-              .join("")}
-          </tbody>
-        </table>
+        ${sections}
 
         <script>window.onload = function () { window.print(); }</script>
       </body>

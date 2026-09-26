@@ -9,7 +9,7 @@ import { STOCK_COPY } from "@/lib/i18n/app/stock";
 import { KES_COPY } from "@/lib/i18n/app/kes";
 import { formatMoney } from "@/lib/money";
 import { recordPurchase, recordStockMovement, type ManualMovementKind, type StockMovementError } from "@/app/stok/actions";
-import { generateSalesReportXLSX, triggerSalesReportPDF } from "@/lib/reports";
+import { generateReportXLSX, triggerReportPDF, type ReportScope } from "@/lib/reports";
 import { stockStateFor } from "@/lib/stock_ai";
 import type { Business, PipelineCard, Product } from "@/lib/types";
 import { Select } from "@/components/ui/Select";
@@ -43,6 +43,8 @@ export function StockManager({
   initialProducts,
   cards,
   canEdit = true,
+  canViewStockReport = true,
+  canViewSalesReport = true,
   movements = [],
   movementsAvailable = false,
   purchases = [],
@@ -53,6 +55,10 @@ export function StockManager({
   initialProducts: Product[];
   cards: PipelineCard[];
   canEdit?: boolean;
+  /** Inventaire : produits, quantites, rotation. Ni clients ni chiffre d'affaires. */
+  canViewStockReport?: boolean;
+  /** Ventes : chiffre d'affaires et detail des commandes, donc les clients. */
+  canViewSalesReport?: boolean;
   movements?: MovementRow[];
   /** Faux tant que la migration 5 n'a pas créé le journal. */
   movementsAvailable?: boolean;
@@ -95,15 +101,16 @@ export function StockManager({
   // Le rapport part en .xlsx et non plus en CSV : un CSV arrivait dans Excel
   // empilé dans une seule colonne, sans couleur ni largeur, et ses montants
   // étaient du texte impossible à additionner.
-  function downloadExcel() {
-    const bytes = generateSalesReportXLSX(cards, products, timeframe, business.name, language);
+  function downloadExcel(scope: ReportScope) {
+    const bytes = generateReportXLSX(scope, cards, products, timeframe, business.name, language);
     const blob = new Blob([bytes], {
       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
+    const nom = business.name.replace(/\s+/g, "-").toLowerCase();
     link.href = url;
-    link.download = `rapport-ventes-${business.name.replace(/\s+/g, "-").toLowerCase()}-${timeframe}.xlsx`;
+    link.download = `${scope === "stock" ? "inventaire-stock" : "rapport-ventes"}-${nom}-${timeframe}.xlsx`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -142,8 +149,13 @@ export function StockManager({
           )}
         </section>
 
-        {products.length > 0 && (
-          <section className="flex flex-col gap-2 rounded-2xl border border-line bg-white p-3.5">
+        {/* Deux rapports, deux droits.
+            Un seul fichier mélangeait l'inventaire et les ventes : le
+            stockiste, l'agent promotionnel et le gérant pouvaient télécharger
+            le chiffre d'affaires et le carnet d'adresses de la boutique, que
+            l'application leur masquait pourtant à l'écran. */}
+        {products.length > 0 && (canViewStockReport || canViewSalesReport) && (
+          <section className="flex flex-col gap-3 rounded-2xl border border-line bg-white p-3.5">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h2 className="text-xs font-extrabold uppercase text-ink">{s.reports.title}</h2>
               <Select
@@ -156,17 +168,28 @@ export function StockManager({
                 <option value="all">{s.reports.all}</option>
               </Select>
             </div>
-            <div className="grid grid-cols-2 gap-2 pt-1">
-              <button onClick={downloadExcel} className="flex h-10 cursor-pointer items-center justify-center rounded-xl border border-line bg-[#F7F8F9] text-xs font-bold text-ink active:scale-95">
-                {s.reports.csv}
-              </button>
-              <button
-                onClick={() => triggerSalesReportPDF(cards, products, timeframe, business.name, language)}
-                className="flex h-10 cursor-pointer items-center justify-center rounded-xl border border-line bg-[#F7F8F9] text-xs font-bold text-ink active:scale-95"
-              >
-                {s.reports.pdf}
-              </button>
-            </div>
+
+            {canViewStockReport && (
+              <ReportBlock
+                title={s.reports.stock}
+                hint={s.reports.stockHint}
+                excel={s.reports.csv}
+                pdf={s.reports.pdf}
+                onExcel={() => downloadExcel("stock")}
+                onPdf={() => triggerReportPDF("stock", cards, products, timeframe, business.name, language)}
+              />
+            )}
+
+            {canViewSalesReport && (
+              <ReportBlock
+                title={s.reports.sales}
+                hint={s.reports.salesHint}
+                excel={s.reports.csv}
+                pdf={s.reports.pdf}
+                onExcel={() => downloadExcel("sales")}
+                onPdf={() => triggerReportPDF("sales", cards, products, timeframe, business.name, language)}
+              />
+            )}
           </section>
         )}
 
@@ -679,6 +702,44 @@ function Purchases({
           })}
         </ul>
       )}
+    </div>
+  );
+}
+
+/**
+ * Un rapport et ses deux formats. Le titre et la phrase disent ce que le
+ * fichier contient : sans cela, deux blocs de boutons identiques laissaient
+ * deviner lequel emportait les clients.
+ */
+function ReportBlock({
+  title,
+  hint,
+  excel,
+  pdf,
+  onExcel,
+  onPdf,
+}: {
+  title: string;
+  hint: string;
+  excel: string;
+  pdf: string;
+  onExcel: () => void;
+  onPdf: () => void;
+}) {
+  return (
+    <div className="flex flex-col gap-2 rounded-xl border border-line bg-[#FBFCFC] p-3">
+      <div className="flex flex-col">
+        <span className="text-[13px] font-extrabold text-ink">{title}</span>
+        <span className="text-[11.5px] leading-snug text-ink-muted">{hint}</span>
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        <button onClick={onExcel} className="flex h-10 cursor-pointer items-center justify-center rounded-xl border border-line bg-white text-xs font-bold text-ink active:scale-95">
+          {excel}
+        </button>
+        <button onClick={onPdf} className="flex h-10 cursor-pointer items-center justify-center rounded-xl border border-line bg-white text-xs font-bold text-ink active:scale-95">
+          {pdf}
+        </button>
+      </div>
     </div>
   );
 }

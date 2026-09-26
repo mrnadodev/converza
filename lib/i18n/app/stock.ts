@@ -8,7 +8,20 @@ export interface StockCopy {
   subtitle: string;
   valuation: { title: string; total: string; products: (n: number) => string };
   alerts: { text: (n: number) => string; see: string };
-  reports: { title: string; week: string; month: string; all: string; /** Bouton du rapport tableur : .xlsx depuis qu'un CSV s'ouvrait en une seule colonne. */ csv: string; pdf: string };
+  reports: {
+    title: string;
+    week: string;
+    month: string;
+    all: string;
+    /** Bouton du rapport tableur : .xlsx depuis qu'un CSV s'ouvrait en une seule colonne. */
+    csv: string;
+    pdf: string;
+    /** Les deux rapports sont separes, et soumis a deux droits distincts. */
+    stock: string;
+    stockHint: string;
+    sales: string;
+    salesHint: string;
+  };
   search: string;
   filters: { all: (n: number) => string; low: (n: number) => string; out: (n: number) => string };
   quantity: string;
@@ -75,11 +88,15 @@ const fr: StockCopy = {
   valuation: { title: "Valeur du stock", total: "Valeur totale", products: (n) => (n <= 1 ? `${n} produit` : `${n} produits`) },
   alerts: { text: (n) => (n <= 1 ? `${n} produit à réapprovisionner` : `${n} produits à réapprovisionner`), see: "Les voir" },
   reports: {
-    title: "Rapport de ventes et de stock",
+    title: "Rapports",
     week: "Cette semaine",
     month: "Ce mois-ci",
     all: "Depuis le début",
     csv: "Télécharger (Excel)",
+    stock: "Inventaire de stock",
+    stockHint: "Produits, quantités restantes et rotation. Aucun client, aucun chiffre d'affaires.",
+    sales: "Rapport de ventes",
+    salesHint: "Chiffre d'affaires, encaissé, reste à encaisser, et le détail des commandes avec vos clients.",
     pdf: "Version imprimable",
   },
   search: "Rechercher un produit…",
@@ -158,11 +175,15 @@ const ht: StockCopy = {
   valuation: { title: "Valè stòk la", total: "Valè total", products: (n) => `${n} pwodwi` },
   alerts: { text: (n) => `${n} pwodwi pou reapwovizyone`, see: "Wè yo" },
   reports: {
-    title: "Rapò vant ak stòk",
+    title: "Rapò",
     week: "Semèn sa a",
     month: "Mwa sa a",
     all: "Depi nan konmansman",
     csv: "Telechaje (Excel)",
+    stock: "Envantè stòk",
+    stockHint: "Pwodwi, kantite ki rete ak rotasyon. Pa gen kliyan, pa gen chif dafè.",
+    sales: "Rapò vant",
+    salesHint: "Chif dafè, sa ki antre, sa ki rete pou rekouvre, ak detay kòmand yo ak kliyan ou yo.",
     pdf: "Vèsyon pou enprime",
   },
   search: "Chèche yon pwodwi…",
@@ -241,11 +262,15 @@ const en: StockCopy = {
   valuation: { title: "Stock value", total: "Total value", products: (n) => (n === 1 ? "1 product" : `${n} products`) },
   alerts: { text: (n) => (n === 1 ? "1 product to restock" : `${n} products to restock`), see: "View them" },
   reports: {
-    title: "Sales and stock report",
+    title: "Reports",
     week: "This week",
     month: "This month",
     all: "All time",
     csv: "Download (Excel)",
+    stock: "Stock inventory",
+    stockHint: "Products, remaining quantities and turnover rate. No customers, no revenue.",
+    sales: "Sales report",
+    salesHint: "Revenue, collected, still to collect, and every order with your customers.",
     pdf: "Printable version",
   },
   search: "Search for a product…",

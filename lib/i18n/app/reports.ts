@@ -1,8 +1,21 @@
-import type { Language } from "../translations";
+﻿import type { Language } from "../translations";
 
 // Libellés des rapports ventes/stock exportés en CSV et en PDF imprimable.
 export interface ReportCopy {
+  /** @deprecated Titre de l'ancien rapport unique, gardé le temps d'une version. */
   title: (business: string) => string;
+  /**
+   * Les deux rapports ont été séparés : l'inventaire n'a rien à dire du chiffre
+   * d'affaires, et le rapport de ventes n'a rien à dire du stock. Chacun est
+   * désormais soumis à son propre droit (voir lib/rbac.ts).
+   */
+  stockTitle: (business: string) => string;
+  salesTitle: (business: string) => string;
+  /** Intertitres, sans numéro : la numérotation dépend du rapport. */
+  stockSummary: string;
+  salesSummary: string;
+  productsSection: string;
+  ordersSection: string;
   period: (period: string, date: string) => string;
   periods: { week: string; month: string; all: string };
   summary: {
@@ -41,6 +54,12 @@ export interface ReportCopy {
 
 const fr: ReportCopy = {
   title: (business) => `Rapport ventes et stock — ${business}`,
+  stockTitle: (business) => `Inventaire de stock — ${business}`,
+  salesTitle: (business) => `Rapport de ventes — ${business}`,
+  stockSummary: "Résumé de l'inventaire",
+  salesSummary: "Résumé financier",
+  productsSection: "Produits et stock",
+  ordersSection: "Commandes",
   period: (period, date) => `Période : ${period} | Édité le ${date}`,
   periods: { week: "Cette semaine", month: "Ce mois-ci", all: "Depuis le début" },
   summary: {
@@ -79,6 +98,12 @@ const fr: ReportCopy = {
 
 const ht: ReportCopy = {
   title: (business) => `Rapò vant ak stòk — ${business}`,
+  stockTitle: (business) => `Envantè stòk — ${business}`,
+  salesTitle: (business) => `Rapò vant — ${business}`,
+  stockSummary: "Rezime envantè a",
+  salesSummary: "Rezime finansye",
+  productsSection: "Pwodwi ak stòk",
+  ordersSection: "Kòmand",
   period: (period, date) => `Peryòd : ${period} | Fèt jou ${date}`,
   periods: { week: "Semèn sa a", month: "Mwa sa a", all: "Depi nan konmansman" },
   summary: {
@@ -117,6 +142,12 @@ const ht: ReportCopy = {
 
 const en: ReportCopy = {
   title: (business) => `Sales and stock report — ${business}`,
+  stockTitle: (business) => `Stock inventory — ${business}`,
+  salesTitle: (business) => `Sales report — ${business}`,
+  stockSummary: "Inventory summary",
+  salesSummary: "Financial summary",
+  productsSection: "Products and stock",
+  ordersSection: "Orders",
   period: (period, date) => `Period: ${period} | Generated on ${date}`,
   periods: { week: "This week", month: "This month", all: "All time" },
   summary: {

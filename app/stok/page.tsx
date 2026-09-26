@@ -13,7 +13,19 @@ export default async function StockPage() {
     redirect("/");
   }
 
-  const [products, business, cards, history, purchases] = await Promise.all([getCatalog(), getMyBusiness(), getPipeline(), loadMovements(), loadPurchases()]);
+  // Les commandes ne partent que vers qui a le droit de les lire.
+  //
+  // Masquer le bouton n'aurait rien réglé : `getPipeline()` était appelé pour
+  // tout le monde, si bien que le navigateur du stockiste recevait déjà chaque
+  // commande avec le nom et le numéro de son client. La restriction se joue
+  // ici, à la source, et le bouton n'en est que la conséquence visible.
+  const [products, business, cards, history, purchases] = await Promise.all([
+    getCatalog(),
+    getMyBusiness(),
+    permissions.canViewSalesReport ? getPipeline() : Promise.resolve([]),
+    loadMovements(),
+    loadPurchases(),
+  ]);
 
   return (
     <div className="app-page with-topnav relative flex min-h-[100dvh] flex-col bg-[#F0F2F3]">
@@ -22,6 +34,8 @@ export default async function StockPage() {
         initialProducts={products}
         cards={cards}
         canEdit={permissions.canEditStock}
+        canViewStockReport={permissions.canViewStockReport}
+        canViewSalesReport={permissions.canViewSalesReport}
         movements={history.rows}
         movementsAvailable={history.available}
         purchases={purchases.rows}
