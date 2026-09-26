@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
@@ -8,6 +8,7 @@ import { LanguageToggle } from "@/components/LanguageToggle";
 import { useDict } from "@/components/LanguageContext";
 import { COMMON_COPY } from "@/lib/i18n/app/common";
 import { TEAM_COPY } from "@/lib/i18n/app/team";
+import { Wordmark } from "@/components/Wordmark";
 
 export function JoinForm({
   businessId,
@@ -59,7 +60,7 @@ export function JoinForm({
             <span className="text-[13px] text-[#B9F5E4]">{t.asAgent}</span>
           </>
         ) : (
-          <span className="mt-1 text-xl font-extrabold tracking-tight text-white">CONVERZA</span>
+          <Wordmark tone="onBrand" className="mt-1 text-xl font-extrabold tracking-tight text-white" />
         )}
       </div>
 

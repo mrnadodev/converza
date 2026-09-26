@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { Tooltip } from "@/components/ui/Tooltip";
@@ -7,6 +7,7 @@ import { LanguageToggle } from "@/components/LanguageToggle";
 import { useDict } from "@/components/LanguageContext";
 import { COMMON_COPY } from "@/lib/i18n/app/common";
 import { getRolePermissions, type NavTab, type UserSession } from "@/lib/rbac";
+import { Wordmark } from "@/components/Wordmark";
 
 const ALL_TABS: NavTab[] = ["tablo", "komand", "katalog", "stok", "kliyan", "kes"];
 
@@ -45,7 +46,7 @@ export function BottomNav({ active, userSession }: { active: NavTab | null; user
             <span className="flex h-8 w-8 items-center justify-center rounded-[9px] bg-gradient-to-br from-brand-green to-brand shadow-2xs">
               <svg width="18" height="18" viewBox="0 0 120 120" fill="none" aria-hidden="true"><circle cx="60" cy="56" r="34" fill="#fff" /><path d="M40 80 L32 96 L54 84 Z" fill="#fff" /><path d="M73 42 A 20 20 0 1 0 73 70" fill="none" stroke="#008069" strokeWidth="11" strokeLinecap="round" /></svg>
             </span>
-            <span className="text-[16px] font-black tracking-tight text-ink">CONVERZA</span>
+            <Wordmark className="text-[16px] font-black tracking-tight text-ink" />
           </Link>
           <div className="flex min-w-0 items-center gap-0.5 lg:gap-1">
             {visible.map((it) => {

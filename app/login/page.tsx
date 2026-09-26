@@ -1,8 +1,9 @@
-import { signIn } from "./actions";
+﻿import { signIn } from "./actions";
 import { CvzMark } from "@/components/CvzMark";
 import { LoginForm } from "@/components/LoginForm";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { hasSupabase } from "@/lib/data";
+import { Wordmark } from "@/components/Wordmark";
 
 // Écran de connexion (owner / agent).
 export default function LoginPage({
@@ -31,7 +32,7 @@ export default function LoginPage({
             <CvzMark size={84} />
           </div>
           <div className="flex flex-col items-center gap-1 text-center">
-            <span className="text-[28px] font-extrabold tracking-tight text-white">CONVERZA</span>
+            <Wordmark tone="onBrand" className="text-[28px] font-extrabold tracking-tight text-white" />
             <span className="text-[13.5px] font-medium text-[#CFF5E7]">Turn conversations into customers</span>
           </div>
         </div>

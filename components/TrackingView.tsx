@@ -1,9 +1,10 @@
-"use client";
+﻿"use client";
 
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { useDict } from "@/components/LanguageContext";
 import { TRACKING_COPY } from "@/lib/i18n/tracking";
 import { waMeLink } from "@/lib/whatsapp";
+import { Wordmark } from "@/components/Wordmark";
 
 export interface TrackingData {
   ref: string;
@@ -112,7 +113,7 @@ export function TrackingView({ data }: { data: TrackingData }) {
             </a>
           )}
         </div>
-        <p className="text-center text-[11px] text-ink-faint">CONVERZA</p>
+        <p className="text-center text-[11px] text-ink-faint"><Wordmark /></p>
       </div>
     </main>
   );

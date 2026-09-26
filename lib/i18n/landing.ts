@@ -163,6 +163,10 @@ export interface LandingCopy {
     companyLinks: string[];
     rights: string;
     city: string;
+    /** Signature de la marque, en pied de page et sous le tableau de bord. */
+    slogan: string;
+    /** Retour à la page d'accueil depuis le pied de page. */
+    home: string;
   };
 }
 
@@ -357,6 +361,8 @@ const fr: LandingCopy = {
     companyLinks: ["Tarifs", "Conditions d'utilisation", "Confidentialité"],
     rights: "© 2026 CONVERZA",
     city: "Port-au-Prince, Haïti",
+    slogan: "Turn conversations into customers",
+    home: "Page d'accueil",
   },
 };
 
@@ -551,6 +557,8 @@ const ht: LandingCopy = {
     companyLinks: ["Pri", "Kondisyon itilizasyon", "Konfidansyalite"],
     rights: "© 2026 CONVERZA",
     city: "Pòtoprens, Ayiti",
+    slogan: "Turn conversations into customers",
+    home: "Paj akèy",
   },
 };
 
@@ -745,6 +753,8 @@ const en: LandingCopy = {
     companyLinks: ["Pricing", "Terms of use", "Privacy"],
     rights: "© 2026 CONVERZA",
     city: "Port-au-Prince, Haiti",
+    slogan: "Turn conversations into customers",
+    home: "Home page",
   },
 };
 

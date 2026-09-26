@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
@@ -12,6 +12,7 @@ import { useScrollReveal, useScrolledPast } from "@/components/useScrollReveal";
 import { planTexts } from "@/lib/plan-texts";
 import type { Plan } from "@/lib/plans";
 import { INDUSTRY_SECTORS, SECTOR_COUNT, TRADE_COUNT } from "@/lib/verticals";
+import { Wordmark } from "@/components/Wordmark";
 
 // Ordre d'affichage des secteurs : celui de lib/verticals.ts, qui va du plus
 // courant au plus spécialisé. Rien à maintenir ici.
@@ -81,7 +82,7 @@ export function LandingPage({
             <div className="flex items-center gap-10">
               <Link href="/" className="flex items-center gap-2.5">
                 <Mark />
-                <span className="text-[18px] font-extrabold tracking-tight text-white">CONVERZA</span>
+                <Wordmark className="text-[18px] font-extrabold tracking-tight text-white" />
               </Link>
               <nav className="hidden items-center gap-7 lg:flex">
                 <a href="#produit" className="text-[14.5px] font-semibold text-[#A9C4BC] transition-colors hover:text-white">{c.nav.product}</a>
@@ -566,7 +567,7 @@ export function LandingPage({
             <div className="flex flex-col gap-3.5 sm:col-span-3 lg:col-span-1">
               <div className="flex items-center gap-2.5">
                 <Mark size={28} />
-                <span className="text-[16.5px] font-extrabold tracking-tight text-white">CONVERZA</span>
+                <Wordmark className="text-[16.5px] font-extrabold tracking-tight text-white" />
               </div>
               <span className="max-w-[290px] text-[14px] leading-[1.62] text-[#7D9A92]">{c.footer.tagline}</span>
             </div>
@@ -578,9 +579,26 @@ export function LandingPage({
             />
             <FooterCol title={c.footer.languageCol} links={["Français", "Kreyòl", "English"]} />
           </div>
-          <div className="mt-9 flex flex-col gap-2 border-t pt-9 sm:flex-row sm:items-center sm:justify-between" style={{ borderColor: "rgba(255,255,255,0.1)" }}>
-            <span className="text-[13px] text-[#5E7E75]">{c.footer.rights}</span>
-            <span className="text-[13px] text-[#5E7E75]">{c.footer.city}</span>
+          {/* La signature de la marque, et le retour à l'accueil.
+              Le pied de page menait partout sauf en haut : un visiteur arrivé
+              par un lien profond n'avait aucun chemin vers la page d'accueil. */}
+          <div className="mt-9 flex flex-col gap-4 border-t pt-9" style={{ borderColor: "rgba(255,255,255,0.1)" }}>
+            <div className="flex flex-col items-center gap-3 text-center sm:flex-row sm:justify-between sm:text-left">
+              <span className="text-[13.5px] font-semibold text-[#7D9A92]">
+                <Wordmark className="font-extrabold text-white" /> · {c.footer.slogan}
+              </span>
+              <Link
+                href="/"
+                className="flex h-10 shrink-0 items-center rounded-xl border px-4 text-[13px] font-bold text-white transition-colors hover:bg-white/10"
+                style={{ borderColor: "rgba(255,255,255,0.22)" }}
+              >
+                {c.footer.home}
+              </Link>
+            </div>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <span className="text-[13px] text-[#5E7E75]">{c.footer.rights}</span>
+              <span className="text-[13px] text-[#5E7E75]">{c.footer.city}</span>
+            </div>
           </div>
         </div>
       </footer>

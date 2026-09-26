@@ -7,7 +7,7 @@ import { ProductPosterModal } from "@/components/ProductPosterModal";
 import { BottomNav } from "@/components/BottomNav";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { LiveClock } from "@/components/LiveClock";
-import { useDict } from "@/components/LanguageContext";
+import { useDict, useLanguage } from "@/components/LanguageContext";
 import { signOut } from "@/app/login/actions";
 import { markOrderPaid, moveOrderStatus } from "@/app/komand/actions";
 import { COMMON_COPY } from "@/lib/i18n/app/common";
@@ -21,6 +21,8 @@ import type { DashboardOrder, SourceRow } from "@/lib/data";
 import type { RolePermissions, UserSession } from "@/lib/rbac";
 import type { Business, OrderStatus, Product } from "@/lib/types";
 import { Tooltip } from "@/components/ui/Tooltip";
+import { Wordmark } from "@/components/Wordmark";
+import { landingCopy } from "@/lib/i18n/landing";
 
 export interface DashboardViewProps {
   session: UserSession;
@@ -49,6 +51,10 @@ export function DashboardView(props: DashboardViewProps) {
   const { session, permissions, business, stats, funnel, statusCounts, recentOrders, products } = props;
   const d = useDict(DASHBOARD_COPY);
   const c = useDict(COMMON_COPY);
+  // Le slogan vient des textes de la page d'accueil : c'est la même signature,
+  // et la recopier ici aurait garanti que les deux finissent par diverger.
+  const { language } = useLanguage();
+  const landing = landingCopy(language);
   const [posterOpen, setPosterOpen] = useState(false);
 
   const profile = c.profiles[session.role === "owner" ? "owner" : session.agentId ?? "agent"] ?? session.specialty ?? c.profiles.agent;
@@ -153,6 +159,12 @@ export function DashboardView(props: DashboardViewProps) {
             {stockAlerts.length > 0 && <StockAlerts alerts={stockAlerts} />}
           </>
         )}
+        {/* Signature de la marque. Le marchand passe sa journée sur cet écran
+            sans jamais voir le nom du produit qu'il utilise — et c'est ce nom
+            qu'il cite quand on lui demande comment il vend. */}
+        <p className="pb-2 pt-1 text-center text-[11.5px] text-ink-faint md:col-span-2">
+          <Wordmark className="font-extrabold text-ink-muted" /> · {landing.footer.slogan}
+        </p>
       </main>
 
       {posterOpen && (
