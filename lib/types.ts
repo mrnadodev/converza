@@ -41,6 +41,10 @@ export interface Business {
   logo_url: string | null;
   cover_url: string | null;
   hours: string | null;
+  /** Horaires structures (migration 12). `hours` reste le texte libre. */
+  opens_at?: string | null;
+  closes_at?: string | null;
+  open_days?: number[] | null;
   business_type: string | null;
   employees_count: number | null;
   theme: string | null;

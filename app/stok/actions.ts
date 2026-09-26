@@ -224,3 +224,50 @@ export async function deleteSupplier(id: string): Promise<{ ok: true } | { ok: f
   revalidatePath("/stok");
   return { ok: true };
 }
+
+/**
+ * Cherche un fournisseur parmi ceux que d autres boutiques ont accepte de
+ * partager, par nom ou par produit deja livre.
+ *
+ * Le stockiste qui manque de riz n a aucune raison de savoir a l avance qui en
+ * fournit : il tape « riz » et trouve. Seuls apparaissent les fournisseurs dont
+ * une boutique a explicitement coche le partage — et jamais le nom de cette
+ * boutique, qui ne regarde personne.
+ */
+export async function searchSharedSuppliers(query: string): Promise<{
+  rows: { id: string; name: string; phone: string | null; note: string | null; products: string[] }[];
+  available: boolean;
+}> {
+  if (!hasSupabase()) return { rows: [], available: false };
+
+  const me = await getMemberContext();
+  const permissions = await getMemberPermissions();
+  if (!me || (permissions && !permissions.canManageSuppliers)) return { rows: [], available: false };
+
+  const admin = createAdminClient();
+  if (!admin) return { rows: [], available: false };
+
+  const { data, error } = await admin.from("public_shared_suppliers").select("id, name, phone_e164, note, products").limit(200);
+  // La vue arrive avec la migration 11 : tant qu elle n est pas passee, on le
+  // dit plutot que d afficher une liste vide qui ressemble a une panne.
+  if (error) return { rows: [], available: false };
+
+  const q = query.trim().toLowerCase();
+  const toutes = (data ?? []).map((s) => ({
+    id: s.id as string,
+    name: s.name as string,
+    phone: (s.phone_e164 as string | null) ?? null,
+    note: (s.note as string | null) ?? null,
+    products: ((s.products as string[] | null) ?? []).filter(Boolean),
+  }));
+
+  if (!q) return { rows: toutes.slice(0, 40), available: true };
+
+  // Le filtrage se fait ici et non en base : les listes de produits sont des
+  // tableaux, et un ILIKE sur un tableau demanderait un index dedie pour un
+  // volume qui tient largement en memoire.
+  const trouves = toutes.filter(
+    (s) => s.name.toLowerCase().includes(q) || s.products.some((p) => p.toLowerCase().includes(q)),
+  );
+  return { rows: trouves.slice(0, 40), available: true };
+}

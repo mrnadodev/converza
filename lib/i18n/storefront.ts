@@ -69,7 +69,11 @@ export interface StorefrontCopy {
     hours: string;
     track: string;
     back: string;
+    /** Hors des heures d'ouverture : quand la réponse viendra. */
+    closed: (heure: string, jours: number) => string;
   };
+  /** Badge de la vitrine quand la boutique est fermée. */
+  closedUntil: (heure: string, jours: number) => string;
   sendAnyway: string;
   scheduleVisit: string;
   previewBanner: string;
@@ -154,7 +158,15 @@ const fr: StorefrontCopy = {
     hours: "Horaires",
     track: "Suivre ma commande",
     back: "Retour à la boutique",
+    closed: (heure, jours) =>
+      jours === 0
+        ? `La boutique ouvre à ${heure}. Votre commande sera traitée dès l'ouverture.`
+        : jours === 1
+          ? `La boutique est fermée. Votre commande sera traitée demain à partir de ${heure}.`
+          : `La boutique est fermée. Votre commande sera traitée dans ${jours} jours, à partir de ${heure}.`,
   },
+  closedUntil: (heure, jours) =>
+    jours === 0 ? `Fermé · ouvre à ${heure}` : jours === 1 ? `Fermé · ouvre demain à ${heure}` : `Fermé · ouvre dans ${jours} jours`,
   sendAnyway: "Envoyer quand même",
   scheduleVisit: "Demander une visite",
   previewBanner: "Aperçu de la mise en page — rien n'est enregistré",
@@ -250,7 +262,15 @@ const ht: StorefrontCopy = {
     hours: "Lè yo louvri",
     track: "Swiv kòmand mwen",
     back: "Tounen nan boutik la",
+    closed: (heure, jours) =>
+      jours === 0
+        ? `Boutik la louvri a ${heure}. N ap trete kòmand ou an depi l louvri.`
+        : jours === 1
+          ? `Boutik la fèmen. N ap trete kòmand ou an demen apati ${heure}.`
+          : `Boutik la fèmen. N ap trete kòmand ou an nan ${jours} jou, apati ${heure}.`,
   },
+  closedUntil: (heure, jours) =>
+    jours === 0 ? `Fèmen · louvri a ${heure}` : jours === 1 ? `Fèmen · louvri demen a ${heure}` : `Fèmen · louvri nan ${jours} jou`,
   sendAnyway: "Voye l kanmenm",
   scheduleVisit: "Mande yon vizit",
   previewBanner: "Apèsi mizanpaj la — anyen pa anrejistre",
@@ -346,7 +366,15 @@ const en: StorefrontCopy = {
     hours: "Opening hours",
     track: "Track my order",
     back: "Back to the shop",
+    closed: (heure, jours) =>
+      jours === 0
+        ? `The shop opens at ${heure}. Your order will be handled as soon as it opens.`
+        : jours === 1
+          ? `The shop is closed. Your order will be handled tomorrow from ${heure}.`
+          : `The shop is closed. Your order will be handled in ${jours} days, from ${heure}.`,
   },
+  closedUntil: (heure, jours) =>
+    jours === 0 ? `Closed · opens at ${heure}` : jours === 1 ? `Closed · opens tomorrow at ${heure}` : `Closed · opens in ${jours} days`,
   sendAnyway: "Send anyway",
   scheduleVisit: "Request a visit",
   previewBanner: "Layout preview — nothing is saved",

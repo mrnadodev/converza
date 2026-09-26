@@ -50,6 +50,10 @@ export function SettingsForm({ business, designs }: { business: Business; design
     layout: resolveLayout(business.layout, effectivePlan(business.plan, business.plan_until), designs),
     phone_e164: business.phone_e164 ?? "",
     hours: business.hours ?? "",
+    // 	ime de PostgreSQL revient en « 07:00:00 » ; <input type="time"> veut « 07:00 ».
+    opens_at: (business.opens_at ?? "").slice(0, 5),
+    closes_at: (business.closes_at ?? "").slice(0, 5),
+    open_days: business.open_days ?? [1, 2, 3, 4, 5, 6],
     address: business.address ?? "",
     logo_url: business.logo_url,
     cover_url: business.cover_url,
@@ -204,9 +208,46 @@ export function SettingsForm({ business, designs }: { business: Business; design
                 </Field>
               </div>
               <div className="grid gap-3 sm:grid-cols-2">
-                <Field label={s.store.hours}>
+                <Field label={s.store.opensAt}>
+                  <input type="time" value={f.opens_at} onChange={(e) => set({ opens_at: e.target.value })} className={cls} />
+                </Field>
+                <Field label={s.store.closesAt}>
+                  <input type="time" value={f.closes_at} onChange={(e) => set({ closes_at: e.target.value })} className={cls} />
+                </Field>
+                <Field label={s.store.hours} hint={s.store.hoursHint}>
                   <input value={f.hours} onChange={(e) => set({ hours: e.target.value })} className={cls} placeholder={s.store.hoursPlaceholder} />
                 </Field>
+
+                {/* Les jours travaillés. Sans eux, une boutique fermée le
+                    dimanche annoncerait une réponse « demain » un samedi soir,
+                    alors qu'elle ne rouvre que le lundi. */}
+                <div className="flex flex-col gap-1.5 sm:col-span-2">
+                  <span className="text-[13px] font-semibold text-ink-soft">{s.store.openDays}</span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {s.store.dayNames.map((nom, jour) => {
+                      const jours = f.open_days ?? [];
+                      const actif = jours.includes(jour);
+                      return (
+                        <button
+                          key={jour}
+                          type="button"
+                          onClick={() =>
+                            set({
+                              open_days: actif ? jours.filter((j) => j !== jour) : [...jours, jour].sort(),
+                            })
+                          }
+                          aria-pressed={actif}
+                          className={`h-9 w-11 cursor-pointer rounded-lg text-[12px] font-extrabold transition-colors ${
+                            actif ? "bg-brand text-white" : "border border-line text-ink-muted"
+                          }`}
+                        >
+                          {nom}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <span className="text-[11.5px] text-ink-muted">{s.store.openDaysHint}</span>
+                </div>
                 <Field label={s.store.address}>
                   <input value={f.address} onChange={(e) => set({ address: e.target.value })} className={cls} placeholder={s.store.addressPlaceholder} />
                 </Field>

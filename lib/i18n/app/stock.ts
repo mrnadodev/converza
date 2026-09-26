@@ -55,6 +55,13 @@ export interface StockCopy {
     share: string;
     shareHint: string;
     shared: string;
+    /** Recherche chez les fournisseurs partagés par d'autres boutiques. */
+    findTitle: string;
+    findHint: string;
+    findPlaceholder: string;
+    findCta: string;
+    findNone: (q: string) => string;
+    findUnavailable: string;
   };
   auto: string;
   movement: {
@@ -158,6 +165,12 @@ const fr: StockCopy = {
     share: "Partager avec les autres boutiques CONVERZA",
     shareHint: "Son nom, son numéro et ce qu'il livre deviennent visibles par les autres marchands. Votre boutique n'est pas nommée. Vous pouvez revenir dessus à tout moment.",
     shared: "Partagé",
+    findTitle: "Chercher un fournisseur",
+    findHint: "Tapez un produit. Les fournisseurs que d'autres boutiques CONVERZA ont acceptés de partager apparaissent.",
+    findPlaceholder: "Riz, ciment, tissu…",
+    findCta: "Chercher",
+    findNone: (q) => (q ? `Aucun fournisseur partagé ne correspond à « ${q} ».` : "Aucun fournisseur partagé pour l'instant."),
+    findUnavailable: "La recherche partagée n'est pas encore activée.",
     failed: "L'enregistrement a échoué. Réessayez.",
   },
   auto: "Les ventes confirmées retirent le stock automatiquement ; une commande annulée le remet.",
@@ -272,6 +285,12 @@ const ht: StockCopy = {
     share: "Pataje ak lòt boutik CONVERZA yo",
     shareHint: "Non li, nimewo li ak sa l livre ap vizib pou lòt machann yo. Boutik ou pa parèt. Ou ka chanje lide nenpòt lè.",
     shared: "Pataje",
+    findTitle: "Chèche yon founisè",
+    findHint: "Tape yon pwodwi. Founisè lòt boutik CONVERZA aksepte pataje yo ap parèt.",
+    findPlaceholder: "Diri, siman, twal…",
+    findCta: "Chèche",
+    findNone: (q) => (q ? `Pa gen founisè pataje ki matche ak « ${q} ».` : "Pa gen founisè pataje pou kounye a."),
+    findUnavailable: "Rechèch pataje a poko aktive.",
     failed: "Nou pa rive anrejistre. Eseye ankò.",
   },
   auto: "Vant ki konfime yo retire stòk la otomatikman ; yon kòmand ki anile remèt li.",
@@ -386,6 +405,12 @@ const en: StockCopy = {
     share: "Share with other CONVERZA shops",
     shareHint: "Their name, number and what they deliver become visible to other merchants. Your shop is not named. You can undo this at any time.",
     shared: "Shared",
+    findTitle: "Find a supplier",
+    findHint: "Type a product. Suppliers that other CONVERZA shops have chosen to share will appear.",
+    findPlaceholder: "Rice, cement, fabric…",
+    findCta: "Search",
+    findNone: (q) => (q ? `No shared supplier matches "${q}".` : "No shared supplier yet."),
+    findUnavailable: "Shared search is not enabled yet.",
     failed: "Saving failed. Please try again.",
   },
   auto: "Confirmed sales remove stock automatically; a cancelled order puts it back.",

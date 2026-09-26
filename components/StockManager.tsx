@@ -11,7 +11,7 @@ import { KES_COPY } from "@/lib/i18n/app/kes";
 import { formatMoney } from "@/lib/money";
 import { recordPurchase, recordStockMovement, type ManualMovementKind, type StockMovementError } from "@/app/stok/actions";
 import { generateReportXLSX, triggerReportPDF, type ReportScope } from "@/lib/reports";
-import { saveSupplier, deleteSupplier } from "@/app/stok/actions";
+import { saveSupplier, deleteSupplier, searchSharedSuppliers } from "@/app/stok/actions";
 import { buildSupplierOrderMessage } from "@/lib/order";
 import { waMeLink } from "@/lib/whatsapp";
 import { MESSAGE_COPY } from "@/lib/i18n/app/messages";
@@ -819,6 +819,15 @@ function Suppliers({
   const [note, setNote] = useState("");
   const [partage, setPartage] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
+  const [recherche, setRecherche] = useState("");
+  /** `null` tant qu'aucune recherche n'a été lancée : on n'affiche rien avant. */
+  const [partages, setPartages] = useState<Awaited<ReturnType<typeof searchSharedSuppliers>> | null>(null);
+
+  function chercher() {
+    start(async () => {
+      setPartages(await searchSharedSuppliers(recherche));
+    });
+  }
 
   // Ce qu'il faut racheter : épuisé d'abord, puis stock faible. La quantité
   // proposée ramène au seuil du produit, à défaut une dizaine.
@@ -901,6 +910,68 @@ function Suppliers({
       </div>
 
       {erreur && <p className="px-1 text-[12px] font-semibold text-[#C0392B]">{erreur}</p>}
+
+      {/* Chercher chez les autres boutiques.
+          Le stockiste qui manque de riz n'a aucune raison de savoir à l'avance
+          qui en fournit : il tape « riz » et trouve. Seuls remontent les
+          fournisseurs qu'une boutique a explicitement acceptés de partager. */}
+      <div className="flex flex-col gap-2 rounded-2xl border border-line bg-white p-3.5">
+        <div className="flex flex-col">
+          <span className="text-[13px] font-extrabold text-ink">{s.suppliers.findTitle}</span>
+          <span className="text-[11.5px] leading-snug text-ink-muted">{s.suppliers.findHint}</span>
+        </div>
+        <div className="flex gap-2">
+          <input
+            value={recherche}
+            onChange={(e) => setRecherche(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && chercher()}
+            placeholder={s.suppliers.findPlaceholder}
+            className="h-10 flex-1 rounded-xl border border-line px-3 text-[13px] outline-none focus:border-brand"
+          />
+          <button
+            onClick={chercher}
+            className="h-10 shrink-0 cursor-pointer rounded-xl bg-brand px-4 text-xs font-extrabold text-white active:scale-95"
+          >
+            {s.suppliers.findCta}
+          </button>
+        </div>
+
+        {partages && (
+          partages.available ? (
+            partages.rows.length === 0 ? (
+              <p className="pt-1 text-[12px] text-ink-muted">{s.suppliers.findNone(recherche.trim())}</p>
+            ) : (
+              <ul className="flex flex-col gap-2 pt-1">
+                {partages.rows.map((sp) => (
+                  <li key={sp.id} className="flex flex-col gap-2 rounded-xl bg-[#F7F8F9] p-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <span className="flex min-w-0 flex-col">
+                        <span className="truncate text-[13px] font-extrabold text-ink">{sp.name}</span>
+                        {sp.products.length > 0 && (
+                          <span className="truncate text-[11.5px] text-ink-muted">{sp.products.slice(0, 6).join(" · ")}</span>
+                        )}
+                        {sp.note && <span className="truncate text-[11px] text-ink-soft">{sp.note}</span>}
+                      </span>
+                      {sp.phone && (
+                        <a
+                          href={waMeLink(sp.phone, buildSupplierOrderMessage(sp.name, businessName, aRacheter, m))}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="h-8 shrink-0 rounded-lg bg-brand-green px-3 text-[11.5px] font-extrabold leading-8 text-white active:scale-95"
+                        >
+                          {s.suppliers.order}
+                        </a>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )
+          ) : (
+            <p className="pt-1 text-[12px] text-ink-muted">{s.suppliers.findUnavailable}</p>
+          )
+        )}
+      </div>
 
       {rows.length === 0 ? (
         <section className="rounded-2xl border border-line bg-white p-8 text-center">

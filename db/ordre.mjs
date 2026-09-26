@@ -1,4 +1,4 @@
-// L'ordre dans lequel un projet Supabase neuf doit être monté.
+﻿// L'ordre dans lequel un projet Supabase neuf doit être monté.
 //
 // Les fichiers db/migrate-*.sql sans numéro (delivery, team, theme, verticals,
 // storage, onboarding, payment-methods, subscription) sont des rattrapages
@@ -18,4 +18,5 @@ export const ORDRE_MONTAGE = [
   "migrate-2026-9-vitrine-accueil.sql",
   "migrate-2026-10-vitrine-produits.sql",
   "migrate-2026-11-annuaire.sql",
+  "migrate-2026-12-horaires.sql",
 ];

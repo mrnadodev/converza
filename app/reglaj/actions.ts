@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
@@ -17,6 +17,10 @@ export interface BusinessInput {
   layout: string;
   phone_e164: string;
   hours: string;
+  /** Horaires structures (migration 12) : « 07:00 », ou vide si non renseigne. */
+  opens_at?: string;
+  closes_at?: string;
+  open_days?: number[];
   address: string;
   logo_url: string | null;
   cover_url: string | null;
@@ -181,6 +185,27 @@ export async function updateBusiness(input: BusinessInput) {
       console.warn("listed:", listedError.message);
     }
     revalidatePath("/boutik");
+  }
+
+  // Horaires structurés (migration 12). Écrits à part pour la même raison que
+  // les deux réglages précédents : tant que la migration n'est pas passée, les
+  // colonnes n'existent pas, et les mêler au reste ferait échouer la
+  // sauvegarde entière — le marchand perdrait son adresse en réglant ses
+  // heures.
+  if (input.opens_at !== undefined || input.closes_at !== undefined || input.open_days !== undefined) {
+    const heure = (v: string | undefined) => (v && /^\d{2}:\d{2}$/.test(v) ? v : null);
+    const jours = (input.open_days ?? []).filter((j) => Number.isInteger(j) && j >= 0 && j <= 6);
+    const { error: horairesError } = await sb
+      .from("businesses")
+      .update({
+        opens_at: heure(input.opens_at),
+        closes_at: heure(input.closes_at),
+        open_days: jours,
+      })
+      .eq("id", member.business_id);
+    if (horairesError && !/opens_at|closes_at|open_days|column|schema cache/i.test(horairesError.message)) {
+      console.warn("horaires:", horairesError.message);
+    }
   }
 
   revalidatePath("/reglaj");

@@ -23,6 +23,14 @@ export interface SettingsCopy {
     employees: string;
     hours: string;
     hoursPlaceholder: string;
+    /** Horaires structurés : c'est eux qui disent « fermé, ouvre demain à 7 h ». */
+    opensAt: string;
+    closesAt: string;
+    hoursHint: string;
+    openDays: string;
+    openDaysHint: string;
+    /** Sept initiales, dimanche en premier (ordre de Date.getDay()). */
+    dayNames: string[];
     address: string;
     addressPlaceholder: string;
     language: string;
@@ -121,6 +129,12 @@ const fr: SettingsCopy = {
     employees: "Nombre d'employés",
     hours: "Heures d'ouverture",
     hoursPlaceholder: "7h–19h",
+    opensAt: "Ouverture",
+    closesAt: "Fermeture",
+    hoursHint: "Texte libre affiché sur la vitrine. Les deux heures ci-dessus servent à dire au client quand vous lui répondrez.",
+    openDays: "Jours d'ouverture",
+    openDaysHint: "Hors de ces jours, le client sait qu'il sera traité à la réouverture au lieu d'attendre sans réponse.",
+    dayNames: ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"],
     address: "Adresse",
     addressPlaceholder: "Delmas 31, Port-au-Prince",
     language: "Langue de l'application",
@@ -264,6 +278,12 @@ const ht: SettingsCopy = {
     employees: "Kantite anplwaye",
     hours: "Lè louvri",
     hoursPlaceholder: "7è–7è",
+    opensAt: "Louvri",
+    closesAt: "Fèmen",
+    hoursHint: "Tèks lib ki parèt sou vitrin nan. De lè anwo yo sèvi pou di kliyan an kilè w ap reponn li.",
+    openDays: "Jou w ap travay",
+    openDaysHint: "Deyò jou sa yo, kliyan an konnen y ap trete l lè w louvri, olye l tann san repons.",
+    dayNames: ["Dim", "Len", "Mad", "Mèk", "Jed", "Van", "Sam"],
     address: "Adrès",
     addressPlaceholder: "Delmas 31, Pòtoprens",
     language: "Lang aplikasyon an",
@@ -407,6 +427,12 @@ const en: SettingsCopy = {
     employees: "Number of employees",
     hours: "Opening hours",
     hoursPlaceholder: "7am–7pm",
+    opensAt: "Opens at",
+    closesAt: "Closes at",
+    hoursHint: "Free text shown on the storefront. The two times above are what tell a customer when you will reply.",
+    openDays: "Open days",
+    openDaysHint: "Outside these days, the customer knows they will be handled when you reopen instead of waiting with no answer.",
+    dayNames: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
     address: "Address",
     addressPlaceholder: "Delmas 31, Port-au-Prince",
     language: "App language",

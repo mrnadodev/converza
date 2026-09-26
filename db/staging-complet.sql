@@ -2,7 +2,7 @@
 -- CONVERZA — montage complet d'une base neuve
 --
 -- GÉNÉRÉ par scripts/build-staging-sql.mjs — ne pas modifier à la main.
--- Source : les 13 fichiers de db/, dans l'ordre de montage.
+-- Source : les 14 fichiers de db/, dans l'ordre de montage.
 --
 -- À coller dans l'éditeur SQL d'un projet Supabase VIDE.
 -- Ne jamais lancer sur la production : le script recrée tout.
@@ -12,7 +12,7 @@
 
 
 -- ══════════════════════════════════════════════════════════
--- ÉTAPE 1 / 13 — schema.sql
+-- ÉTAPE 1 / 14 — schema.sql
 -- ══════════════════════════════════════════════════════════
 
 -- ============================================================
@@ -364,7 +364,7 @@ create policy biz_isolation on order_items
 
 
 -- ══════════════════════════════════════════════════════════
--- ÉTAPE 2 / 13 — migrate-2026-1-enums.sql
+-- ÉTAPE 2 / 14 — migrate-2026-1-enums.sql
 -- ══════════════════════════════════════════════════════════
 
 -- ============================================================
@@ -414,7 +414,7 @@ alter type pay_method add value if not exists 'banque_locale';
 
 
 -- ══════════════════════════════════════════════════════════
--- ÉTAPE 3 / 13 — migrate-2026-2-schema.sql
+-- ÉTAPE 3 / 14 — migrate-2026-2-schema.sql
 -- ══════════════════════════════════════════════════════════
 
 -- ============================================================
@@ -743,7 +743,7 @@ $$;
 
 
 -- ══════════════════════════════════════════════════════════
--- ÉTAPE 4 / 13 — migrate-2026-3-admin.sql
+-- ÉTAPE 4 / 14 — migrate-2026-3-admin.sql
 -- ══════════════════════════════════════════════════════════
 
 -- ============================================================
@@ -828,7 +828,7 @@ revoke all on security_audit_logs from anon, authenticated;
 
 
 -- ══════════════════════════════════════════════════════════
--- ÉTAPE 5 / 13 — migrate-2026-4-numero.sql
+-- ÉTAPE 5 / 14 — migrate-2026-4-numero.sql
 -- ══════════════════════════════════════════════════════════
 
 -- ============================================================
@@ -969,7 +969,7 @@ on conflict (id) do update set public = false;
 
 
 -- ══════════════════════════════════════════════════════════
--- ÉTAPE 6 / 13 — migrate-2026-5-stock.sql
+-- ÉTAPE 6 / 14 — migrate-2026-5-stock.sql
 -- ══════════════════════════════════════════════════════════
 
 -- ============================================================
@@ -1200,7 +1200,7 @@ create trigger products_stock_log
 
 
 -- ══════════════════════════════════════════════════════════
--- ÉTAPE 7 / 13 — migrate-2026-5b-correctif-stock.sql
+-- ÉTAPE 7 / 14 — migrate-2026-5b-correctif-stock.sql
 -- ══════════════════════════════════════════════════════════
 
 -- ============================================================
@@ -1281,7 +1281,7 @@ revoke all on function apply_stock_movement(uuid, uuid, text, numeric, uuid, tex
 
 
 -- ══════════════════════════════════════════════════════════
--- ÉTAPE 8 / 13 — migrate-2026-6-gestion.sql
+-- ÉTAPE 8 / 14 — migrate-2026-6-gestion.sql
 -- ══════════════════════════════════════════════════════════
 
 -- ============================================================
@@ -1521,7 +1521,7 @@ create policy purchase_items_read on purchase_items for select to authenticated
 
 
 -- ══════════════════════════════════════════════════════════
--- ÉTAPE 9 / 13 — migrate-2026-7-support.sql
+-- ÉTAPE 9 / 14 — migrate-2026-7-support.sql
 -- ══════════════════════════════════════════════════════════
 
 -- ============================================================
@@ -1624,7 +1624,7 @@ revoke all on app_errors from anon, authenticated;
 
 
 -- ══════════════════════════════════════════════════════════
--- ÉTAPE 10 / 13 — migrate-2026-8-abonnement.sql
+-- ÉTAPE 10 / 14 — migrate-2026-8-abonnement.sql
 -- ══════════════════════════════════════════════════════════
 
 -- ============================================================
@@ -1681,7 +1681,7 @@ on conflict (key) do update
 
 
 -- ══════════════════════════════════════════════════════════
--- ÉTAPE 11 / 13 — migrate-2026-9-vitrine-accueil.sql
+-- ÉTAPE 11 / 14 — migrate-2026-9-vitrine-accueil.sql
 -- ══════════════════════════════════════════════════════════
 
 -- ============================================================
@@ -1738,7 +1738,7 @@ on conflict (key) do update
 
 
 -- ══════════════════════════════════════════════════════════
--- ÉTAPE 12 / 13 — migrate-2026-10-vitrine-produits.sql
+-- ÉTAPE 12 / 14 — migrate-2026-10-vitrine-produits.sql
 -- ══════════════════════════════════════════════════════════
 
 -- ============================================================
@@ -1772,7 +1772,7 @@ on conflict (key) do update
 
 
 -- ══════════════════════════════════════════════════════════
--- ÉTAPE 13 / 13 — migrate-2026-11-annuaire.sql
+-- ÉTAPE 13 / 14 — migrate-2026-11-annuaire.sql
 -- ══════════════════════════════════════════════════════════
 
 -- ============================================================
@@ -1892,6 +1892,76 @@ insert into platform_settings (key, value)
 values ('db_version', jsonb_build_object('migration', 11))
 on conflict (key) do update
   set value = jsonb_build_object('migration', greatest(11, coalesce((platform_settings.value->>'migration')::int, 0))),
+      updated_at = now();
+
+-- ✅ Migration terminée.
+
+
+-- ══════════════════════════════════════════════════════════
+-- ÉTAPE 14 / 14 — migrate-2026-12-horaires.sql
+-- ══════════════════════════════════════════════════════════
+
+-- ============================================================
+-- CONVERZA — migration 12 (horaires d'ouverture structurés)
+-- À exécuter dans l'éditeur SQL Supabase après
+-- migrate-2026-11-annuaire.sql. Le script est rejouable.
+--
+-- La colonne `hours` existait, mais en texte libre : « 8h – 18h », « 7am–7pm »,
+-- « lundi au samedi ». On peut l'afficher, on ne peut rien en déduire. Or un
+-- client qui commande à 22 h n'a pas besoin qu'on lui montre des horaires : il
+-- a besoin qu'on lui dise quand il aura une réponse.
+--
+-- Trois colonnes suffisent pour une boutique de quartier : une heure
+-- d'ouverture, une heure de fermeture, et les jours travaillés. Une grille
+-- jour par jour serait plus juste pour une minorité et plus pénible à remplir
+-- pour tout le monde.
+--
+-- `hours` est conservée : elle reste ce que le marchand veut écrire en toutes
+-- lettres, et les boutiques qui ne renseignent pas les nouvelles colonnes ne
+-- changent pas d'apparence.
+-- ============================================================
+
+alter table businesses add column if not exists opens_at time;
+alter table businesses add column if not exists closes_at time;
+
+-- Jours travaillés, au format de Date.getDay() : 0 = dimanche … 6 = samedi.
+-- Le défaut couvre lundi à samedi, la semaine de la plupart des commerces.
+alter table businesses add column if not exists open_days smallint[] not null default '{1,2,3,4,5,6}';
+
+-- ------------------------------------------------------------
+-- La vitrine lit la boutique par `public_businesses` : sans ces colonnes dans
+-- la vue, la page ne les verrait jamais.
+--
+-- PostgreSQL refuse de remplacer une vue dont les colonnes changent : on la
+-- supprime d'abord, et les droits sont réattribués juste en dessous.
+-- ------------------------------------------------------------
+
+drop view if exists public_businesses;
+create view public_businesses as
+select
+  id, name, slug, category, address, phone_e164, logo_url, cover_url, hours,
+  business_type, theme, layout,
+  case
+    when coalesce(plan, 'gratis') <> 'gratis'
+         and plan_until is not null
+         and plan_until + interval '3 days' < now()
+    then 'gratis'
+    else coalesce(plan, 'gratis')
+  end as plan,
+  social_instagram, social_facebook,
+  social_tiktok, delivery_zones, default_currency, slogan, promo_text, created_at,
+  previous_phone_e164, phone_changed_at, phone_notice_until,
+  showcase_opt_out,
+  opens_at, closes_at, open_days
+from businesses
+where suspended_at is null;
+grant select on public_businesses to anon, authenticated;
+
+-- Repère de version lu par la console.
+insert into platform_settings (key, value)
+values ('db_version', jsonb_build_object('migration', 12))
+on conflict (key) do update
+  set value = jsonb_build_object('migration', greatest(12, coalesce((platform_settings.value->>'migration')::int, 0))),
       updated_at = now();
 
 -- ✅ Migration terminée.

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { formatMoney } from "@/lib/money";
 import { waMeLink } from "@/lib/whatsapp";
+import { etatBoutique, type EtatBoutique } from "@/lib/horaires";
 import { buildOrderMessage, type CartLine } from "@/lib/order";
 import { verticalOf } from "@/lib/verticals";
 import { paletteOfTheme, themeOf } from "@/lib/themes";
@@ -111,6 +112,31 @@ export function Storefront({
   const [sendFailed, setSendFailed] = useState(false);
   /** Accusé de réception affiché après l'enregistrement d'une commande. */
   const [confirmation, setConfirmation] = useState<{ ref: string; token: string | null; code: string | null } | null>(null);
+
+  /**
+   * Ouvert ou fermé, d'après l'heure de l'appareil du client.
+   *
+   * Calculé après le montage seulement : le serveur et le navigateur ne sont
+   * pas à la même seconde, et afficher « ouvert » au premier rendu pour le
+   * corriger ensuite ferait clignoter la vitrine — ou pire, ferait mentir la
+   * page rendue côté serveur et mise en cache.
+   */
+  const [etat, setEtat] = useState<EtatBoutique>({ connu: false });
+  useEffect(() => {
+    const lire = () =>
+      setEtat(
+        etatBoutique({
+          opensAt: business.opens_at,
+          closesAt: business.closes_at,
+          openDays: business.open_days,
+        }),
+      );
+    lire();
+    // Une minute suffit : on bascule d'ouvert à fermé sans que le client ait à
+    // recharger, et sans réveiller son téléphone pour rien.
+    const battement = setInterval(lire, 60_000);
+    return () => clearInterval(battement);
+  }, [business.opens_at, business.closes_at, business.open_days]);
   const [phoneError, setPhoneError] = useState(false);
   const phoneRef = useRef<HTMLInputElement>(null);
 
@@ -318,10 +344,26 @@ export function Storefront({
               {sector.label}
               {business.address ? ` · ${business.address}` : ""}
             </span>
-            {business.hours && (
-              <div className="mt-1 flex items-center gap-1.5 rounded-full px-3 py-1.5" style={{ background: theme.accentSoft }}>
-                <span className="h-2 w-2 rounded-full bg-brand-green" />
-                <span className="text-xs font-bold" style={{ color: theme.accentText }}>{c.open} · {business.hours}</span>
+            {/* Le badge disait « Ouvert » à toute heure, y compris à 3 h du
+                matin : il annonçait une disponibilité que personne ne pouvait
+                tenir. Il suit maintenant les horaires quand ils sont
+                renseignés, et se contente de les afficher sinon. */}
+            {(business.hours || etat.connu) && (
+              <div
+                className="mt-1 flex items-center gap-1.5 rounded-full px-3 py-1.5"
+                style={{ background: etat.connu && !etat.ouvert ? "#FEF3C7" : theme.accentSoft }}
+              >
+                <span className={`h-2 w-2 rounded-full ${etat.connu && !etat.ouvert ? "bg-[#B25E09]" : "bg-brand-green"}`} />
+                <span
+                  className="text-xs font-bold"
+                  style={{ color: etat.connu && !etat.ouvert ? "#92400E" : theme.accentText }}
+                >
+                  {etat.connu
+                    ? etat.ouvert
+                      ? [c.open, business.hours].filter(Boolean).join(" · ")
+                      : c.closedUntil(etat.reouvreA, etat.jours)
+                    : business.hours}
+                </span>
               </div>
             )}
             {phoneNotice === "mention" && business.phone_changed_at && (
@@ -561,6 +603,14 @@ export function Storefront({
               <p className={`max-w-sm text-[13.5px] leading-relaxed ${darkMode ? "text-slate-300" : "text-ink-muted"}`}>
                 {c.received.body(business.name)}
               </p>
+              {/* Hors des heures d'ouverture, on dit quand la réponse viendra.
+                  Un client qui commande à 22 h n'a pas besoin qu'on lui montre
+                  des horaires : il a besoin de savoir qu'il sera lu demain. */}
+              {etat.connu && !etat.ouvert && (
+                <p className="max-w-sm rounded-xl bg-[#FEF3C7] px-3 py-2 text-[12.5px] font-semibold leading-snug text-[#92400E]">
+                  {c.received.closed(etat.reouvreA, etat.jours)}
+                </p>
+              )}
             </div>
 
             <div className={`mt-4 flex flex-col gap-2 rounded-2xl p-3.5 ${darkMode ? "bg-slate-800" : "bg-[#F7F8F9]"}`}>
