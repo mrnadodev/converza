@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { revalidatePath } from "next/cache";
 import { getMemberContext, getMemberPermissions } from "@/lib/auth";
@@ -119,5 +119,92 @@ export async function recordPurchase(input: {
   revalidatePath("/stok");
   revalidatePath("/katalog");
   revalidatePath("/kes");
+  return { ok: true };
+}
+
+// ---------------------------------------------------------------------------
+// Fournisseurs
+//
+// La table existait depuis la migration 6, avec un telephone et une note, mais
+// l application ne s en servait que comme liste deroulante dans le formulaire
+// de reception : un nom, rien d autre. Le stockiste qui voulait recommander
+// devait chercher le numero ailleurs — sur un carnet, dans ses messages.
+// ---------------------------------------------------------------------------
+
+export type SupplierError = "forbidden" | "invalid" | "migration" | "failed" | "duplicate";
+
+/** Cree un fournisseur, ou met a jour celui dont l identifiant est fourni. */
+export async function saveSupplier(input: {
+  id?: string | null;
+  name: string;
+  phone: string;
+  note: string;
+}): Promise<{ ok: true; id: string } | { ok: false; error: SupplierError }> {
+  if (!hasSupabase()) return { ok: true, id: "demo" };
+
+  const me = await getMemberContext();
+  const permissions = await getMemberPermissions();
+  if (!me || (permissions && !permissions.canManageSuppliers)) return { ok: false, error: "forbidden" };
+
+  const name = input.name.trim().slice(0, 80);
+  if (!name) return { ok: false, error: "invalid" };
+
+  // Le numero sert a ouvrir WhatsApp : on garde les chiffres et le « + ».
+  const phone = input.phone.trim().replace(/[^\d+]/g, "").slice(0, 20) || null;
+  const note = input.note.trim().slice(0, 300) || null;
+
+  const admin = createAdminClient();
+  if (!admin) return { ok: false, error: "failed" };
+
+  // Le filtre business_id borne l ecriture : un identifiant d une autre
+  // boutique ne modifie rien, meme s il est devine.
+  if (input.id) {
+    const { data, error } = await admin
+      .from("suppliers")
+      .update({ name, phone_e164: phone, note })
+      .eq("id", input.id)
+      .eq("business_id", me.businessId)
+      .select("id")
+      .maybeSingle();
+    if (error) return { ok: false, error: error.code === "23505" ? "duplicate" : /suppliers/.test(error.message) ? "migration" : "failed" };
+    if (!data) return { ok: false, error: "forbidden" };
+    revalidatePath("/stok");
+    return { ok: true, id: data.id };
+  }
+
+  const { data, error } = await admin
+    .from("suppliers")
+    .insert({ business_id: me.businessId, name, phone_e164: phone, note })
+    .select("id")
+    .single();
+  if (error) {
+    if (error.code === "23505") return { ok: false, error: "duplicate" };
+    await logAppError({ scope: "stock.supplier", message: error.message, businessId: me.businessId });
+    return { ok: false, error: /suppliers/.test(error.message) ? "migration" : "failed" };
+  }
+  revalidatePath("/stok");
+  return { ok: true, id: data.id };
+}
+
+/**
+ * Retire un fournisseur de l annuaire.
+ *
+ * Les receptions deja enregistrees ne disparaissent pas : leur `supplier_id`
+ * passe a null (la cle etrangere le prevoit). L historique d achat reste donc
+ * lisible, seul le contact s en va.
+ */
+export async function deleteSupplier(id: string): Promise<{ ok: true } | { ok: false; error: SupplierError }> {
+  if (!hasSupabase()) return { ok: true };
+
+  const me = await getMemberContext();
+  const permissions = await getMemberPermissions();
+  if (!me || (permissions && !permissions.canManageSuppliers)) return { ok: false, error: "forbidden" };
+
+  const admin = createAdminClient();
+  if (!admin) return { ok: false, error: "failed" };
+
+  const { error } = await admin.from("suppliers").delete().eq("id", id).eq("business_id", me.businessId);
+  if (error) return { ok: false, error: "failed" };
+  revalidatePath("/stok");
   return { ok: true };
 }

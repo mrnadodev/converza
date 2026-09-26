@@ -88,6 +88,36 @@ export function buildBackInStockMessage(
   return m.backInStock(customerName, businessName, itemSummary);
 }
 
+/**
+ * Bon de commande à envoyer au fournisseur, sur WhatsApp.
+ *
+ * Les lignes sont pré-remplies avec ce qui manque : l'application sait déjà
+ * quels produits sont en stock faible ou épuisés, et le stockiste n'a aucune
+ * raison de les retaper un à un. Il ne lui reste qu'à ajuster les quantités.
+ *
+ * La liste est plafonnée : au-delà d'une vingtaine de lignes, WhatsApp coupe
+ * le message et le fournisseur reçoit une commande tronquée — pire que pas de
+ * commande du tout, parce que personne ne s'en aperçoit.
+ */
+export function buildSupplierOrderMessage(
+  supplierName: string,
+  businessName: string,
+  items: { name: string; qty: number }[],
+  m: MessageCopy = MESSAGE_COPY.ht,
+): string {
+  const MAX = 20;
+  const lignes = items.slice(0, MAX).map((it) => m.supplierOrderLine(it.name, it.qty));
+  const reste = items.length - lignes.length;
+  return [
+    m.supplierOrderHead(supplierName, businessName),
+    ...lignes,
+    reste > 0 ? m.supplierOrderMore(reste) : null,
+    lignes.length > 0 ? m.supplierOrderFoot() : m.supplierOrderEmpty(),
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
 /** Message WhatsApp pour demander si le client est satisfait. */
 export function buildSatisfactionMessage(customerName: string, businessName: string, m: MessageCopy = MESSAGE_COPY.ht): string {
   return m.satisfaction(customerName, businessName);

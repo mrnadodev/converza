@@ -1,4 +1,4 @@
-import type { Language } from "../translations";
+﻿import type { Language } from "../translations";
 
 // Messages WhatsApp envoyés aux clients depuis l'application. Ils suivent la
 // langue choisie par le marchand dans l'interface : c'est lui qui écrit à ses
@@ -24,6 +24,13 @@ export interface MessageCopy {
   followUp: (name: string, business: string) => string;
   debtReminder: (name: string, owed: string, business: string) => string;
   backInStock: (name: string, business: string, items?: string) => string;
+  /** Bon de commande envoyé au fournisseur : en-tête, lignes, pied. */
+  supplierOrderHead: (supplier: string, business: string) => string;
+  supplierOrderLine: (product: string, qty: number) => string;
+  supplierOrderMore: (n: number) => string;
+  supplierOrderFoot: () => string;
+  /** Rien à réapprovisionner : on ouvre quand même la conversation. */
+  supplierOrderEmpty: () => string;
   satisfaction: (name: string, business: string) => string;
   reorder: (name: string) => string;
   promoDefault: (business: string) => string;
@@ -53,6 +60,12 @@ const ht: MessageCopy = {
     `Bonjou ${name} 👋 Pwodwi ou te mande a${items ? ` (${items})` : ""} disponib ankò nan ${business}! Èske w ta renmen nou prepare kòmand ou an kounye a?`,
   satisfaction: (name, business) =>
     `Bonjou ${name} 👋 Se ${business}. Nou t ap tcheke si w byen resevwa kòmand ou an e si w satisfè ak pwodwi yo. Opinyon ou enpòtan pou nou!`,
+  supplierOrderHead: (supplier, business) =>
+    `Bonjou ${supplier} 👋 Se ${business}. Nou ta renmen pase yon kòmand :`,
+  supplierOrderLine: (product, qty) => `• ${product} — ${qty}`,
+  supplierOrderMore: (n) => `…ak ${n} lòt pwodwi ankò.`,
+  supplierOrderFoot: () => "Di nou si w gen yo epi konbyen sa ap fè. Mèsi!",
+  supplierOrderEmpty: () => "Nou ta renmen konnen sa w genyen disponib kounye a. Mèsi!",
   reorder: (name) =>
     `Bonjou ${name}! Sa gen kèk tan nou pa wè w. Nou fèk resevwa nouvo pwodwi. Èske w ta renmen nou prepare kòmand abityèl ou an?`,
   promoDefault: (business) =>
@@ -83,6 +96,12 @@ const fr: MessageCopy = {
     `Bonjour ${name} 👋 Le produit que vous attendiez${items ? ` (${items})` : ""} est de nouveau disponible chez ${business} ! Voulez-vous que nous préparions votre commande ?`,
   satisfaction: (name, business) =>
     `Bonjour ${name} 👋 Ici ${business}. Avez-vous bien reçu votre commande et êtes-vous satisfait(e) des produits ? Votre avis compte beaucoup pour nous !`,
+  supplierOrderHead: (supplier, business) =>
+    `Bonjour ${supplier} 👋 Ici ${business}. Nous souhaitons passer une commande :`,
+  supplierOrderLine: (product, qty) => `• ${product} — ${qty}`,
+  supplierOrderMore: (n) => `…et ${n} autre${n > 1 ? "s" : ""} produit${n > 1 ? "s" : ""}.`,
+  supplierOrderFoot: () => "Dites-nous ce que vous avez en stock et le montant. Merci !",
+  supplierOrderEmpty: () => "Nous aimerions savoir ce que vous avez de disponible en ce moment. Merci !",
   reorder: (name) =>
     `Bonjour ${name} ! Cela fait un moment. Nous venons de recevoir de nouveaux produits : voulez-vous que nous préparions votre commande habituelle ?`,
   promoDefault: (business) =>
@@ -113,6 +132,12 @@ const en: MessageCopy = {
     `Hello ${name} 👋 The product you asked for${items ? ` (${items})` : ""} is back in stock at ${business}! Would you like us to prepare your order?`,
   satisfaction: (name, business) =>
     `Hello ${name} 👋 This is ${business}. Did you receive your order and are you happy with the products? Your feedback matters to us!`,
+  supplierOrderHead: (supplier, business) =>
+    `Hello ${supplier} 👋 This is ${business}. We would like to place an order:`,
+  supplierOrderLine: (product, qty) => `• ${product} — ${qty}`,
+  supplierOrderMore: (n) => `…and ${n} more product${n > 1 ? "s" : ""}.`,
+  supplierOrderFoot: () => "Let us know what you have in stock and the total. Thank you!",
+  supplierOrderEmpty: () => "We would like to know what you currently have available. Thank you!",
   reorder: (name) =>
     `Hello ${name}! It has been a while. We just received new products: would you like us to prepare your usual order?`,
   promoDefault: (business) =>

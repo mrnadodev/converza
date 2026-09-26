@@ -1,18 +1,41 @@
 ﻿"use client";
 
 import Link from "next/link";
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { useDict, useLanguage } from "@/components/LanguageContext";
 import { STOCK_COPY } from "@/lib/i18n/app/stock";
+import { COMMON_COPY } from "@/lib/i18n/app/common";
 import { KES_COPY } from "@/lib/i18n/app/kes";
 import { formatMoney } from "@/lib/money";
 import { recordPurchase, recordStockMovement, type ManualMovementKind, type StockMovementError } from "@/app/stok/actions";
 import { generateReportXLSX, triggerReportPDF, type ReportScope } from "@/lib/reports";
+import { saveSupplier, deleteSupplier } from "@/app/stok/actions";
+import { buildSupplierOrderMessage } from "@/lib/order";
+import { waMeLink } from "@/lib/whatsapp";
+import { MESSAGE_COPY } from "@/lib/i18n/app/messages";
 import { stockStateFor } from "@/lib/stock_ai";
 import type { Business, PipelineCard, Product } from "@/lib/types";
 import { Select } from "@/components/ui/Select";
+
+/**
+ * Une fiche de l'annuaire des fournisseurs.
+ *
+ * La table existait depuis la migration 6, avec un téléphone et une note, mais
+ * l'application ne lisait que le nom : le stockiste qui voulait recommander
+ * devait aller chercher le numéro ailleurs.
+ */
+export interface SupplierRow {
+  id: string;
+  name: string;
+  phone: string | null;
+  note: string | null;
+  /** Dernière réception enregistrée, pour savoir qui travaille encore avec nous. */
+  lastReceivedOn: string | null;
+  purchaseCount: number;
+  totalCents: number;
+}
 
 export interface PurchaseRow {
   id: string;
@@ -45,6 +68,7 @@ export function StockManager({
   canEdit = true,
   canViewStockReport = true,
   canViewSalesReport = true,
+  canManageSuppliers = true,
   movements = [],
   movementsAvailable = false,
   purchases = [],
@@ -59,11 +83,13 @@ export function StockManager({
   canViewStockReport?: boolean;
   /** Ventes : chiffre d'affaires et detail des commandes, donc les clients. */
   canViewSalesReport?: boolean;
+  /** Annuaire des fournisseurs : lister, joindre, commander. */
+  canManageSuppliers?: boolean;
   movements?: MovementRow[];
   /** Faux tant que la migration 5 n'a pas créé le journal. */
   movementsAvailable?: boolean;
   purchases?: PurchaseRow[];
-  suppliers?: { id: string; name: string }[];
+  suppliers?: SupplierRow[];
   /** Faux tant que la migration 6 n'a pas créé les tables d'achats. */
   purchasesAvailable?: boolean;
 }) {
@@ -73,7 +99,7 @@ export function StockManager({
   const [filter, setFilter] = useState<"all" | "low" | "out">("all");
   const [search, setSearch] = useState("");
   const [timeframe, setTimeframe] = useState<"week" | "month" | "all">("month");
-  const [tab, setTab] = useState<"products" | "purchases" | "history">("products");
+  const [tab, setTab] = useState<"products" | "purchases" | "suppliers" | "history">("products");
   const [editing, setEditing] = useState<Product | null>(null);
   const router = useRouter();
 
@@ -197,7 +223,7 @@ export function StockManager({
             faisait croire que les réceptions n'existaient pas. */}
         <div className="flex flex-col gap-2">
           <div className="flex gap-1 rounded-xl bg-white p-1 ring-1 ring-line">
-            {(["products", "purchases", "history"] as const).map((k) => (
+            {(["products", "purchases", ...(canManageSuppliers ? (["suppliers"] as const) : []), "history"] as const).map((k) => (
               <button
                 key={k}
                 onClick={() => setTab(k)}
@@ -211,7 +237,14 @@ export function StockManager({
           <p className="px-1 text-[11.5px] leading-snug text-ink-muted">{s.auto}</p>
         </div>
 
-        {tab === "history" ? (
+        {tab === "suppliers" ? (
+          <Suppliers
+            rows={suppliers}
+            products={products}
+            available={purchasesAvailable}
+            businessName={business.name}
+          />
+        ) : tab === "history" ? (
           <MovementHistory rows={movements} available={movementsAvailable} />
         ) : tab === "purchases" && products.length === 0 ? (
           <section className="flex flex-col items-center gap-2 rounded-2xl border border-line bg-white p-8 text-center">
@@ -741,5 +774,202 @@ function ReportBlock({
         </button>
       </div>
     </div>
+  );
+}
+
+/**
+ * Annuaire des fournisseurs, et bon de commande WhatsApp.
+ *
+ * Les fournisseurs n'existaient que comme liste déroulante dans le formulaire
+ * de réception : un nom, rien d'autre. Pour recommander, le stockiste devait
+ * retrouver le numéro sur un carnet ou dans ses conversations.
+ *
+ * Le bouton « Commander » ouvre WhatsApp avec les produits à réapprovisionner
+ * déjà écrits : l'application sait lesquels sont en stock faible ou épuisés,
+ * et les retaper un à un n'apporte rien.
+ */
+function Suppliers({
+  rows,
+  products,
+  available,
+  businessName,
+}: {
+  rows: SupplierRow[];
+  products: Product[];
+  available: boolean;
+  businessName: string;
+}) {
+  const { language } = useLanguage();
+  const s = useDict(STOCK_COPY);
+  const c = useDict(COMMON_COPY);
+  const m = MESSAGE_COPY[language] ?? MESSAGE_COPY.fr;
+  const router = useRouter();
+  const [, start] = useTransition();
+
+  const [edite, setEdite] = useState<SupplierRow | null>(null);
+  const [ouvert, setOuvert] = useState(false);
+  const [nom, setNom] = useState("");
+  const [tel, setTel] = useState("");
+  const [note, setNote] = useState("");
+  const [erreur, setErreur] = useState<string | null>(null);
+
+  // Ce qu'il faut racheter : épuisé d'abord, puis stock faible. La quantité
+  // proposée ramène au seuil du produit, à défaut une dizaine.
+  const aRacheter = useMemo(
+    () =>
+      products
+        .filter((p) => p.stock_state === "fini" || p.stock_state === "ba_stok")
+        .sort((a, b) => (a.stock_state === "fini" ? -1 : 1) - (b.stock_state === "fini" ? -1 : 1))
+        .map((p) => ({
+          name: p.name,
+          qty: Math.max((p.stock_threshold ?? 10) - (p.stock_qty ?? 0), 1),
+        })),
+    [products],
+  );
+
+  function ouvrir(sup: SupplierRow | null) {
+    setEdite(sup);
+    setNom(sup?.name ?? "");
+    setTel(sup?.phone ?? "");
+    setNote(sup?.note ?? "");
+    setErreur(null);
+    setOuvert(true);
+  }
+
+  function enregistrer() {
+    if (!nom.trim()) return;
+    setErreur(null);
+    start(async () => {
+      const res = await saveSupplier({ id: edite?.id ?? null, name: nom, phone: tel, note });
+      if (res.ok) {
+        setOuvert(false);
+        router.refresh();
+      } else {
+        // Chaque cause a son message : « réessayez » sur un refus de droits
+        // aurait fait tourner le stockiste en rond.
+        setErreur(
+          res.error === "duplicate" ? s.suppliers.duplicate
+          : res.error === "forbidden" ? s.suppliers.forbidden
+          : res.error === "invalid" ? s.suppliers.invalid
+          : res.error === "migration" ? s.suppliers.migration
+          : s.suppliers.failed,
+        );
+      }
+    });
+  }
+
+  function retirer(sup: SupplierRow) {
+    if (!window.confirm(s.suppliers.deleteConfirm(sup.name))) return;
+    start(async () => {
+      const res = await deleteSupplier(sup.id);
+      if (res.ok) router.refresh();
+      else setErreur(s.suppliers.failed);
+    });
+  }
+
+  if (!available) {
+    return (
+      <section className="rounded-2xl border border-line bg-white p-8 text-center">
+        <p className="text-[13px] text-ink-muted">{s.suppliers.empty}</p>
+      </section>
+    );
+  }
+
+  return (
+    <section className="flex flex-col gap-3">
+      <div className="flex items-start justify-between gap-3 rounded-2xl border border-line bg-white p-3.5">
+        <div className="flex min-w-0 flex-col">
+          <h2 className="text-sm font-extrabold text-ink">{s.suppliers.title}</h2>
+          <p className="text-[11.5px] leading-snug text-ink-muted">
+            {aRacheter.length > 0 ? s.suppliers.toReorder(aRacheter.length) : s.suppliers.hint}
+          </p>
+        </div>
+        <button
+          onClick={() => ouvrir(null)}
+          className="h-9 shrink-0 cursor-pointer rounded-xl bg-brand px-3.5 text-xs font-extrabold text-white active:scale-95"
+        >
+          {s.suppliers.add}
+        </button>
+      </div>
+
+      {erreur && <p className="px-1 text-[12px] font-semibold text-[#C0392B]">{erreur}</p>}
+
+      {rows.length === 0 ? (
+        <section className="rounded-2xl border border-line bg-white p-8 text-center">
+          <p className="text-[13px] text-ink-muted">{s.suppliers.empty}</p>
+        </section>
+      ) : (
+        <ul className="flex flex-col gap-2">
+          {rows.map((sup) => (
+            <li key={sup.id} className="flex flex-col gap-2.5 rounded-2xl border border-line bg-white p-3.5">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex min-w-0 flex-col">
+                  <span className="truncate text-[14px] font-extrabold text-ink">{sup.name}</span>
+                  <span className="text-[11.5px] text-ink-muted">
+                    {sup.phone ? sup.phone : s.suppliers.noPhone}
+                    {sup.lastReceivedOn ? ` · ${s.suppliers.lastDelivery(sup.lastReceivedOn)}` : ""}
+                  </span>
+                  {sup.note && <span className="mt-0.5 text-[11.5px] leading-snug text-ink-soft">{sup.note}</span>}
+                </div>
+                {sup.purchaseCount > 0 && (
+                  <span className="shrink-0 rounded-full bg-[#F3F6F4] px-2 py-0.5 text-[10.5px] font-bold text-ink-muted">
+                    {s.suppliers.deliveries(sup.purchaseCount)}
+                  </span>
+                )}
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                {sup.phone ? (
+                  <a
+                    href={waMeLink(sup.phone, buildSupplierOrderMessage(sup.name, businessName, aRacheter, m))}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex h-9 flex-1 min-w-[140px] items-center justify-center rounded-xl bg-brand-green px-3 text-xs font-extrabold text-white active:scale-95"
+                  >
+                    {s.suppliers.order}
+                  </a>
+                ) : (
+                  <span className="flex h-9 flex-1 min-w-[140px] items-center justify-center rounded-xl bg-[#F3F6F4] px-3 text-xs font-bold text-ink-faint">
+                    {s.suppliers.needPhone}
+                  </span>
+                )}
+                <button onClick={() => ouvrir(sup)} className="h-9 cursor-pointer rounded-xl border border-line px-3 text-xs font-bold text-ink active:scale-95">
+                  {c.actions.edit}
+                </button>
+                <button onClick={() => retirer(sup)} className="h-9 cursor-pointer rounded-xl px-2.5 text-xs font-bold text-ink-faint hover:text-[#C0392B] active:scale-95">
+                  {c.actions.delete}
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {ouvert && (
+        <section className="flex flex-col gap-3 rounded-2xl border border-line bg-white p-3.5">
+          <h3 className="text-sm font-extrabold text-ink">{edite ? s.suppliers.editTitle : s.suppliers.addTitle}</h3>
+          <label className="flex flex-col gap-1">
+            <span className="text-[11.5px] font-bold text-ink-muted">{s.suppliers.name}</span>
+            <input value={nom} onChange={(e) => setNom(e.target.value)} maxLength={80} className="h-10 rounded-xl border border-line px-3 text-[13px] outline-none" />
+          </label>
+          <label className="flex flex-col gap-1">
+            <span className="text-[11.5px] font-bold text-ink-muted">{s.suppliers.phone}</span>
+            <input value={tel} onChange={(e) => setTel(e.target.value)} inputMode="tel" placeholder="+509 3712 4488" maxLength={20} className="h-10 rounded-xl border border-line px-3 text-[13px] outline-none" />
+          </label>
+          <label className="flex flex-col gap-1">
+            <span className="text-[11.5px] font-bold text-ink-muted">{s.suppliers.note}</span>
+            <input value={note} onChange={(e) => setNote(e.target.value)} maxLength={300} placeholder={s.suppliers.notePlaceholder} className="h-10 rounded-xl border border-line px-3 text-[13px] outline-none" />
+          </label>
+          <div className="grid grid-cols-2 gap-2">
+            <button onClick={() => setOuvert(false)} className="h-10 cursor-pointer rounded-xl border border-line text-xs font-bold text-ink active:scale-95">
+              {c.actions.cancel}
+            </button>
+            <button onClick={enregistrer} disabled={!nom.trim()} className="h-10 cursor-pointer rounded-xl bg-brand text-xs font-extrabold text-white disabled:opacity-50 active:scale-95">
+              {c.actions.save}
+            </button>
+          </div>
+        </section>
+      )}
+    </section>
   );
 }

@@ -26,7 +26,32 @@ export interface StockCopy {
   filters: { all: (n: number) => string; low: (n: number) => string; out: (n: number) => string };
   quantity: string;
   untracked: string;
-  tabs: { products: string; purchases: string; history: string };
+  tabs: { products: string; purchases: string; suppliers: string; history: string };
+  /** Annuaire des fournisseurs : lister, joindre, commander. */
+  suppliers: {
+    title: string;
+    hint: string;
+    toReorder: (n: number) => string;
+    add: string;
+    addTitle: string;
+    editTitle: string;
+    name: string;
+    phone: string;
+    note: string;
+    notePlaceholder: string;
+    noPhone: string;
+    needPhone: string;
+    order: string;
+    empty: string;
+    lastDelivery: (date: string) => string;
+    deliveries: (n: number) => string;
+    deleteConfirm: (name: string) => string;
+    duplicate: string;
+    failed: string;
+    forbidden: string;
+    invalid: string;
+    migration: string;
+  };
   auto: string;
   movement: {
     open: string;
@@ -103,7 +128,31 @@ const fr: StockCopy = {
   filters: { all: (n) => `Tous (${n})`, low: (n) => `Stock faible (${n})`, out: (n) => `Épuisés (${n})` },
   quantity: "Quantité en stock",
   untracked: "Non suivi",
-  tabs: { products: "Produits", purchases: "Réceptions", history: "Historique" },
+  tabs: { products: "Produits", purchases: "Réceptions", suppliers: "Fournisseurs", history: "Historique" },
+  suppliers: {
+    title: "Fournisseurs",
+    hint: "Vos fournisseurs et leurs coordonnées, pour commander sans les chercher ailleurs.",
+    toReorder: (n) => `${n} produit${n > 1 ? "s" : ""} à réapprovisionner : le bon de commande est déjà rempli.`,
+    add: "Ajouter",
+    addTitle: "Nouveau fournisseur",
+    editTitle: "Modifier le fournisseur",
+    name: "Nom du fournisseur",
+    phone: "Numéro WhatsApp",
+    note: "Note",
+    notePlaceholder: "Ce qu'il livre, ses jours de passage…",
+    noPhone: "Aucun numéro",
+    needPhone: "Ajoutez un numéro pour commander",
+    order: "Commander sur WhatsApp",
+    empty: "Aucun fournisseur pour l'instant. Ajoutez-en un, ou enregistrez une réception : il sera créé tout seul.",
+    lastDelivery: (date) => `dernière livraison le ${date}`,
+    deliveries: (n) => `${n} livraison${n > 1 ? "s" : ""}`,
+    deleteConfirm: (name) => `Retirer « ${name} » de l'annuaire ?\n\nLes réceptions déjà enregistrées restent, seul le contact s'en va.`,
+    duplicate: "Un fournisseur porte déjà ce nom.",
+    forbidden: "Votre rôle ne permet pas de gérer les fournisseurs.",
+    invalid: "Le nom du fournisseur est obligatoire.",
+    migration: "L'annuaire des fournisseurs n'est pas encore activé sur cette boutique.",
+    failed: "L'enregistrement a échoué. Réessayez.",
+  },
   auto: "Les ventes confirmées retirent le stock automatiquement ; une commande annulée le remet.",
   movement: {
     open: "Mouvement",
@@ -190,7 +239,31 @@ const ht: StockCopy = {
   filters: { all: (n) => `Tout (${n})`, low: (n) => `Stòk fèb (${n})`, out: (n) => `Fini (${n})` },
   quantity: "Kantite nan stòk",
   untracked: "Pa swiv",
-  tabs: { products: "Pwodwi", purchases: "Resepsyon", history: "Istorik" },
+  tabs: { products: "Pwodwi", purchases: "Resepsyon", suppliers: "Founisè", history: "Istorik" },
+  suppliers: {
+    title: "Founisè",
+    hint: "Founisè ou yo ak kontak yo, pou w kòmande san w pa bezwen chèche lòt kote.",
+    toReorder: (n) => `${n} pwodwi pou reyaprovizyone : bon kòmand lan deja ranpli.`,
+    add: "Ajoute",
+    addTitle: "Nouvo founisè",
+    editTitle: "Modifye founisè a",
+    name: "Non founisè a",
+    phone: "Nimewo WhatsApp",
+    note: "Nòt",
+    notePlaceholder: "Sa l livre, ki jou l pase…",
+    noPhone: "Pa gen nimewo",
+    needPhone: "Mete yon nimewo pou kòmande",
+    order: "Kòmande sou WhatsApp",
+    empty: "Pa gen founisè pou kounye a. Ajoute youn, oswa anrejistre yon resepsyon : l ap kreye pou kont li.",
+    lastDelivery: (date) => `dènye livrezon ${date}`,
+    deliveries: (n) => `${n} livrezon`,
+    deleteConfirm: (name) => `Retire « ${name} » nan lis la ?\n\nResepsyon ki deja anrejistre yo rete, se kontak la sèlman ki ale.`,
+    duplicate: "Gen yon founisè ki deja rele konsa.",
+    forbidden: "Wòl ou pa pèmèt ou jere founisè yo.",
+    invalid: "Non founisè a obligatwa.",
+    migration: "Lis founisè yo poko aktive sou boutik sa a.",
+    failed: "Nou pa rive anrejistre. Eseye ankò.",
+  },
   auto: "Vant ki konfime yo retire stòk la otomatikman ; yon kòmand ki anile remèt li.",
   movement: {
     open: "Mouvman",
@@ -277,7 +350,31 @@ const en: StockCopy = {
   filters: { all: (n) => `All (${n})`, low: (n) => `Low stock (${n})`, out: (n) => `Sold out (${n})` },
   quantity: "Quantity in stock",
   untracked: "Not tracked",
-  tabs: { products: "Products", purchases: "Receipts", history: "History" },
+  tabs: { products: "Products", purchases: "Receipts", suppliers: "Suppliers", history: "History" },
+  suppliers: {
+    title: "Suppliers",
+    hint: "Your suppliers and their contact details, so you can order without looking elsewhere.",
+    toReorder: (n) => `${n} product${n > 1 ? "s" : ""} to restock: the order is already written for you.`,
+    add: "Add",
+    addTitle: "New supplier",
+    editTitle: "Edit supplier",
+    name: "Supplier name",
+    phone: "WhatsApp number",
+    note: "Note",
+    notePlaceholder: "What they deliver, which days they come…",
+    noPhone: "No number",
+    needPhone: "Add a number to order",
+    order: "Order on WhatsApp",
+    empty: "No supplier yet. Add one, or record a receipt: it will be created for you.",
+    lastDelivery: (date) => `last delivery on ${date}`,
+    deliveries: (n) => (n === 1 ? "1 delivery" : `${n} deliveries`),
+    deleteConfirm: (name) => `Remove "${name}" from the directory?\n\nRecorded receipts stay; only the contact goes.`,
+    duplicate: "A supplier already has that name.",
+    forbidden: "Your role does not allow managing suppliers.",
+    invalid: "The supplier name is required.",
+    migration: "The supplier directory is not enabled on this shop yet.",
+    failed: "Saving failed. Please try again.",
+  },
   auto: "Confirmed sales remove stock automatically; a cancelled order puts it back.",
   movement: {
     open: "Movement",

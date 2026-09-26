@@ -1,6 +1,6 @@
-import { redirect } from "next/navigation";
+﻿import { redirect } from "next/navigation";
 import { BottomNav } from "@/components/BottomNav";
-import { StockManager, type MovementRow, type PurchaseRow } from "@/components/StockManager";
+import { StockManager, type MovementRow, type PurchaseRow, type SupplierRow } from "@/components/StockManager";
 import { getCatalog, getMyBusiness, getPipeline, getCurrentUserSession, getRolePermissions, hasSupabase } from "@/lib/data";
 import { createClient } from "@/lib/supabase/server";
 
@@ -36,6 +36,7 @@ export default async function StockPage() {
         canEdit={permissions.canEditStock}
         canViewStockReport={permissions.canViewStockReport}
         canViewSalesReport={permissions.canViewSalesReport}
+        canManageSuppliers={permissions.canManageSuppliers}
         movements={history.rows}
         movementsAvailable={history.available}
         purchases={purchases.rows}
@@ -49,19 +50,34 @@ export default async function StockPage() {
 }
 
 /** Réceptions récentes et fournisseurs (migration 6). */
-async function loadPurchases(): Promise<{ rows: PurchaseRow[]; suppliers: { id: string; name: string }[]; available: boolean }> {
+async function loadPurchases(): Promise<{ rows: PurchaseRow[]; suppliers: SupplierRow[]; available: boolean }> {
   if (!hasSupabase()) return { rows: [], suppliers: [], available: false };
   const sb = createClient();
-  const [{ data, error }, { data: suppliers }] = await Promise.all([
+  const [{ data, error }, { data: suppliers }, { data: achats }] = await Promise.all([
     sb
       .from("purchases")
       .select("id, total_cents, paid_cents, currency, received_on, note, suppliers(name), purchase_items(qty, unit_cost_cents, products(name))")
       .order("received_on", { ascending: false })
       .order("created_at", { ascending: false })
       .limit(30),
-    sb.from("suppliers").select("id, name").order("name"),
+    sb.from("suppliers").select("id, name, phone_e164, note").order("name"),
+    // Dernière réception par fournisseur : sans elle, l'annuaire ne dit pas
+    // lesquels travaillent encore avec la boutique.
+    sb.from("purchases").select("supplier_id, received_on, total_cents"),
   ]);
   if (error) return { rows: [], suppliers: [], available: false };
+
+  const dernieres = new Map<string, { date: string; total: number; count: number }>();
+  for (const a of achats ?? []) {
+    if (!a.supplier_id) continue;
+    const vu = dernieres.get(a.supplier_id);
+    const date = String(a.received_on);
+    dernieres.set(a.supplier_id, {
+      date: !vu || date > vu.date ? date : vu.date,
+      total: (vu?.total ?? 0) + Number(a.total_cents),
+      count: (vu?.count ?? 0) + 1,
+    });
+  }
 
   const one = <T,>(v: T | T[] | null): T | null => (Array.isArray(v) ? v[0] ?? null : v);
   const rows: PurchaseRow[] = (data ?? []).map((p) => ({
@@ -78,7 +94,20 @@ async function loadPurchases(): Promise<{ rows: PurchaseRow[]; suppliers: { id: 
       unitCost: Number(it.unit_cost_cents),
     })),
   }));
-  return { rows, suppliers: suppliers ?? [], available: true };
+  const annuaire: SupplierRow[] = (suppliers ?? []).map((sup) => {
+    const vu = dernieres.get(sup.id);
+    return {
+      id: sup.id,
+      name: sup.name,
+      phone: sup.phone_e164 ?? null,
+      note: sup.note ?? null,
+      lastReceivedOn: vu?.date ?? null,
+      purchaseCount: vu?.count ?? 0,
+      totalCents: vu?.total ?? 0,
+    };
+  });
+
+  return { rows, suppliers: annuaire, available: true };
 }
 
 /**

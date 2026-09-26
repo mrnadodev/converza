@@ -34,6 +34,14 @@ export interface RolePermissions {
    * qui les contenait tous, avec le carnet d'adresses de la boutique.
    */
   canViewSalesReport: boolean;
+  /**
+   * Annuaire des fournisseurs : les lister, les joindre, leur passer commande.
+   *
+   * Séparé de `canEditStock` bien que les deux se recouvrent aujourd'hui :
+   * compter des cartons et détenir le carnet d'adresses des fournisseurs sont
+   * deux responsabilités différentes, et elles finiront par se séparer.
+   */
+  canManageSuppliers: boolean;
   allowedPipelineColumns: OrderStatus[];
   allowedNavTabs: NavTab[];
   isReadOnly: boolean;
@@ -51,6 +59,7 @@ export function getRolePermissions(session: UserSession): RolePermissions {
       canViewFinancialTurnover: true,
       canViewStockReport: true,
       canViewSalesReport: true,
+      canManageSuppliers: true,
       allowedPipelineColumns: ["demand_acha", "kontak", "metod_peman", "konfime_peman", "sou_wout", "livre", "swivi"],
       allowedNavTabs: ["tablo", "komand", "stok", "katalog", "kliyan", "kes"],
       isReadOnly: false,
@@ -69,6 +78,7 @@ export function getRolePermissions(session: UserSession): RolePermissions {
         canViewFinancialTurnover: false,     // 🔒 Masquage des chiffres financiers
         canViewStockReport: false,
         canViewSalesReport: false,
+        canManageSuppliers: false,
         allowedPipelineColumns: ["konfime_peman"], // 🔒 Uniquement sa colonne dédiée
         allowedNavTabs: ["tablo", "komand"],
         isReadOnly: true,
@@ -84,6 +94,7 @@ export function getRolePermissions(session: UserSession): RolePermissions {
         canViewFinancialTurnover: false,
         canViewStockReport: false,
         canViewSalesReport: false,
+        canManageSuppliers: false,
         allowedPipelineColumns: ["demand_acha", "kontak", "metod_peman"],
         allowedNavTabs: ["tablo", "komand", "katalog", "kliyan"],
         isReadOnly: false,
@@ -99,6 +110,7 @@ export function getRolePermissions(session: UserSession): RolePermissions {
         canViewFinancialTurnover: false,
         canViewStockReport: true,  // c'est son metier
         canViewSalesReport: false,
+        canManageSuppliers: true,  // c est lui qui commande
         allowedPipelineColumns: ["sou_wout", "livre"],
         allowedNavTabs: ["tablo", "komand", "stok"],
         isReadOnly: false,
@@ -114,6 +126,7 @@ export function getRolePermissions(session: UserSession): RolePermissions {
         canViewFinancialTurnover: false,
         canViewStockReport: false,
         canViewSalesReport: false,
+        canManageSuppliers: false,
         allowedPipelineColumns: ["swivi"],
         allowedNavTabs: ["tablo", "komand", "kliyan"],
         isReadOnly: false,
@@ -129,6 +142,7 @@ export function getRolePermissions(session: UserSession): RolePermissions {
         canViewFinancialTurnover: false,
         canViewStockReport: true,  // il doit savoir quoi promouvoir
         canViewSalesReport: false,
+        canManageSuppliers: false, // lecture seule, il ne commande pas
         allowedPipelineColumns: ["demand_acha", "kontak", "metod_peman", "konfime_peman", "sou_wout", "livre", "swivi"],
         allowedNavTabs: ["tablo", "stok", "katalog"],
         isReadOnly: true,
@@ -144,6 +158,7 @@ export function getRolePermissions(session: UserSession): RolePermissions {
         canViewFinancialTurnover: false, // 🔒 Masquage du bénéfice net final
         canViewStockReport: true,
         canViewSalesReport: true,   // il voit deja chaque commande dans le pipeline
+        canManageSuppliers: true,
         allowedPipelineColumns: ["demand_acha", "kontak", "metod_peman", "konfime_peman", "sou_wout", "livre", "swivi"],
         allowedNavTabs: ["tablo", "komand", "stok", "katalog", "kliyan", "kes"],
         isReadOnly: false,
@@ -159,6 +174,7 @@ export function getRolePermissions(session: UserSession): RolePermissions {
         canViewFinancialTurnover: false,
         canViewStockReport: false,
         canViewSalesReport: false,
+        canManageSuppliers: false,
         allowedPipelineColumns: ["demand_acha", "kontak", "metod_peman", "konfime_peman", "sou_wout", "livre", "swivi"],
         allowedNavTabs: ["tablo", "komand"],
         isReadOnly: true,
