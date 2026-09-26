@@ -2,7 +2,7 @@
 -- CONVERZA — montage complet d'une base neuve
 --
 -- GÉNÉRÉ par scripts/build-staging-sql.mjs — ne pas modifier à la main.
--- Source : les 14 fichiers de db/, dans l'ordre de montage.
+-- Source : les 15 fichiers de db/, dans l'ordre de montage.
 --
 -- À coller dans l'éditeur SQL d'un projet Supabase VIDE.
 -- Ne jamais lancer sur la production : le script recrée tout.
@@ -12,7 +12,7 @@
 
 
 -- ══════════════════════════════════════════════════════════
--- ÉTAPE 1 / 14 — schema.sql
+-- ÉTAPE 1 / 15 — schema.sql
 -- ══════════════════════════════════════════════════════════
 
 -- ============================================================
@@ -364,7 +364,7 @@ create policy biz_isolation on order_items
 
 
 -- ══════════════════════════════════════════════════════════
--- ÉTAPE 2 / 14 — migrate-2026-1-enums.sql
+-- ÉTAPE 2 / 15 — migrate-2026-1-enums.sql
 -- ══════════════════════════════════════════════════════════
 
 -- ============================================================
@@ -414,7 +414,7 @@ alter type pay_method add value if not exists 'banque_locale';
 
 
 -- ══════════════════════════════════════════════════════════
--- ÉTAPE 3 / 14 — migrate-2026-2-schema.sql
+-- ÉTAPE 3 / 15 — migrate-2026-2-schema.sql
 -- ══════════════════════════════════════════════════════════
 
 -- ============================================================
@@ -743,7 +743,7 @@ $$;
 
 
 -- ══════════════════════════════════════════════════════════
--- ÉTAPE 4 / 14 — migrate-2026-3-admin.sql
+-- ÉTAPE 4 / 15 — migrate-2026-3-admin.sql
 -- ══════════════════════════════════════════════════════════
 
 -- ============================================================
@@ -828,7 +828,7 @@ revoke all on security_audit_logs from anon, authenticated;
 
 
 -- ══════════════════════════════════════════════════════════
--- ÉTAPE 5 / 14 — migrate-2026-4-numero.sql
+-- ÉTAPE 5 / 15 — migrate-2026-4-numero.sql
 -- ══════════════════════════════════════════════════════════
 
 -- ============================================================
@@ -969,7 +969,7 @@ on conflict (id) do update set public = false;
 
 
 -- ══════════════════════════════════════════════════════════
--- ÉTAPE 6 / 14 — migrate-2026-5-stock.sql
+-- ÉTAPE 6 / 15 — migrate-2026-5-stock.sql
 -- ══════════════════════════════════════════════════════════
 
 -- ============================================================
@@ -1200,7 +1200,7 @@ create trigger products_stock_log
 
 
 -- ══════════════════════════════════════════════════════════
--- ÉTAPE 7 / 14 — migrate-2026-5b-correctif-stock.sql
+-- ÉTAPE 7 / 15 — migrate-2026-5b-correctif-stock.sql
 -- ══════════════════════════════════════════════════════════
 
 -- ============================================================
@@ -1281,7 +1281,7 @@ revoke all on function apply_stock_movement(uuid, uuid, text, numeric, uuid, tex
 
 
 -- ══════════════════════════════════════════════════════════
--- ÉTAPE 8 / 14 — migrate-2026-6-gestion.sql
+-- ÉTAPE 8 / 15 — migrate-2026-6-gestion.sql
 -- ══════════════════════════════════════════════════════════
 
 -- ============================================================
@@ -1521,7 +1521,7 @@ create policy purchase_items_read on purchase_items for select to authenticated
 
 
 -- ══════════════════════════════════════════════════════════
--- ÉTAPE 9 / 14 — migrate-2026-7-support.sql
+-- ÉTAPE 9 / 15 — migrate-2026-7-support.sql
 -- ══════════════════════════════════════════════════════════
 
 -- ============================================================
@@ -1624,7 +1624,7 @@ revoke all on app_errors from anon, authenticated;
 
 
 -- ══════════════════════════════════════════════════════════
--- ÉTAPE 10 / 14 — migrate-2026-8-abonnement.sql
+-- ÉTAPE 10 / 15 — migrate-2026-8-abonnement.sql
 -- ══════════════════════════════════════════════════════════
 
 -- ============================================================
@@ -1681,7 +1681,7 @@ on conflict (key) do update
 
 
 -- ══════════════════════════════════════════════════════════
--- ÉTAPE 11 / 14 — migrate-2026-9-vitrine-accueil.sql
+-- ÉTAPE 11 / 15 — migrate-2026-9-vitrine-accueil.sql
 -- ══════════════════════════════════════════════════════════
 
 -- ============================================================
@@ -1738,7 +1738,7 @@ on conflict (key) do update
 
 
 -- ══════════════════════════════════════════════════════════
--- ÉTAPE 12 / 14 — migrate-2026-10-vitrine-produits.sql
+-- ÉTAPE 12 / 15 — migrate-2026-10-vitrine-produits.sql
 -- ══════════════════════════════════════════════════════════
 
 -- ============================================================
@@ -1772,7 +1772,7 @@ on conflict (key) do update
 
 
 -- ══════════════════════════════════════════════════════════
--- ÉTAPE 13 / 14 — migrate-2026-11-annuaire.sql
+-- ÉTAPE 13 / 15 — migrate-2026-11-annuaire.sql
 -- ══════════════════════════════════════════════════════════
 
 -- ============================================================
@@ -1898,7 +1898,7 @@ on conflict (key) do update
 
 
 -- ══════════════════════════════════════════════════════════
--- ÉTAPE 14 / 14 — migrate-2026-12-horaires.sql
+-- ÉTAPE 14 / 15 — migrate-2026-12-horaires.sql
 -- ══════════════════════════════════════════════════════════
 
 -- ============================================================
@@ -1962,6 +1962,68 @@ insert into platform_settings (key, value)
 values ('db_version', jsonb_build_object('migration', 12))
 on conflict (key) do update
   set value = jsonb_build_object('migration', greatest(12, coalesce((platform_settings.value->>'migration')::int, 0))),
+      updated_at = now();
+
+-- ✅ Migration terminée.
+
+
+-- ══════════════════════════════════════════════════════════
+-- ÉTAPE 15 / 15 — migrate-2026-13-audience.sql
+-- ══════════════════════════════════════════════════════════
+
+-- ============================================================
+-- CONVERZA — migration 13 (audience du site public)
+-- À exécuter dans l'éditeur SQL Supabase après
+-- migrate-2026-12-horaires.sql. Le script est rejouable.
+--
+-- Jusqu'ici, CONVERZA ne mesurait que les commandes. On savait ce qui se
+-- vendait, jamais ce qui avait conduit à la vente — ni, surtout, ce qui n'y
+-- avait pas conduit. L'annuaire venait d'ouvrir sans aucun moyen de savoir
+-- s'il servait à quelque chose.
+--
+-- Trois évènements suffisent à répondre : on est venu, on a cherché, on a
+-- cliqué sur une boutique. Le terme cherché est le plus précieux des trois :
+-- il dit ce que les gens veulent et que personne ne vend.
+--
+-- CE QUI N'EST PAS ENREGISTRÉ, et ne doit pas l'être : aucune adresse IP,
+-- aucun cookie, aucun identifiant de visiteur. On compte des évènements, pas
+-- des personnes. « Visites » veut donc dire pages ouvertes, pas visiteurs
+-- uniques — et les écrans doivent le dire ainsi.
+-- ============================================================
+
+create table if not exists site_events (
+  id          uuid primary key default gen_random_uuid(),
+  -- 'visit' : une page du site publique ouverte.
+  -- 'search' : une recherche de produit dans l'annuaire.
+  -- 'shop_click' : une vitrine ouverte depuis l'annuaire.
+  kind        text not null check (kind in ('visit', 'search', 'shop_click')),
+  path        text,
+  -- Terme cherché, déjà mis en minuscules et tronqué côté application.
+  term        text,
+  business_id uuid references businesses(id) on delete set null,
+  created_at  timestamptz not null default now()
+);
+
+-- Les trois lectures de la console : le décompte par jour, le classement des
+-- termes, et celui des boutiques.
+create index if not exists site_events_created_idx on site_events (created_at desc);
+create index if not exists site_events_kind_idx on site_events (kind, created_at desc);
+create index if not exists site_events_term_idx on site_events (term) where term is not null;
+
+-- Personne ne lit ni n'écrit cette table depuis un navigateur.
+--
+-- Les écritures passent par le serveur, avec la clé de service ; les lectures
+-- par la console d'administration, qui l'emploie aussi. Ouvrir la table au
+-- rôle anonyme permettrait à n'importe qui de la remplir de faux évènements,
+-- et de lire ce que les gens cherchent.
+alter table site_events enable row level security;
+revoke all on site_events from anon, authenticated;
+
+-- Repère de version lu par la console.
+insert into platform_settings (key, value)
+values ('db_version', jsonb_build_object('migration', 13))
+on conflict (key) do update
+  set value = jsonb_build_object('migration', greatest(13, coalesce((platform_settings.value->>'migration')::int, 0))),
       updated_at = now();
 
 -- ✅ Migration terminée.

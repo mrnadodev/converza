@@ -3,7 +3,22 @@ import type { Language } from "../translations";
 // Console super-admin CONVERZA (plateforme), en français, kreyòl et anglais.
 export interface AdminCopy {
   header: { title: string; subtitle: string; signOut: string };
-  tabs: { overview: string; merchants: string; billing: string; phones: string; qrMenu: string; platform: string; landing: string; security: string };
+  tabs: { overview: string; merchants: string; billing: string; phones: string; qrMenu: string; platform: string; landing: string; audience: string; security: string };
+  /** Mesure du site public : pages ouvertes, recherches, clics vers une boutique. */
+  audience: {
+    title: string;
+    hint: string;
+    unavailable: string;
+    visits: string;
+    searches: string;
+    clicks: string;
+    day: string;
+    topTerms: string;
+    topTermsHint: string;
+    topShops: string;
+    empty: string;
+    privacy: string;
+  };
   landing: {
     title: string;
     hint: string;
@@ -369,7 +384,21 @@ export interface AdminCopy {
 
 const fr: AdminCopy = {
   header: { title: "Console CONVERZA", subtitle: "Supervision de la plateforme et des abonnements", signOut: "Se déconnecter" },
-  tabs: { overview: "Vue d'ensemble", merchants: "Marchands", billing: "Abonnements", phones: "Numéros", qrMenu: "Menu QR", platform: "Plateforme", landing: "Page d'accueil", security: "Sécurité" },
+  tabs: { overview: "Vue d'ensemble", merchants: "Marchands", billing: "Abonnements", phones: "Numéros", qrMenu: "Menu QR", platform: "Plateforme", landing: "Page d'accueil", audience: "Audience", security: "Sécurité" },
+  audience: {
+    title: "Audience du site public",
+    hint: "Trente derniers jours. Une « visite » est une page ouverte, pas un visiteur : rien n'identifie personne.",
+    unavailable: "La mesure n'est pas encore activée. Passez la migration 13.",
+    visits: "Pages ouvertes",
+    searches: "Recherches",
+    clicks: "Clics vers une boutique",
+    day: "Jour",
+    topTerms: "Ce que les gens cherchent",
+    topTermsHint: "Un terme très cherché et peu cliqué désigne un produit que personne ne vend encore.",
+    topShops: "Boutiques les plus ouvertes",
+    empty: "Aucun évènement pour l'instant.",
+    privacy: "Aucune adresse IP, aucun cookie, aucun identifiant de visiteur n'est enregistré.",
+  },
   landing: {
     title: "Textes de la page d'accueil",
     hint: "Chaque texte de la page publique, dans chaque langue. Un champ laissé tel quel suit le texte d'origine.",
@@ -831,7 +860,21 @@ const fr: AdminCopy = {
 
 const ht: AdminCopy = {
   header: { title: "Konsòl CONVERZA", subtitle: "Sipèvizyon plataform lan ak abònman yo", signOut: "Dekonekte" },
-  tabs: { overview: "Apèsi", merchants: "Machann", billing: "Abònman", phones: "Nimewo", qrMenu: "Meni QR", platform: "Plataform", landing: "Paj akèy", security: "Sekirite" },
+  tabs: { overview: "Apèsi", merchants: "Machann", billing: "Abònman", phones: "Nimewo", qrMenu: "Meni QR", platform: "Plataform", landing: "Paj akèy", audience: "Odyans", security: "Sekirite" },
+  audience: {
+    title: "Odyans sit piblik la",
+    hint: "Trant dènye jou yo. Yon « vizit » se yon paj ki louvri, se pa yon moun : anyen pa idantifye pèsonn.",
+    unavailable: "Mezi a poko aktive. Pase migrasyon 13 la.",
+    visits: "Paj ki louvri",
+    searches: "Rechèch",
+    clicks: "Klik sou yon boutik",
+    day: "Jou",
+    topTerms: "Sa moun yo ap chèche",
+    topTermsHint: "Yon mo moun chèche anpil men yo pa klike sou li, se yon pwodwi pèsonn poko vann.",
+    topShops: "Boutik yo louvri plis",
+    empty: "Pa gen anyen pou kounye a.",
+    privacy: "Nou pa anrejistre okenn adrès IP, okenn cookie, okenn idantifyan vizitè.",
+  },
   landing: {
     title: "Tèks paj akèy la",
     hint: "Chak tèks paj piblik la, nan chak lang. Yon chan ou pa touche swiv tèks orijinal la.",
@@ -1293,7 +1336,21 @@ const ht: AdminCopy = {
 
 const en: AdminCopy = {
   header: { title: "CONVERZA console", subtitle: "Platform and subscription oversight", signOut: "Sign out" },
-  tabs: { overview: "Overview", merchants: "Merchants", billing: "Billing", phones: "Numbers", qrMenu: "QR menu", platform: "Platform", landing: "Home page", security: "Security" },
+  tabs: { overview: "Overview", merchants: "Merchants", billing: "Billing", phones: "Numbers", qrMenu: "QR menu", platform: "Platform", landing: "Home page", audience: "Audience", security: "Security" },
+  audience: {
+    title: "Public site audience",
+    hint: "Last thirty days. A « visit » is a page opened, not a person: nothing identifies anyone.",
+    unavailable: "Measurement is not enabled yet. Run migration 13.",
+    visits: "Pages opened",
+    searches: "Searches",
+    clicks: "Clicks to a shop",
+    day: "Day",
+    topTerms: "What people search for",
+    topTermsHint: "A term searched often but rarely clicked points to a product nobody sells yet.",
+    topShops: "Most opened shops",
+    empty: "No events yet.",
+    privacy: "No IP address, no cookie, no visitor identifier is recorded.",
+  },
   landing: {
     title: "Home page texts",
     hint: "Every text of the public page, in every language. A field left untouched follows the original text.",

@@ -109,12 +109,13 @@ export async function getAdminData() {
   if (!admin) return null;
   const now = Date.now();
 
-  const [platformPlans, platformPaymentInfo, platformSettings, legalInfo, landingOverrides] = await Promise.all([
+  const [platformPlans, platformPaymentInfo, platformSettings, legalInfo, landingOverrides, audience] = await Promise.all([
     loadPlans(),
     loadPaymentInfo(),
     loadPlatformSettings(),
     loadLegalInfo(),
     loadLandingOverrides(),
+    getAudience(),
   ]);
 
   // Les compteurs par marchand sont agrégés par Postgres (vue
@@ -425,7 +426,78 @@ export async function getAdminData() {
     legalInfo,
     landingOverrides,
     platformSettings,
+    audience,
   };
 }
 
 export type AdminData = NonNullable<Awaited<ReturnType<typeof getAdminData>>>;
+
+/**
+ * Audience du site public, sur les `jours` derniers jours.
+ *
+ * `disponible` est faux tant que la migration 13 n a pas cree la table : la
+ * console le dit alors franchement, au lieu d afficher des zeros qui
+ * ressembleraient a un site desert.
+ *
+ * « Visites » veut dire pages ouvertes, pas visiteurs uniques : rien
+ * n identifie qui que ce soit, ni cookie ni adresse IP.
+ */
+export interface AudienceData {
+  disponible: boolean;
+  parJour: { jour: string; visites: number; recherches: number; clics: number }[];
+  termes: { terme: string; nb: number }[];
+  boutiques: { nom: string; slug: string; nb: number }[];
+  total: { visites: number; recherches: number; clics: number };
+}
+
+export async function getAudience(jours = 30): Promise<AudienceData> {
+  const vide: AudienceData = { disponible: false, parJour: [], termes: [], boutiques: [], total: { visites: 0, recherches: 0, clics: 0 } };
+  const admin = createAdminClient();
+  if (!admin) return vide;
+
+  const depuis = new Date(Date.now() - jours * 864e5).toISOString();
+  const { data, error } = await admin
+    .from("site_events")
+    .select("kind, term, business_id, created_at")
+    .gte("created_at", depuis)
+    .order("created_at", { ascending: false })
+    .limit(20000);
+  if (error) return vide;
+
+  const evenements = data ?? [];
+  const parJour = new Map<string, { visites: number; recherches: number; clics: number }>();
+  const termes = new Map<string, number>();
+  const clicsParBoutique = new Map<string, number>();
+  const total = { visites: 0, recherches: 0, clics: 0 };
+
+  for (const e of evenements) {
+    const jour = String(e.created_at).slice(0, 10);
+    const ligne = parJour.get(jour) ?? { visites: 0, recherches: 0, clics: 0 };
+    if (e.kind === "visit") { ligne.visites++; total.visites++; }
+    else if (e.kind === "search") {
+      ligne.recherches++; total.recherches++;
+      if (e.term) termes.set(e.term, (termes.get(e.term) ?? 0) + 1);
+    } else if (e.kind === "shop_click") {
+      ligne.clics++; total.clics++;
+      if (e.business_id) clicsParBoutique.set(e.business_id, (clicsParBoutique.get(e.business_id) ?? 0) + 1);
+    }
+    parJour.set(jour, ligne);
+  }
+
+  // Les noms de boutiques ne sont lus que pour celles qui ont ete cliquees.
+  const ids = [...clicsParBoutique.keys()];
+  const { data: boutiques } = ids.length
+    ? await admin.from("businesses").select("id, name, slug").in("id", ids)
+    : { data: [] as { id: string; name: string; slug: string }[] };
+
+  return {
+    disponible: true,
+    parJour: [...parJour.entries()].sort((a, b) => b[0].localeCompare(a[0])).map(([jour, v]) => ({ jour, ...v })),
+    termes: [...termes.entries()].sort((a, b) => b[1] - a[1]).slice(0, 20).map(([terme, nb]) => ({ terme, nb })),
+    boutiques: (boutiques ?? [])
+      .map((b) => ({ nom: b.name, slug: b.slug, nb: clicsParBoutique.get(b.id) ?? 0 }))
+      .sort((a, b) => b.nb - a.nb)
+      .slice(0, 15),
+    total,
+  };
+}

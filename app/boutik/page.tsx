@@ -1,8 +1,10 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import type { Metadata } from "next";
 import { listDirectoryShops, searchDirectory } from "@/lib/data";
 import { formatMoney } from "@/lib/money";
 import { BackToTop } from "@/components/BackToTop";
+import { Audience } from "@/components/Audience";
+import { ShopLink } from "@/components/ShopLink";
 
 // Annuaire public des boutiques CONVERZA.
 //
@@ -69,6 +71,11 @@ export default async function AnnuairePage({ searchParams }: { searchParams?: { 
           <Boutiques shops={annuaire?.shops ?? []} />
         )}
       </div>
+
+      {/* Une visite, ou une recherche quand un terme est tape. C est ce qui
+          permet de savoir si l annuaire est trouve, et ce que les gens y
+          cherchent sans le trouver. */}
+      <Audience kind={q ? "search" : "visit"} path="/boutik" term={q || undefined} />
 
       {/* Les résultats peuvent tenir sur plusieurs écrans : la même flèche que
           sur la page d'accueil évite de remonter à la main pour rechercher. */}
@@ -162,7 +169,7 @@ function Boutiques({ shops }: { shops: Awaited<ReturnType<typeof listDirectorySh
       <ul className="grid gap-2.5 sm:grid-cols-2">
         {shops.map((b) => (
           <li key={b.id}>
-            <Link href={`/b/${b.slug}`} className="flex items-center gap-3 rounded-2xl border border-line bg-white p-3.5 hover:border-ink-faint">
+            <ShopLink slug={b.slug} businessId={b.id} className="flex items-center gap-3 rounded-2xl border border-line bg-white p-3.5 hover:border-ink-faint">
               <span className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[#E7F7F1] text-[15px] font-extrabold text-brand">
                 {b.logoUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
@@ -180,7 +187,7 @@ function Boutiques({ shops }: { shops: Awaited<ReturnType<typeof listDirectorySh
                   {b.productCount} produit{b.productCount > 1 ? "s" : ""}
                 </span>
               </span>
-            </Link>
+            </ShopLink>
           </li>
         ))}
       </ul>

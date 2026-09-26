@@ -1,4 +1,4 @@
-﻿// Couche d'accès aux données.
+// Couche d'accès aux données.
 // Marche en MODE DÉMO (données de lib/demo.ts) tant que Supabase n'est pas
 // configuré, puis bascule automatiquement sur Supabase dès que les variables
 // NEXT_PUBLIC_SUPABASE_* sont présentes.
@@ -634,6 +634,8 @@ export interface DirectoryHit {
   priceCents: number;
   currency: string;
   photoUrl: string | null;
+  /** Sert à noter le clic vers cette boutique (migration 13). */
+  businessId: string;
   businessName: string;
   businessSlug: string;
   businessAddress: string | null;
@@ -664,7 +666,7 @@ export async function searchDirectory(query: string): Promise<{ hits: DirectoryH
 
   const { data, error } = await sb
     .from("public_directory_products")
-    .select("id, name, category, price_cents, currency, photo_url, business_name, business_slug, business_address, business_type")
+    .select("id, name, category, price_cents, currency, photo_url, business_id, business_name, business_slug, business_address, business_type")
     .or(`name.ilike.${motif},category.ilike.${motif}`)
     .limit(60);
 
@@ -679,6 +681,7 @@ export async function searchDirectory(query: string): Promise<{ hits: DirectoryH
       priceCents: Number(p.price_cents),
       currency: p.currency,
       photoUrl: p.photo_url,
+      businessId: p.business_id,
       businessName: p.business_name,
       businessSlug: p.business_slug,
       businessAddress: p.business_address,

@@ -1,4 +1,4 @@
-﻿import { readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { PGlite } from "@electric-sql/pglite";
 import { beforeAll, describe, expect, it } from "vitest";
@@ -19,7 +19,7 @@ const DB = join(__dirname);
 
 
 /** Tables volontairement réservées à la console (clé de service). */
-const SERVICE_SEUL = ["app_errors", "platform_settings", "security_audit_logs"];
+const SERVICE_SEUL = ["app_errors", "platform_settings", "security_audit_logs", "site_events"];
 
 let db: PGlite;
 const erreurs: string[] = [];
@@ -60,7 +60,7 @@ describe("montage d'une base à partir de zéro", () => {
 
   it("aboutit à la version de base attendue", async () => {
     const [v] = await rows<{ v: string }>(`select value->>'migration' as v from platform_settings where key='db_version'`);
-    expect(v?.v).toBe("12");
+    expect(v?.v).toBe("13");
   });
 
   it("crée les tables dont l'application se sert", async () => {
@@ -119,13 +119,13 @@ describe("db/staging-complet.sql", () => {
     const [v] = (await neuve.query<{ v: string }>(
       `select value->>'migration' as v from platform_settings where key='db_version'`,
     )).rows;
-    expect(v?.v, "le fichier assemblé est-il à jour ? npm run staging-sql").toBe("12");
+    expect(v?.v, "le fichier assemblé est-il à jour ? npm run staging-sql").toBe("13");
 
     const tables = (await neuve.query<{ n: number }>(
       `select count(*)::int as n from pg_class c join pg_namespace nsp on nsp.oid=c.relnamespace
        where nsp.nspname='public' and c.relkind='r'`,
     )).rows[0].n;
-    expect(tables).toBe(19);
+    expect(tables).toBe(20);
   }, 120_000);
 
   it("contient exactement les fichiers sources, sans dérive", () => {

@@ -39,13 +39,13 @@ import { INDUSTRY_SECTORS, verticalOf } from "@/lib/verticals";
 import { designFor, paletteFor } from "@/lib/storefront-designs";
 import { DESIGN_COPY, designName } from "@/lib/i18n/app/designs";
 import { LayoutThumb as LayoutThumbMini } from "@/components/LayoutThumb";
-import type { AdminData, AdminMerchant } from "@/lib/admin-data";
+import type { AdminData, AdminMerchant, AudienceData } from "@/lib/admin-data";
 import type { BankAccountDetails, Plan } from "@/lib/plans";
 import type { DesignLayoutConfig, QrMenuServiceConfig } from "@/lib/platform-config";
 import { DEFAULT_LAYOUT, STOREFRONT_LAYOUTS, isLayoutKey, layoutRule, type LayoutKey } from "@/lib/storefront-layouts";
 import { Select } from "@/components/ui/Select";
 
-type Tab = "overview" | "merchants" | "billing" | "phones" | "qrMenu" | "platform" | "landing" | "security";
+type Tab = "overview" | "merchants" | "billing" | "phones" | "qrMenu" | "platform" | "landing" | "audience" | "security";
 type Runner = (id: string, fn: () => Promise<unknown>) => void;
 
 const PLAN_KEYS = ["gratis", "qr_express", "pro", "premium"] as const;
@@ -122,7 +122,7 @@ export function AdminPanel({ data }: { data: AdminData }) {
       </header>
 
       <nav className="flex gap-1 overflow-x-auto border-b border-line bg-white px-4 pt-3 text-[13.5px] font-bold [scrollbar-width:none]">
-        {(["overview", "merchants", "billing", "phones", "qrMenu", "platform", "landing", "security"] as const).map((key) => {
+        {(["overview", "merchants", "billing", "phones", "qrMenu", "platform", "landing", "audience", "security"] as const).map((key) => {
           const badge =
             key === "billing"
               ? data.pendingPayments.length
@@ -177,6 +177,7 @@ export function AdminPanel({ data }: { data: AdminData }) {
       {tab === "qrMenu" && <QrMenuTab data={data} run={run} pending={pending} busy={busy} onPrint={(m) => setQrMerchant(m)} />}
       {tab === "platform" && <PlatformTab data={data} run={run} pending={pending} />}
       {tab === "landing" && <LandingEditor initial={data.landingOverrides ?? {}} />}
+      {tab === "audience" && <AudienceTab audience={data.audience} />}
       {tab === "security" && <SecurityTab data={data} />}
 
       {cockpit && <CockpitModal merchant={cockpit} onClose={() => setCockpit(null)} onRefresh={() => router.refresh()} />}
@@ -2451,5 +2452,126 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
       {children}
       {hint && <span className="mt-1 text-[10.5px] text-ink-faint">{hint}</span>}
     </label>
+  );
+}
+
+/**
+ * Audience du site public.
+ *
+ * Trois chiffres qui se lisent ensemble : on est venu, on a cherché, on a
+ * cliqué. Le troisième est le seul qui dise que l'annuaire envoie du monde
+ * chez les marchands — les deux premiers disent seulement qu'il est trouvé.
+ *
+ * Les termes cherchés valent plus que les décomptes : un mot tapé souvent et
+ * peu suivi de clic désigne un produit que personne ne vend encore.
+ */
+function AudienceTab({ audience }: { audience: AudienceData }) {
+  const a = useDict(ADMIN_COPY);
+  const t = a.audience;
+
+  if (!audience.disponible) {
+    return (
+      <section className="rounded-2xl border border-line bg-white p-8 text-center">
+        <p className="text-[13px] text-ink-muted">{t.unavailable}</p>
+      </section>
+    );
+  }
+
+  const max = Math.max(1, ...audience.parJour.map((j) => j.visites + j.recherches + j.clics));
+
+  return (
+    <section className="flex flex-col gap-4">
+      <div className="flex flex-col gap-1">
+        <h2 className="text-base font-extrabold text-ink">{t.title}</h2>
+        <p className="text-[12px] leading-snug text-ink-muted">{t.hint}</p>
+      </div>
+
+      <div className="grid grid-cols-3 gap-3">
+        {[
+          [t.visits, audience.total.visites, "text-ink"],
+          [t.searches, audience.total.recherches, "text-ink"],
+          [t.clicks, audience.total.clics, "text-brand"],
+        ].map(([label, valeur, couleur]) => (
+          <div key={String(label)} className="rounded-2xl border border-line bg-white p-3.5">
+            <span className="text-[11px] font-bold uppercase leading-tight text-ink-muted">{label}</span>
+            <p className={`pt-1 text-[22px] font-extrabold tabular-nums ${couleur}`}>{valeur}</p>
+          </div>
+        ))}
+      </div>
+
+      {audience.parJour.length === 0 ? (
+        <p className="rounded-2xl border border-line bg-white p-8 text-center text-[13px] text-ink-muted">{t.empty}</p>
+      ) : (
+        <div className="overflow-hidden rounded-2xl border border-line bg-white">
+          <table className="w-full text-[12.5px]">
+            <thead>
+              <tr className="bg-[#F7F8F9] text-left text-[11px] uppercase text-ink-muted">
+                <th className="px-3 py-2 font-bold">{t.day}</th>
+                <th className="px-3 py-2 font-bold">{t.visits}</th>
+                <th className="px-3 py-2 font-bold">{t.searches}</th>
+                <th className="px-3 py-2 font-bold">{t.clicks}</th>
+                <th className="w-[38%] px-3 py-2" />
+              </tr>
+            </thead>
+            <tbody>
+              {audience.parJour.map((j) => (
+                <tr key={j.jour} className="border-t border-line">
+                  <td className="px-3 py-2 font-semibold tabular-nums text-ink">{j.jour}</td>
+                  <td className="px-3 py-2 tabular-nums">{j.visites}</td>
+                  <td className="px-3 py-2 tabular-nums">{j.recherches}</td>
+                  <td className="px-3 py-2 font-bold tabular-nums text-brand">{j.clics}</td>
+                  <td className="px-3 py-2">
+                    {/* Une barre plutôt qu'un graphique : on cherche la forme
+                        de la semaine, pas une valeur au pixel près. */}
+                    <span className="flex h-1.5 overflow-hidden rounded-full bg-[#EEF2F1]">
+                      <span className="bg-brand" style={{ width: `${((j.visites + j.recherches + j.clics) / max) * 100}%` }} />
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      <div className="grid gap-3 md:grid-cols-2">
+        <div className="flex flex-col gap-2 rounded-2xl border border-line bg-white p-3.5">
+          <div className="flex flex-col">
+            <span className="text-[13px] font-extrabold text-ink">{t.topTerms}</span>
+            <span className="text-[11.5px] leading-snug text-ink-muted">{t.topTermsHint}</span>
+          </div>
+          {audience.termes.length === 0 ? (
+            <p className="text-[12px] text-ink-muted">{t.empty}</p>
+          ) : (
+            <ul className="flex flex-col divide-y divide-line/60">
+              {audience.termes.map((x) => (
+                <li key={x.terme} className="flex items-center justify-between gap-3 py-1.5">
+                  <span className="truncate text-[12.5px] text-ink">{x.terme}</span>
+                  <span className="shrink-0 text-[12.5px] font-extrabold tabular-nums text-ink-muted">{x.nb}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        <div className="flex flex-col gap-2 rounded-2xl border border-line bg-white p-3.5">
+          <span className="text-[13px] font-extrabold text-ink">{t.topShops}</span>
+          {audience.boutiques.length === 0 ? (
+            <p className="text-[12px] text-ink-muted">{t.empty}</p>
+          ) : (
+            <ul className="flex flex-col divide-y divide-line/60">
+              {audience.boutiques.map((b) => (
+                <li key={b.slug} className="flex items-center justify-between gap-3 py-1.5">
+                  <span className="truncate text-[12.5px] text-ink">{b.nom}</span>
+                  <span className="shrink-0 text-[12.5px] font-extrabold tabular-nums text-brand">{b.nb}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
+
+      <p className="px-1 text-[11.5px] text-ink-faint">{t.privacy}</p>
+    </section>
   );
 }
