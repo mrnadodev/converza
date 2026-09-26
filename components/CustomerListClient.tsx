@@ -1,8 +1,9 @@
-"use client";
+﻿"use client";
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { InvoiceModal } from "@/components/InvoiceModal";
+import { PromoBroadcast } from "@/components/PromoBroadcast";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { useDict, useLanguage } from "@/components/LanguageContext";
 import { createCustomer, setCustomerTags } from "@/app/kliyan/actions";
@@ -50,6 +51,7 @@ export function CustomerListClient({
   const [selected, setSelected] = useState<Customer | null>(null);
   const [invoiceCard, setInvoiceCard] = useState<PipelineCard | null>(null);
   const [addOpen, setAddOpen] = useState(false);
+  const [promoOpen, setPromoOpen] = useState(false);
 
   const filtered = customers.filter((c) => {
     const q = search.toLowerCase().trim();
@@ -69,8 +71,24 @@ export function CustomerListClient({
       <header className="flex items-center gap-2.5 bg-brand px-4 pb-4 pt-5">
         <h1 className="text-[21px] font-extrabold tracking-tight text-white">{k.title}</h1>
         <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-bold text-white">{k.count(customers.length)}</span>
-        <div className="ml-auto md:hidden">
-          <LanguageToggle />
+        <div className="ml-auto flex items-center gap-2">
+          {/* La promotion part d'ici : c'est le seul écran qui connaît tous les
+              clients. Elle n'était accessible que depuis une commande arrivée à
+              l'étape « Suivi » — donc jamais pour un client qui n'avait pas
+              encore acheté, ni pour ceux dont la commande n'était pas allée
+              jusqu'au bout. */}
+          {customers.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setPromoOpen(true)}
+              className="h-9 cursor-pointer rounded-xl bg-white/15 px-3 text-[12.5px] font-extrabold text-white hover:bg-white/25 active:scale-95"
+            >
+              {k.broadcast.cta}
+            </button>
+          )}
+          <div className="md:hidden">
+            <LanguageToggle />
+          </div>
         </div>
       </header>
 
@@ -176,6 +194,16 @@ export function CustomerListClient({
       )}
 
       {addOpen && <AddCustomerModal onClose={() => setAddOpen(false)} />}
+
+      {promoOpen && (
+        <PromoBroadcast
+          customers={filtered}
+          businessName={business.name}
+          businessSlug={business.slug}
+          initialPromoText={business.promo_text}
+          onClose={() => setPromoOpen(false)}
+        />
+      )}
 
       {selected && (
         <CustomerProfileModal

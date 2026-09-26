@@ -1,4 +1,4 @@
-import type { Language } from "../translations";
+﻿import type { Language } from "../translations";
 
 export interface CustomersCopy {
   title: string;
@@ -7,6 +7,33 @@ export interface CustomersCopy {
   clearSearch: string;
   orders: (n: number) => string;
   tags: { vip: string; kliyan_fidel: string; nouvo_kliyan: string };
+  /**
+   * Envoi guide d une promotion. WhatsApp n offre aucune diffusion gratuite :
+   * on enchaine les clients un par un. Les libelles disent « ouvert » et non
+   * « envoye » — l application ne peut pas savoir si le marchand a appuye.
+   */
+  broadcast: {
+    cta: string;
+    title: string;
+    stepWho: string;
+    stepMessage: string;
+    selectAll: string;
+    selectNone: string;
+    chosen: (n: number) => string;
+    next: string;
+    messageLabel: string;
+    photos: string;
+    addPhotos: string;
+    photosChosen: (n: number) => string;
+    photosHint: string;
+    preview: string;
+    start: (n: number) => string;
+    progress: (i: number, total: number) => string;
+    open: string;
+    skip: string;
+    done: (n: number) => string;
+    doneHint: string;
+  };
   empty: { title: string; desc: string; cta: string; noMatch: string };
   add: {
     cta: string;
@@ -43,6 +70,28 @@ const fr: CustomersCopy = {
   clearSearch: "Effacer la recherche",
   orders: (n) => (n <= 1 ? `${n} commande` : `${n} commandes`),
   tags: { vip: "VIP", kliyan_fidel: "Client fidèle", nouvo_kliyan: "Nouveau client" },
+  broadcast: {
+    cta: "Promotion",
+    title: "Envoyer une promotion",
+    stepWho: "Choisissez qui doit la recevoir.",
+    stepMessage: "Écrivez le message et ajoutez vos photos.",
+    selectAll: "Tout sélectionner",
+    selectNone: "Tout désélectionner",
+    chosen: (n) => (n <= 1 ? `${n} client choisi` : `${n} clients choisis`),
+    next: "Continuer",
+    messageLabel: "Votre message",
+    photos: "Photos du produit",
+    addPhotos: "Ajouter des photos",
+    photosChosen: (n) => (n <= 1 ? `${n} photo choisie` : `${n} photos choisies`),
+    photosHint: "Sur téléphone, la photo part avec le message. Sur ordinateur, elle est téléchargée une seule fois : vous la joignez dans WhatsApp.",
+    preview: "Aperçu",
+    start: (n) => (n <= 1 ? `Commencer (${n} client)` : `Commencer (${n} clients)`),
+    progress: (i, total) => `Client ${i} sur ${total}`,
+    open: "Ouvrir WhatsApp",
+    skip: "Passer",
+    done: (n) => (n <= 1 ? `${n} conversation ouverte` : `${n} conversations ouvertes`),
+    doneHint: "Vérifiez dans WhatsApp que chaque message est bien parti : nous ouvrons la conversation, c'est vous qui appuyez sur envoyer.",
+  },
   empty: {
     title: "Aucun client enregistré",
     desc: "Chaque commande passée depuis votre vitrine crée la fiche du client. Vous pouvez aussi en ajouter un à la main.",
@@ -84,6 +133,28 @@ const ht: CustomersCopy = {
   clearSearch: "Efase rechèch la",
   orders: (n) => `${n} kòmand`,
   tags: { vip: "VIP", kliyan_fidel: "Kliyan fidèl", nouvo_kliyan: "Nouvo kliyan" },
+  broadcast: {
+    cta: "Pwomosyon",
+    title: "Voye yon pwomosyon",
+    stepWho: "Chwazi kiyès ki dwe resevwa l.",
+    stepMessage: "Ekri mesaj la epi ajoute foto ou yo.",
+    selectAll: "Chwazi tout",
+    selectNone: "Retire tout",
+    chosen: (n) => `${n} kliyan chwazi`,
+    next: "Kontinye",
+    messageLabel: "Mesaj ou",
+    photos: "Foto pwodwi a",
+    addPhotos: "Ajoute foto",
+    photosChosen: (n) => `${n} foto chwazi`,
+    photosHint: "Sou telefòn, foto a pati ak mesaj la. Sou òdinatè, li telechaje yon sèl fwa : ou mete l nan WhatsApp.",
+    preview: "Apèsi",
+    start: (n) => `Kòmanse (${n} kliyan)`,
+    progress: (i, total) => `Kliyan ${i} sou ${total}`,
+    open: "Louvri WhatsApp",
+    skip: "Sote",
+    done: (n) => `${n} konvèsasyon louvri`,
+    doneHint: "Tcheke nan WhatsApp si chak mesaj byen pati : nou louvri konvèsasyon an, se ou ki peze voye.",
+  },
   empty: {
     title: "Poko gen kliyan",
     desc: "Chak kòmand ki soti nan vitrin ou kreye fich kliyan an. Ou ka ajoute youn alamen tou.",
@@ -125,6 +196,28 @@ const en: CustomersCopy = {
   clearSearch: "Clear search",
   orders: (n) => (n === 1 ? "1 order" : `${n} orders`),
   tags: { vip: "VIP", kliyan_fidel: "Loyal customer", nouvo_kliyan: "New customer" },
+  broadcast: {
+    cta: "Promotion",
+    title: "Send a promotion",
+    stepWho: "Choose who should receive it.",
+    stepMessage: "Write the message and add your photos.",
+    selectAll: "Select all",
+    selectNone: "Clear selection",
+    chosen: (n) => (n === 1 ? "1 customer chosen" : `${n} customers chosen`),
+    next: "Continue",
+    messageLabel: "Your message",
+    photos: "Product photos",
+    addPhotos: "Add photos",
+    photosChosen: (n) => (n === 1 ? "1 photo chosen" : `${n} photos chosen`),
+    photosHint: "On a phone the photo travels with the message. On a computer it is downloaded once: attach it in WhatsApp.",
+    preview: "Preview",
+    start: (n) => (n === 1 ? "Start (1 customer)" : `Start (${n} customers)`),
+    progress: (i, total) => `Customer ${i} of ${total}`,
+    open: "Open WhatsApp",
+    skip: "Skip",
+    done: (n) => (n === 1 ? "1 conversation opened" : `${n} conversations opened`),
+    doneHint: "Check in WhatsApp that each message went out: we open the conversation, you press send.",
+  },
   empty: {
     title: "No customers yet",
     desc: "Every order from your storefront creates a customer record. You can also add one by hand.",
