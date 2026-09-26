@@ -58,7 +58,7 @@ export function LandingPage({
   const qrPrice = plans.find((p) => p.key === "qr_express")?.priceGdes;
 
   return (
-    <div ref={rootRef} style={{ background: "#FFFFFF", color: INK }} className="overflow-x-hidden">
+    <div id="haut" ref={rootRef} style={{ background: "#FFFFFF", color: INK }} className="overflow-x-hidden">
 
       {/* ══════════ ACCROCHE ══════════ */}
       <section className="relative overflow-hidden" style={{ background: INK }}>
@@ -587,13 +587,17 @@ export function LandingPage({
               <span className="text-[13.5px] font-semibold text-[#7D9A92]">
                 <Wordmark className="font-extrabold text-white" /> · {c.footer.slogan}
               </span>
-              <Link
-                href="/"
+              {/* Remonte en haut de cette page, et non vers « / ».
+                  Un marchand connecté qui cliquait sur « / » atterrissait sur
+                  son tableau de bord : le bouton le sortait du site au lieu de
+                  l'y ramener. */}
+              <a
+                href="#haut"
                 className="flex h-10 shrink-0 items-center rounded-xl border px-4 text-[13px] font-bold text-white transition-colors hover:bg-white/10"
                 style={{ borderColor: "rgba(255,255,255,0.22)" }}
               >
                 {c.footer.home}
-              </Link>
+              </a>
             </div>
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <span className="text-[13px] text-[#5E7E75]">{c.footer.rights}</span>
