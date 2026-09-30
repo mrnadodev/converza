@@ -6,6 +6,7 @@ import { formatMoney } from "@/lib/money";
 import { waMeLink } from "@/lib/whatsapp";
 import { etatBoutique, type EtatBoutique } from "@/lib/horaires";
 import { countNew } from "@/lib/nouveautes";
+import { prixEffectif } from "@/lib/prix";
 import { buildOrderMessage, type CartLine } from "@/lib/order";
 import { verticalOf } from "@/lib/verticals";
 import { paletteOfTheme, themeOf } from "@/lib/themes";
@@ -91,7 +92,10 @@ export function Storefront({
     () =>
       products
         .filter((p) => cart[p.id])
-        .map((p) => ({ name: p.name, unit: p.unit, qty: cart[p.id], unitPriceCents: p.price_cents })),
+        // Le panier compte au prix promo, comme la vitrine l'affiche et comme
+        // le serveur le facturera. Repartir de `price_cents` ici donnerait au
+        // client un total qui ne correspond a aucun des deux.
+        .map((p) => ({ name: p.name, unit: p.unit, qty: cart[p.id], unitPriceCents: prixEffectif(p).cents })),
     [cart, products],
   );
   const count = lines.reduce((a, l) => a + l.qty, 0);
@@ -267,8 +271,12 @@ export function Storefront({
   const grouped = useMemo(() => {
     let list = [...products];
     if (inStockOnly) list = list.filter((p) => p.stock_state !== "fini");
-    if (sort === "price_up") list.sort((a, b) => a.price_cents - b.price_cents);
-    else if (sort === "price_down") list.sort((a, b) => b.price_cents - a.price_cents);
+    // Trier « par prix » veut dire par ce que le client paie : un article en
+    // promo doit remonter dans la liste, sinon le tri le range a un prix que
+    // personne ne voit affiche.
+    const aPayer = (p: Product) => prixEffectif(p).cents;
+    if (sort === "price_up") list.sort((a, b) => aPayer(a) - aPayer(b));
+    else if (sort === "price_down") list.sort((a, b) => aPayer(b) - aPayer(a));
     else list.sort((a, b) => b.sold_count - a.sold_count);
 
     const map = new Map<string, Product[]>();

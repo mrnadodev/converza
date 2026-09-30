@@ -5,6 +5,7 @@ import { formatMoney } from "@/lib/money";
 import type { Product } from "@/lib/types";
 import { categoryLabel } from "@/lib/categories";
 import { isNew } from "@/lib/nouveautes";
+import { prixEffectif } from "@/lib/prix";
 import { storefrontCopy, type StorefrontCopy } from "@/lib/i18n/storefront";
 import { useLanguage } from "@/components/LanguageContext";
 
@@ -118,7 +119,8 @@ function PhotoBadges({ p, compact }: { p: Product; compact?: boolean }) {
   const c = useCopy();
   const taille = p.size?.trim();
   const neuf = isNew(p);
-  if (!taille && !neuf) return null;
+  const prix = prixEffectif(p);
+  if (!taille && !neuf && !prix.enPromo) return null;
 
   const pastille = compact
     ? "rounded-full px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wide shadow-sm"
@@ -133,10 +135,15 @@ function PhotoBadges({ p, compact }: { p: Product; compact?: boolean }) {
 
   return (
     <>
-      {neuf && (
-        <span className={`pointer-events-none absolute left-1.5 z-10 ${gauche} ${pastille} bg-[#25D366] text-[#05261B]`}>
-          {c.isNew}
-        </span>
+      {/* La gauche est une colonne : un produit peut être neuf ET en promo, et
+          la remise passe devant — c'est elle qui fait entrer dans la boutique. */}
+      {(prix.enPromo || neuf) && (
+        <div className={`pointer-events-none absolute left-1.5 z-10 ${gauche} flex flex-col items-start gap-1`}>
+          {prix.enPromo && (
+            <span className={`${pastille} bg-[#C0392B] text-white`}>−{prix.remisePourcent} %</span>
+          )}
+          {neuf && <span className={`${pastille} bg-[#25D366] text-[#05261B]`}>{c.isNew}</span>}
+        </div>
       )}
       {taille && (
         <span className={`pointer-events-none absolute right-1.5 z-10 ${droite} ${pastille} bg-white/92 text-ink`}>
@@ -266,20 +273,60 @@ export function SoldBadge({ p, className, prefix }: { p: Product; className?: st
 
 /** Prix du catalogue : la devise en petit, à côté du montant. */
 export function PriceLabel({ p }: { p: Product }) {
+  const c = useCopy();
+  const prix = prixEffectif(p);
+  const sansDevise = (cents: number) => formatMoney(cents, p.currency).replace(` ${p.currency}`, "");
   return (
     <span className="text-base font-extrabold">
-      {formatMoney(p.price_cents, p.currency).replace(` ${p.currency}`, "")}{" "}
+      {prix.enPromo && (
+        <>
+          {/* Le barre seul ne se lit pas a voix haute : sans l etiquette, un
+              lecteur d ecran annonce deux prix a payer, dont un faux. */}
+          <span className="sr-only">{c.oldPrice} </span>
+          {/* Ni `opacity`, ni `ink-faint` : mesuré à 2,56:1 sur fond blanc,
+              soit sous le minimum lisible de 4,5:1 pour ce corps de texte. Le
+              barré et la taille suffisent à distinguer l'ancien prix ;
+              l'affadir le rendait illisible sans rien clarifier. */}
+          <s className="mr-1.5 text-[12px] font-semibold text-ink-muted">{sansDevise(prix.ancienCents!)}</s>
+        </>
+      )}
+      <span className={prix.enPromo ? "text-[#C0392B]" : undefined}>{sansDevise(prix.cents)}</span>{" "}
       <span className="text-[11px] font-semibold opacity-60">{p.currency}</span>
     </span>
   );
 }
 
 /** Prix des designs de secteur : montant complet, unité de vente si elle existe. */
-export function PriceText({ p, className, style, wrap }: { p: Product; className?: string; style?: CSSProperties; wrap?: boolean }) {
+export function PriceText({
+  p,
+  className,
+  style,
+  wrap,
+  hideUnit,
+}: {
+  p: Product;
+  className?: string;
+  style?: CSSProperties;
+  wrap?: boolean;
+  /** Pour les mises en page qui écrivent l'unité sur leur propre ligne. */
+  hideUnit?: boolean;
+}) {
+  const c = useCopy();
+  const prix = prixEffectif(p);
   return (
     <span className={`${wrap ? "" : "whitespace-nowrap"} font-extrabold ${className ?? ""}`} style={style}>
-      {formatMoney(p.price_cents, p.currency)}
-      {p.unit ? <span className="text-[11px] font-semibold opacity-70"> / {p.unit}</span> : null}
+      {prix.enPromo && (
+        <>
+          <span className="sr-only">{c.oldPrice} </span>
+          {/* Pas de couleur fixe : ces designs écrivent le prix sur seize
+              fonds différents, dont des photos sombres. En héritant de la
+              couleur du prix, l'ancien prix est exactement aussi lisible que
+              lui — une opacité le faisait tomber à 2,56:1, sous le seuil. */}
+          <s className="mr-1.5 text-[0.8em] font-normal">{formatMoney(prix.ancienCents!, p.currency)}</s>
+        </>
+      )}
+      {formatMoney(prix.cents, p.currency)}
+      {p.unit && !hideUnit ? <span className="text-[11px] font-semibold opacity-70"> / {p.unit}</span> : null}
     </span>
   );
 }

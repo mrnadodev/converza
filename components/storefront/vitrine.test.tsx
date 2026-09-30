@@ -210,13 +210,16 @@ describe("les pastilles de photo ne se recouvrent pas", () => {
     size: "40",
   });
 
-  // La classe de position de chaque pastille, retrouvee par son texte.
+  // La classe de position de chaque pastille, retrouvee par son texte. La
+  // pastille peut porter sa position elle-meme (la taille, a droite) ou la
+  // tenir de sa colonne (a gauche, ou plusieurs pastilles s empilent) : on
+  // prend la derniere position declaree avant le texte cherche.
   const rangee = (html: string, texte: string): string => {
-    const span = html.match(new RegExp(`<span[^>]*>${texte}</span>`));
-    expect(span, `pastille « ${texte} » absente du rendu`).not.toBeNull();
-    const top = span![0].match(/top-[\d.]+/);
-    expect(top, `pastille « ${texte} » sans position verticale`).not.toBeNull();
-    return top![0];
+    const i = html.indexOf(`>${texte}</span>`);
+    expect(i, `pastille « ${texte} » absente du rendu`).toBeGreaterThan(-1);
+    const avant = html.slice(0, i).match(/top-[\d.]+/g);
+    expect(avant, `pastille « ${texte} » sans position verticale`).not.toBeNull();
+    return avant![avant!.length - 1];
   };
 
   it("Nouveau reste en haut quand rien n occupe le coin gauche", () => {
@@ -244,5 +247,101 @@ describe("les pastilles de photo ne se recouvrent pas", () => {
     expect(html).toContain("40");
     // Et pas a la meme hauteur que le badge des ventes.
     expect(rangee(html, "Nouveau")).not.toBe("top-1.5");
+  });
+});
+
+describe("le prix barre apparait sur toutes les vitrines", () => {
+  // La taille avait ete oubliee sur dix designs sur trente-trois parce qu elle
+  // dependait d une ligne que ces mises en page n affichent pas. Un prix barre
+  // qui manque est pire : le client voit le tarif plein et passe son chemin,
+  // alors que le marchand croit sa promo visible.
+  const rendre = (p: Product, verticalId: string, layout: LayoutKey) =>
+    renderToStaticMarkup(
+      <LanguageProvider>
+        <FeaturedSection
+          layout={layout}
+          verticalId={verticalId}
+          featured={[p]}
+          cart={{}}
+          ops={{ add: () => {}, sub: () => {} }}
+          onZoom={() => {}}
+          visitHref={() => "#"}
+          palette={{ strong: "#0F766E", soft: "#CCFBF1" }}
+        />
+      </LanguageProvider>,
+    );
+
+  // Les montants sont formates a la francaise (« 2 000 HTG »), avec une
+  // espace qui peut etre fine ou insecable selon la plateforme.
+  const montant = (gourdes: number) =>
+    new RegExp(String(gourdes).replace(/\B(?=(\d{3})+(?!\d))/g, "[\s\u00a0\u202f]"));
+
+  // 2 000 HTG barre, 1 500 HTG a payer, soit −25 %.
+  const enPromo: Product = { ...product(0, "Homme · Chaussures"), price_cents: 200000, promo_price_cents: 150000 };
+
+  for (const verticalId of Object.keys(INDUSTRY_SECTORS)) {
+    for (const layout of LAYOUTS) {
+      it(`${verticalId} / ${layout} barre l ancien prix`, () => {
+        const html = rendre(enPromo, verticalId, layout);
+        expect(html, "l ancien prix doit etre barre").toContain("<s ");
+        expect(html, "le prix a payer").toMatch(montant(1500));
+        expect(html, "l ancien prix").toMatch(montant(2000));
+      });
+    }
+  }
+
+  it("hors promo, rien n est barre", () => {
+    // Un barre orphelin ferait croire a un rabais qui n existe pas.
+    const html = rendre({ ...product(0, "Homme · Chaussures"), price_cents: 200000 }, "commerce_vente", "design1");
+    expect(html).not.toContain("<s ");
+    expect(html).toMatch(montant(2000));
+  });
+
+  it("un faux rabais n est pas affiche comme un rabais", () => {
+    const html = rendre(
+      { ...product(0, "Homme · Chaussures"), price_cents: 200000, promo_price_cents: 250000 },
+      "commerce_vente",
+      "design1",
+    );
+    expect(html).not.toContain("<s ");
+    expect(html).not.toMatch(montant(2500));
+  });
+
+  it("une promo terminee ne barre plus rien", () => {
+    const html = rendre(
+      {
+        ...product(0, "Homme · Chaussures"),
+        price_cents: 200000,
+        promo_price_cents: 150000,
+        promo_ends_at: new Date(Date.now() - 3600000).toISOString(),
+      },
+      "commerce_vente",
+      "design1",
+    );
+    expect(html).not.toContain("<s ");
+    expect(html).toMatch(montant(2000));
+  });
+
+  it("la remise s annonce en pourcentage sur la photo", () => {
+    expect(rendre(enPromo, "commerce_vente", "design1")).toContain("25 %");
+  });
+
+  it("l ancien prix n est pas affadi au point d etre illisible", () => {
+    // Mesure faite a l ecran : `opacity-60` sur le vert du theme donnait
+    // 2,56:1 a 11,2 px, sous le minimum de 4,5:1. En heritant de la couleur du
+    // prix, l ancien prix est exactement aussi lisible que lui, sur les seize
+    // fonds. Ce test empeche de remettre une opacite « pour faire discret ».
+    const html = rendre(enPromo, "commerce_vente", "design1");
+    const barre = html.match(/<s class="([^"]*)"/g) ?? [];
+    expect(barre.length, "l ancien prix doit etre barre").toBeGreaterThan(0);
+    for (const b of barre) {
+      expect(b, "pas d opacite sur l ancien prix").not.toMatch(/opacity-\d/);
+      expect(b, "pas de gris trop pale sur l ancien prix").not.toContain("ink-faint");
+    }
+  });
+
+  it("le prix barre est etiquete pour les lecteurs d ecran", () => {
+    // Sans etiquette, un lecteur d ecran annonce deux prix a payer.
+    expect(rendre(enPromo, "commerce_vente", "design1")).toContain("Ancien prix");
   });
 });

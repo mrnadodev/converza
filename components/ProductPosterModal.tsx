@@ -5,6 +5,7 @@ import { useDict, useLanguage } from "@/components/LanguageContext";
 import { POSTER_COPY } from "@/lib/i18n/app/poster";
 import type { Language } from "@/lib/i18n/translations";
 import { formatMoney } from "@/lib/money";
+import { prixEffectif } from "@/lib/prix";
 import { themeOf } from "@/lib/themes";
 import { verticalOf } from "@/lib/verticals";
 import type { Business, Product } from "@/lib/types";
@@ -478,7 +479,9 @@ export function ProductPosterModal({ business, products, onClose }: { business: 
   const [draft, setDraft] = useState<Draft>(() => ({
     headline: "",
     name: product?.name ?? "",
-    price: product ? formatMoney(product.price_cents, product.currency) : "",
+    // Le prix de l affiche est celui que le client paiera : annoncer le
+    // tarif plein pendant une promo ferait de l affiche un contre-argument.
+    price: product ? formatMoney(prixEffectif(product).cents, product.currency) : "",
     cta: t.ctaDefault,
     link: storeUrl.replace(/^https?:\/\//, ""),
     style: "shop",
@@ -490,7 +493,7 @@ export function ProductPosterModal({ business, products, onClose }: { business: 
 
   // Nouveau produit : on reprend son nom et son prix réels.
   useEffect(() => {
-    if (product) set({ name: product.name, price: formatMoney(product.price_cents, product.currency) });
+    if (product) set({ name: product.name, price: formatMoney(prixEffectif(product).cents, product.currency) });
   }, [productId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const [captionLang, setCaptionLang] = useState<Language>(language);
@@ -629,7 +632,7 @@ export function ProductPosterModal({ business, products, onClose }: { business: 
               <Select value={productId} onChange={(e) => setProductId(e.target.value)} triggerClassName={field}>
                 {products.map((p) => (
                   <option key={p.id} value={p.id}>
-                    {p.name} — {formatMoney(p.price_cents, p.currency)}
+                    {p.name} — {formatMoney(prixEffectif(p).cents, p.currency)}
                   </option>
                 ))}
               </Select>

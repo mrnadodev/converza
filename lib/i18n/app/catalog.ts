@@ -34,6 +34,15 @@ export interface CatalogCopy {
     /** Taille, pour ce qui se porte ou se chausse. */
     size: string;
     sizeHelp: string;
+    /** Prix promotionnel (migration 15) : le prix barre est celui du produit. */
+    promo: (currency: string) => string;
+    promoHelp: string;
+    promoEnds: string;
+    promoEndsHelp: string;
+    /** Rappel sous le champ des que la saisie ne ferait pas une vraie remise. */
+    promoInvalid: string;
+    /** Confirmation vivante : ce que le client verra exactement. */
+    promoPreview: (avant: string, apres: string, pct: number) => string;
     cost: (currency: string) => string;
     costHelp: string;
     margin: (amount: string, pct: number) => string;
@@ -95,6 +104,12 @@ const fr: CatalogCopy = {
     categoryPick: "Choisir…",
     size: "Taille",
     sizeHelp: "Les tailles disponibles pour cet article : « M », « 38 à 42 », « Taille unique »…",
+    promo: (currency) => `Prix promo (${currency}) — facultatif`,
+    promoHelp: "Laissez vide s'il n'y a pas de promotion. Le prix normal s'affichera barré à côté.",
+    promoEnds: "Fin de la promo — facultatif",
+    promoEndsHelp: "À cette date, le prix normal revient tout seul. Vide : la promo dure jusqu'à ce que vous l'enleviez.",
+    promoInvalid: "Le prix promo doit être inférieur au prix normal, sinon il n'y a pas de remise à montrer.",
+    promoPreview: (avant, apres, pct) => `Vos clients verront ${avant} barré, puis ${apres} — soit −${pct} %.`,
     cost: (currency) => `Prix d'achat (${currency}) — facultatif`,
     costHelp: "Ce que le produit vous coûte. Il sert à calculer votre bénéfice ; vos clients ne le voient jamais.",
     margin: (amount, pct) => `Marge : ${amount} par unité (${pct} %)`,
@@ -156,6 +171,12 @@ const ht: CatalogCopy = {
     categoryPick: "Chwazi…",
     size: "Gwosè",
     sizeHelp: "Gwosè ki disponib pou atik sa a : « M », « 38 a 42 », « Yon sèl gwosè »…",
+    promo: (currency) => `Pri pwomosyon (${currency}) — opsyonèl`,
+    promoHelp: "Kite l vid si pa gen pwomosyon. Pri nòmal la ap parèt bare bò kote l.",
+    promoEnds: "Fen pwomosyon an — opsyonèl",
+    promoEndsHelp: "Nan dat sa a, pri nòmal la tounen pou kont li. Vid : pwomosyon an dire jiskaske ou retire l.",
+    promoInvalid: "Pri pwomosyon an dwe pi ba pase pri nòmal la, sinon pa gen rabè pou montre.",
+    promoPreview: (avant, apres, pct) => `Kliyan ou yo ap wè ${avant} bare, apre sa ${apres} — sa fè −${pct} %.`,
     cost: (currency) => `Pri acha (${currency}) — si w vle`,
     costHelp: "Sa pwodwi a koute w. Li sèvi pou kalkile benefis ou ; kliyan ou yo pa janm wè l.",
     margin: (amount, pct) => `Maj : ${amount} pa inite (${pct} %)`,
@@ -217,6 +238,12 @@ const en: CatalogCopy = {
     categoryPick: "Choose…",
     size: "Size",
     sizeHelp: "The sizes available for this item: « M », « 38 to 42 », « One size »…",
+    promo: (currency) => `Sale price (${currency}) — optional`,
+    promoHelp: "Leave empty if there is no sale. The normal price will show struck through next to it.",
+    promoEnds: "Sale ends — optional",
+    promoEndsHelp: "On that date the normal price comes back on its own. Empty: the sale runs until you remove it.",
+    promoInvalid: "The sale price must be lower than the normal price, otherwise there is no discount to show.",
+    promoPreview: (avant, apres, pct) => `Your customers will see ${avant} struck through, then ${apres} — that is −${pct}%.`,
     cost: (currency) => `Purchase cost (${currency}) — optional`,
     costHelp: "What the product costs you. It's used to work out your profit; customers never see it.",
     margin: (amount, pct) => `Margin: ${amount} per unit (${pct}%)`,

@@ -27,6 +27,14 @@ export interface ProductInput {
    * ligne de commande et un inventaire par déclinaison.
    */
   size?: string;
+  /**
+   * Prix promotionnel (migration 15), vide hors promo. Le prix normal reste
+   * `priceGdes` et s'affiche barre : la remise appartient au produit, pas a
+   * une copie du produit.
+   */
+  promoGdes?: string;
+  /** Fin de promo au format « AAAA-MM-JJ », vide pour une promo sans fin. */
+  promoEndsAt?: string;
   stockQty: string;
   stockState: StockState;
   photoUrl: string | null;
@@ -167,6 +175,31 @@ export async function saveProduct(input: ProductInput) {
       .eq("business_id", bid);
     if (sizeError && !/size|column|schema cache/i.test(sizeError.message)) {
       console.warn("size:", sizeError.message);
+    }
+  }
+
+  // Promo : écrite séparément, même raison que la taille et la vitrine.
+  //
+  // Un prix promo supérieur ou égal au prix normal est enregistré tel quel —
+  // c'est une saisie du marchand, pas une erreur du système — mais il ne sera
+  // pas affiché comme une remise (lib/prix.ts). Le formulaire le lui dit déjà
+  // au moment où il tape.
+  if (!res.error && productId && input.promoGdes !== undefined) {
+    const brut = input.promoGdes.trim();
+    const fin = (input.promoEndsAt ?? "").trim();
+    // Une date sans heure vaut minuit : la promo durerait jusqu'à la veille au
+    // soir. Le marchand qui écrit « 15 octobre » veut le 15 inclus.
+    const finIso = fin ? new Date(`${fin}T23:59:59`).toISOString() : null;
+    const { error: promoError } = await sb
+      .from("products")
+      .update({
+        promo_price_cents: brut ? toCents(brut) : null,
+        promo_ends_at: brut ? finIso : null,
+      })
+      .eq("id", productId)
+      .eq("business_id", bid);
+    if (promoError && !/promo_price_cents|promo_ends_at|column|schema cache/i.test(promoError.message)) {
+      console.warn("promo:", promoError.message);
     }
   }
 

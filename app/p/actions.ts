@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { logAppError } from "@/lib/app-errors";
 import { generateOrderSecurityCode } from "@/lib/order";
+import { prixEffectif } from "@/lib/prix";
 import { isValidWaPhone, normalizePhoneHT } from "@/lib/whatsapp";
 
 // Une commande vitrine est créée par un visiteur anonyme, via la clé service
@@ -142,20 +143,37 @@ export async function createStorefrontOrderAction({
 
   // Prix et noms viennent de la base, jamais du client : sinon n'importe qui
   // pourrait commander à 0 HTG ou injecter du texte dans le pipeline marchand.
-  const { data: products, error: prodErr } = await admin
-    .from("products")
-    .select("id, name, price_cents, currency, is_active")
-    .eq("business_id", businessId)
-    .in("id", [...wanted.keys()]);
-  if (prodErr) return { ok: false, error: "Erè pandan lekti katalòg la" };
+  const COLS = "id, name, price_cents, currency, is_active";
+  // Les colonnes de promo sont demandées à part : tant que la migration 15
+  // n'est pas jouée, les réclamer ferait échouer toute la commande.
+  type LignePrix = {
+    id: string;
+    name: string;
+    price_cents: number;
+    currency: string;
+    is_active: boolean;
+    promo_price_cents?: number | null;
+    promo_ends_at?: string | null;
+  };
+  const lire = (cols: string) =>
+    admin.from("products").select(cols).eq("business_id", businessId).in("id", [...wanted.keys()]);
 
-  const sellable = (products ?? []).filter((p) => p.is_active);
+  let lu = await lire(`${COLS}, promo_price_cents, promo_ends_at`);
+  if (lu.error) lu = await lire(COLS);
+  if (lu.error) return { ok: false, error: "Erè pandan lekti katalòg la" };
+  const products = (lu.data ?? []) as unknown as LignePrix[];
+
+  const sellable = products.filter((p) => p.is_active);
   if (sellable.length === 0) return { ok: false, error: "Pwodwi yo pa disponib ankò" };
 
+  // Le prix facturé passe par la même fonction que le prix affiché en
+  // vitrine. Un prix barré est une promesse écrite : la facturer au tarif
+  // plein romprait cette promesse sur chaque commande, et c'est le marchand
+  // qui en répondrait devant son client.
   const itemsToInsert = sellable.map((p) => ({
     product_id: p.id,
     name: p.name,
-    unit_price_cents: p.price_cents,
+    unit_price_cents: prixEffectif(p).cents,
     qty: wanted.get(p.id)!,
   }));
 

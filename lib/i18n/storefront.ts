@@ -21,6 +21,11 @@ export interface StorefrontCopy {
   sold: (n: number) => string;
   /** Pastille sur un produit arrive cette semaine. */
   isNew: string;
+  /**
+   * Etiquette du prix barre, pour les lecteurs d ecran : sans elle, le prix
+   * barre est annonce comme un prix a payer, soit deux prix contradictoires.
+   */
+  oldPrice: string;
   /** Bandeau calme en haut de la vitrine, quand il y a des nouveautes. */
   newArrivals: (n: number) => string;
   soldOut: string;
@@ -118,6 +123,7 @@ const fr: StorefrontCopy = {
   add: "Ajouter",
   sold: (n) => `${n} vendus`,
   isNew: "Nouveau",
+  oldPrice: "Ancien prix",
   newArrivals: (n) => (n === 1 ? "1 nouveauté cette semaine" : `${n} nouveautés cette semaine`),
   soldOut: "Épuisé",
   unavailable: "Indisponible",
@@ -224,6 +230,7 @@ const ht: StorefrontCopy = {
   add: "Ajoute",
   sold: (n) => `${n} vann`,
   isNew: "Nouvo",
+  oldPrice: "Ansyen pri",
   newArrivals: (n) => (n === 1 ? "1 nouvote semèn sa a" : `${n} nouvote semèn sa a`),
   soldOut: "Fini",
   unavailable: "Pa disponib",
@@ -330,6 +337,7 @@ const en: StorefrontCopy = {
   add: "Add",
   sold: (n) => `${n} sold`,
   isNew: "New",
+  oldPrice: "Old price",
   newArrivals: (n) => (n === 1 ? "1 new item this week" : `${n} new items this week`),
   soldOut: "Sold out",
   unavailable: "Unavailable",

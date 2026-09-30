@@ -163,6 +163,10 @@ export function demoStorefront(sectorId: string, theme: string): { business: Bus
     photo_url: art(item.emoji, [paletteFor(key).soft, paletteFor(key).strong], i),
     sold_count: 50 - i * 8,
     is_active: true,
+    // Le deuxième article porte une remise de 25 %. La vitrine d'exemple sert
+    // à montrer au marchand ce que CONVERZA sait faire : une promo y est aussi
+    // parlante qu'un produit de plus, et elle se voit d'un coup d'œil.
+    ...(i === 1 ? { promo_price_cents: Math.round(item.price * 100 * 0.75) } : {}),
   }));
 
   return { business, products };

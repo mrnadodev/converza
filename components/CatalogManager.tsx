@@ -26,6 +26,8 @@ const EMPTY = (currency: "HTG" | "USD"): ProductInput => ({
   currency,
   unit: "",
   size: "",
+  promoGdes: "",
+  promoEndsAt: "",
   stockQty: "",
   stockState: "en_stok",
   photoUrl: null,
@@ -65,6 +67,9 @@ export function CatalogManager({ business, initial, userSession }: { business: B
       currency: p.currency,
       unit: p.unit ?? "",
       size: p.size ?? "",
+      promoGdes: p.promo_price_cents == null ? "" : String(p.promo_price_cents / 100),
+      // L'input date veut « AAAA-MM-JJ » ; la base rend un horodatage complet.
+      promoEndsAt: p.promo_ends_at ? p.promo_ends_at.slice(0, 10) : "",
       stockQty: p.stock_qty == null ? "" : String(p.stock_qty),
       stockState: p.stock_state,
       photoUrl: photos[0] ?? null,
@@ -102,6 +107,31 @@ export function CatalogManager({ business, initial, userSession }: { business: B
   // Les tailles dependent du rayon choisi : elles apparaissent et changent
   // au fil de la saisie, sans que le marchand ait a rouvrir le formulaire.
   const tailles = sizesFor(form?.category, language);
+
+  /**
+   * Ce que le client verra, écrit sous le champ pendant que le marchand tape.
+   *
+   * Une remise se saisit une fois et s'affiche des milliers de fois. Le
+   * marchand doit pouvoir vérifier avant d'enregistrer, pas découvrir son
+   * erreur sur sa propre vitrine — ou pire, ne jamais la découvrir parce
+   * qu'un prix promo supérieur au prix normal est simplement ignoré.
+   */
+  function promoHint(f: ProductInput): { texte: string; alerte: boolean } | null {
+    const brut = (f.promoGdes ?? "").trim();
+    if (!brut) return null;
+    const promo = parseFloat(brut.replace(",", "."));
+    const price = parseFloat(f.priceGdes.replace(",", "."));
+    if (!Number.isFinite(promo) || !Number.isFinite(price) || price <= 0) return null;
+    if (promo >= price) return { texte: k.form.promoInvalid, alerte: true };
+    return {
+      texte: k.form.promoPreview(
+        formatMoney(Math.round(price * 100), f.currency),
+        formatMoney(Math.round(promo * 100), f.currency),
+        Math.round(((price - promo) / price) * 100),
+      ),
+      alerte: false,
+    };
+  }
 
   // Marge unitaire affichée sous le prix d'achat dès que les deux sont saisis.
   function marginHint(f: ProductInput): string | null {
@@ -361,6 +391,34 @@ export function CatalogManager({ business, initial, userSession }: { business: B
                 <input value={form.costGdes ?? ""} onChange={(e) => set({ costGdes: e.target.value })} inputMode="decimal" className={inputCls} placeholder="120" />
               </Field>
 
+              {/* Promo : le prix normal reste celui du dessus et s'affichera
+                  barré. La date de fin n'apparaît qu'une fois un prix saisi —
+                  une date de fin sans remise ne veut rien dire. */}
+              <Field
+                label={k.form.promo(form.currency)}
+                hint={promoHint(form)?.texte ?? k.form.promoHelp}
+                hintTone={promoHint(form)?.alerte ? "alerte" : undefined}
+              >
+                <input
+                  value={form.promoGdes ?? ""}
+                  onChange={(e) => set({ promoGdes: e.target.value })}
+                  inputMode="decimal"
+                  className={inputCls}
+                  placeholder="150"
+                />
+              </Field>
+
+              {(form.promoGdes ?? "").trim() !== "" && (
+                <Field label={k.form.promoEnds} hint={k.form.promoEndsHelp}>
+                  <input
+                    type="date"
+                    value={form.promoEndsAt ?? ""}
+                    onChange={(e) => set({ promoEndsAt: e.target.value })}
+                    className={inputCls}
+                  />
+                </Field>
+              )}
+
               {/* La mode se choisit en deux temps : le public, puis le rayon.
                   Quinze libellés dans une seule liste obligeaient le marchand à
                   tous les lire. Les secteurs sans deux niveaux gardent un champ
@@ -455,12 +513,27 @@ export function CatalogManager({ business, initial, userSession }: { business: B
 const inputCls =
   "h-12 w-full rounded-xl border border-line bg-[#F7F8F9] px-3 text-[15px] outline-none focus:border-brand focus:bg-white";
 
-function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
+function Field({
+  label,
+  hint,
+  hintTone,
+  children,
+}: {
+  label: string;
+  hint?: string;
+  /** « alerte » quand la saisie ne produira pas l'effet attendu. */
+  hintTone?: "alerte";
+  children: React.ReactNode;
+}) {
   return (
     <label className="flex flex-col gap-1.5">
       <span className="text-[13px] font-semibold text-ink-soft">{label}</span>
       {children}
-      {hint && <span className="text-[11.5px] text-ink-muted">{hint}</span>}
+      {hint && (
+        <span className={`text-[11.5px] ${hintTone === "alerte" ? "font-semibold text-[#C0392B]" : "text-ink-muted"}`}>
+          {hint}
+        </span>
+      )}
     </label>
   );
 }

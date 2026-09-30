@@ -424,9 +424,10 @@ function PricingColumn({ p, ctx, highlight }: { p: Product; ctx: Ctx; highlight:
       </div>
       <ProductCategory p={p} className={`text-[10.5px] font-bold uppercase tracking-wide ${neon ? "text-slate-400" : "text-ink-muted"}`} />
       <h4 className="line-clamp-2 text-[15px] font-extrabold">{p.name}</h4>
-      <span className="text-[22px] font-black" style={{ color: neon ? ctx.pal.soft : ctx.pal.strong }}>
-        {formatMoney(p.price_cents, p.currency)}
-      </span>
+      {/* Ce prix était écrit à la main, hors de PriceText : la remise ne s'y
+          affichait pas, et la carte annonçait « −25 % » sur la photo à côté du
+          tarif plein. L'unité reste à part, cette mise en page la met dessous. */}
+      <PriceText p={p} hideUnit className="text-[22px] font-black" style={{ color: neon ? ctx.pal.soft : ctx.pal.strong }} />
       {p.unit && <span className={`-mt-1 text-[12px] ${neon ? "text-slate-400" : "text-ink-muted"}`}>/ {p.unit}</span>}
       <Cta p={p} ctx={ctx} variant="solid" full />
     </div>

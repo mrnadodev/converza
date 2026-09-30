@@ -125,6 +125,14 @@ export interface Product {
   is_active: boolean;
   /** Date de mise en catalogue : sert au repère « Nouveau » sur la vitrine. */
   created_at?: string;
+  /**
+   * Prix promotionnel (migration 15). Nul hors promo. N'est pris en compte
+   * que s'il est strictement inférieur à `price_cents` : voir `lib/prix.ts`,
+   * seul endroit qui tranche entre les deux.
+   */
+  promo_price_cents?: number | null;
+  /** Fin de la promo. Nul veut dire « jusqu'à ce que le marchand l'enlève ». */
+  promo_ends_at?: string | null;
   /** Prix d'achat unitaire (migration 6), pour le calcul du bénéfice. */
   cost_cents?: number | null;
 }

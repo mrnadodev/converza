@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useDict } from "@/components/LanguageContext";
 import { REEL_COPY } from "@/lib/i18n/app/reel";
 import { formatMoney } from "@/lib/money";
+import { prixEffectif } from "@/lib/prix";
 import { themeOf } from "@/lib/themes";
 import { categoryLabel } from "@/lib/categories";
 import { useLanguage } from "@/components/LanguageContext";
@@ -68,7 +69,7 @@ export function ProductReelModal({
         .filter((p): p is Product => Boolean(p))
         .map((p) => ({
           name: p.name,
-          price: formatMoney(p.price_cents, p.currency),
+          price: formatMoney(prixEffectif(p).cents, p.currency),
           // La taille d'abord : c'est ce qui décide un achat de vêtement.
           detail: [categoryLabel(p.category, language), p.size?.trim()].filter(Boolean).join(" · ") || null,
           image: images[p.id] ?? null,
