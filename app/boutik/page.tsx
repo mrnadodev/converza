@@ -121,12 +121,13 @@ function Resultats({ q, hits }: { q: string; hits: Awaited<ReturnType<typeof sea
                 <span className="truncate text-[11.5px] text-ink-muted">{produits[0].businessAddress}</span>
               )}
             </div>
-            <Link
-              href={`/b/${slug}`}
+            <ShopLink
+              slug={slug}
+              businessId={produits[0].businessId}
               className="h-9 shrink-0 rounded-xl bg-brand-green px-3.5 text-[12.5px] font-extrabold leading-9 text-white active:scale-95"
             >
               Voir la vitrine
-            </Link>
+            </ShopLink>
           </div>
 
           <ul className="divide-y divide-line/60">
