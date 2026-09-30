@@ -1,4 +1,4 @@
-﻿import type { Language } from "../translations";
+import type { Language } from "../translations";
 
 /** 7 → « 07 ». Une horloge qui saute d'une largeur à chaque minute agace. */
 const pad = (n: number) => String(n).padStart(2, "0");
@@ -59,6 +59,8 @@ export interface DashboardCopy {
     shareText: string;
     viewStore: string;
     poster: string;
+    /** Diaporama video des produits, a cote de l affiche fixe. */
+    reel: string;
   };
   firstSteps: {
     title: string;
@@ -142,6 +144,7 @@ const fr: DashboardCopy = {
     shareText: "Découvrez notre catalogue et commandez facilement sur WhatsApp :",
     viewStore: "Voir ma vitrine",
     poster: "Créer une affiche",
+    reel: "Créer une vidéo",
   },
   firstSteps: {
     title: "Premiers pas",
@@ -265,6 +268,7 @@ const ht: DashboardCopy = {
     shareText: "Gade katalòg nou an epi kòmande fasil sou WhatsApp :",
     viewStore: "Gade vitrin mwen",
     poster: "Kreye yon afich",
+    reel: "Kreye yon videyo",
   },
   firstSteps: {
     title: "Premye etap yo",
@@ -389,6 +393,7 @@ const en: DashboardCopy = {
     shareText: "Browse our catalog and order easily on WhatsApp:",
     viewStore: "View my storefront",
     poster: "Create a poster",
+    reel: "Create a video",
   },
   firstSteps: {
     title: "Getting started",

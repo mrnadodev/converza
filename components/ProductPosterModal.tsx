@@ -20,9 +20,9 @@ const W = 1080;
 const H = 1920;
 const FONT = "'Plus Jakarta Sans', system-ui, sans-serif";
 
-type Style = "shop" | "dark" | "light";
+export type Style = "shop" | "dark" | "light";
 
-interface Palette {
+export interface Palette {
   top: string;
   bottom: string;
   text: string;
@@ -34,7 +34,7 @@ interface Palette {
   panel: string;
 }
 
-function paletteFor(style: Style, accent: string, soft: string): Palette {
+export function paletteFor(style: Style, accent: string, soft: string): Palette {
   if (style === "dark") {
     return { top: "#111827", bottom: "#000000", text: "#FFFFFF", sub: "rgba(255,255,255,0.72)", pillBg: "#F5B942", pillText: "#1F1300", priceBg: "#F5B942", priceText: "#1F1300", panel: "rgba(255,255,255,0.08)" };
   }
@@ -44,7 +44,7 @@ function paletteFor(style: Style, accent: string, soft: string): Palette {
   return { top: accent, bottom: "#0B1220", text: "#FFFFFF", sub: "rgba(255,255,255,0.78)", pillBg: soft, pillText: accent, priceBg: "#FFFFFF", priceText: accent, panel: "rgba(0,0,0,0.35)" };
 }
 
-function loadImage(src: string): Promise<HTMLImageElement | null> {
+export function loadImage(src: string): Promise<HTMLImageElement | null> {
   return new Promise((resolve) => {
     const img = new Image();
     img.crossOrigin = "anonymous";
@@ -55,7 +55,7 @@ function loadImage(src: string): Promise<HTMLImageElement | null> {
 }
 
 /** Plus grande taille de police (≤ size) qui tient dans maxWidth. */
-function fit(ctx: CanvasRenderingContext2D, text: string, weight: number, size: number, maxWidth: number, min = 26): number {
+export function fit(ctx: CanvasRenderingContext2D, text: string, weight: number, size: number, maxWidth: number, min = 26): number {
   let s = size;
   while (s > min) {
     ctx.font = `${weight} ${s}px ${FONT}`;
@@ -67,7 +67,7 @@ function fit(ctx: CanvasRenderingContext2D, text: string, weight: number, size: 
 }
 
 /** Coupe le texte en lignes, avec « … » au-delà de maxLines. */
-function wrap(ctx: CanvasRenderingContext2D, text: string, maxWidth: number, maxLines: number): string[] {
+export function wrap(ctx: CanvasRenderingContext2D, text: string, maxWidth: number, maxLines: number): string[] {
   const words = text.split(/\s+/).filter(Boolean);
   const lines: string[] = [];
   let line = "";
@@ -91,7 +91,7 @@ function wrap(ctx: CanvasRenderingContext2D, text: string, maxWidth: number, max
 }
 
 /** Dessine l'image en la recadrant (object-fit: cover), sans la déformer. */
-function drawCover(ctx: CanvasRenderingContext2D, img: HTMLImageElement, x: number, y: number, w: number, h: number) {
+export function drawCover(ctx: CanvasRenderingContext2D, img: HTMLImageElement, x: number, y: number, w: number, h: number) {
   const scale = Math.max(w / img.width, h / img.height);
   const sw = w / scale;
   const sh = h / scale;

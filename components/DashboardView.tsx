@@ -1,9 +1,10 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { ProductPosterModal } from "@/components/ProductPosterModal";
+import { ProductReelModal } from "@/components/ProductReelModal";
 import { BottomNav } from "@/components/BottomNav";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { LiveClock } from "@/components/LiveClock";
@@ -56,6 +57,7 @@ export function DashboardView(props: DashboardViewProps) {
   const { language } = useLanguage();
   const landing = landingCopy(language);
   const [posterOpen, setPosterOpen] = useState(false);
+  const [reelOpen, setReelOpen] = useState(false);
 
   const profile = c.profiles[session.role === "owner" ? "owner" : session.agentId ?? "agent"] ?? session.specialty ?? c.profiles.agent;
   const userInitials = initialsOf(props.userName) || "C";
@@ -125,6 +127,7 @@ export function DashboardView(props: DashboardViewProps) {
               slug={business.slug}
               canMakePoster={products.length > 0}
               onPoster={() => setPosterOpen(true)}
+              onReel={() => setReelOpen(true)}
             />
 
             <FirstSteps business={business} productCount={products.length} orderCount={funnel.orders} />
@@ -171,6 +174,10 @@ export function DashboardView(props: DashboardViewProps) {
         <ProductPosterModal business={business} products={products} onClose={() => setPosterOpen(false)} />
       )}
 
+      {reelOpen && (
+        <ProductReelModal business={business} products={products} onClose={() => setReelOpen(false)} />
+      )}
+
       <BottomNav active="tablo" userSession={session} />
     </div>
   );
@@ -178,7 +185,7 @@ export function DashboardView(props: DashboardViewProps) {
 
 /* ---------- Blocs ---------- */
 
-function StoreActions({ slug, canMakePoster, onPoster }: { slug: string; canMakePoster: boolean; onPoster: () => void }) {
+function StoreActions({ slug, canMakePoster, onPoster, onReel }: { slug: string; canMakePoster: boolean; onPoster: () => void; onReel: () => void }) {
   const d = useDict(DASHBOARD_COPY);
   const { share, copied, shareLabel } = useShareStore(slug);
   return (
@@ -210,7 +217,28 @@ function StoreActions({ slug, canMakePoster, onPoster }: { slug: string; canMake
           <span>{d.actions.poster}</span>
         </button>
       )}
+      {/* La vidéo à côté de l'affiche : même geste, même endroit. Une photo se
+          dépasse dans un statut, un diaporama retient trois secondes. */}
+      {canMakePoster && (
+        <button
+          type="button"
+          onClick={onReel}
+          className="flex h-12 cursor-pointer items-center justify-center gap-2 rounded-2xl border border-line bg-white px-4 text-sm font-bold text-ink active:scale-[0.99]"
+        >
+          <PlayIcon />
+          <span>{d.actions.reel}</span>
+        </button>
+      )}
     </div>
+  );
+}
+
+function PlayIcon() {
+  return (
+    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="2" y="4" width="20" height="16" rx="3" />
+      <path d="m10 9 5 3-5 3z" fill="currentColor" stroke="none" />
+    </svg>
   );
 }
 
