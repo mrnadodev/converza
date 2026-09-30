@@ -15,7 +15,7 @@ import { verticalOf } from "@/lib/verticals";
 import { saveProduct, deleteProduct, type ProductInput } from "@/app/katalog/actions";
 import type { Business, Product } from "@/lib/types";
 import type { UserSession } from "@/lib/rbac";
-import { categoriesFor, categoryLabel, categoryLevels, joinCategory, splitCategory } from "@/lib/categories";
+import { categoriesFor, categoryLabel, categoryLevels, joinCategory, sizesFor, splitCategory } from "@/lib/categories";
 import { Select } from "@/components/ui/Select";
 
 const EMPTY = (currency: "HTG" | "USD"): ProductInput => ({
@@ -25,6 +25,7 @@ const EMPTY = (currency: "HTG" | "USD"): ProductInput => ({
   costGdes: "",
   currency,
   unit: "",
+  size: "",
   stockQty: "",
   stockState: "en_stok",
   photoUrl: null,
@@ -63,6 +64,7 @@ export function CatalogManager({ business, initial, userSession }: { business: B
       costGdes: p.cost_cents == null ? "" : String(p.cost_cents / 100),
       currency: p.currency,
       unit: p.unit ?? "",
+      size: p.size ?? "",
       stockQty: p.stock_qty == null ? "" : String(p.stock_qty),
       stockState: p.stock_state,
       photoUrl: photos[0] ?? null,
@@ -97,6 +99,9 @@ export function CatalogManager({ business, initial, userSession }: { business: B
 
   const set = (patch: Partial<ProductInput>) => setForm((f) => (f ? { ...f, ...patch } : f));
   const choix = splitCategory(form?.category, language);
+  // Les tailles dependent du rayon choisi : elles apparaissent et changent
+  // au fil de la saisie, sans que le marchand ait a rouvrir le formulaire.
+  const tailles = sizesFor(form?.category, language);
 
   // Marge unitaire affichée sous le prix d'achat dès que les deux sont saisis.
   function marginHint(f: ProductInput): string | null {
@@ -249,6 +254,9 @@ export function CatalogManager({ business, initial, userSession }: { business: B
                 <div className="flex items-center gap-2 text-[12.5px] text-ink-faint">
                   <span className="font-semibold text-ink">{formatMoney(p.price_cents, p.currency)}</span>
                   {p.category && <span>· {categoryLabel(p.category, language)}</span>}
+                  {/* La taille, la ou le marchand la cherche quand un client
+                      demande « vous l avez en 40 ? ». */}
+                  {p.size?.trim() && <span className="font-semibold text-ink-muted">· {p.size.trim()}</span>}
                   <span>
                     · {p.stock_qty ?? "—"} {k.stockState[p.stock_state]}
                   </span>
@@ -386,6 +394,30 @@ export function CatalogManager({ business, initial, userSession }: { business: B
                   <datalist id="cats">
                     {categoriesFor(business.business_type, language).map((cat) => (
                       <option key={cat.label} value={cat.label} />
+                    ))}
+                  </datalist>
+                </Field>
+              )}
+
+              {/* La taille, pour ce qui se porte ou se chausse.
+                  Le client demandait « vous l'avez en 40 ? » dans la
+                  conversation, et le marchand répondait à la main, dix fois
+                  par jour pour la même paire.
+                  Champ libre avec suggestions : une liste fermée aurait
+                  bloqué le premier « 38 à 42 » ou « Taille unique ». */}
+              {tailles && (
+                <Field label={k.form.size} hint={k.form.sizeHelp}>
+                  <input
+                    value={form.size ?? ""}
+                    onChange={(e) => set({ size: e.target.value })}
+                    list="tailles"
+                    maxLength={40}
+                    className={inputCls}
+                    placeholder={tailles.slice(0, 3).join(", ") + "…"}
+                  />
+                  <datalist id="tailles">
+                    {tailles.map((t) => (
+                      <option key={t} value={t} />
                     ))}
                   </datalist>
                 </Field>

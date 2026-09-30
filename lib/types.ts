@@ -1,4 +1,4 @@
-﻿// Types applicatifs — miroir du schéma db/schema.sql.
+// Types applicatifs — miroir du schéma db/schema.sql.
 
 export type MemberRole = "owner" | "agent";
 // Pipeline de vente : à confirmer -> payé -> en route -> livré -> suivi ; annulé en sortie.
@@ -107,6 +107,13 @@ export interface Product {
   price_cents: number;
   currency: Currency;
   unit: string | null;
+  /**
+   * Tailles disponibles (migration 14). Texte libre : « M », « 38 à 42 ».
+   * Ce n'est pas un stock par taille : compter taille par taille demanderait
+   * des déclinaisons de produit, donc un inventaire et une ligne de commande
+   * par déclinaison.
+   */
+  size?: string | null;
   stock_qty: number | null;
   stock_threshold?: number | null;
   stock_state: StockState;

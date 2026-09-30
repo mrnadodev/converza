@@ -31,6 +31,9 @@ export interface CatalogCopy {
     categoryPlaceholder: string;
     /** Entree neutre en tete des deux listes de categorie : rien n a encore ete choisi. */
     categoryPick: string;
+    /** Taille, pour ce qui se porte ou se chausse. */
+    size: string;
+    sizeHelp: string;
     cost: (currency: string) => string;
     costHelp: string;
     margin: (amount: string, pct: number) => string;
@@ -90,6 +93,8 @@ const fr: CatalogCopy = {
     subcategory: "Sous-catégorie",
     categoryPlaceholder: "Alimentation",
     categoryPick: "Choisir…",
+    size: "Taille",
+    sizeHelp: "Les tailles disponibles pour cet article : « M », « 38 à 42 », « Taille unique »…",
     cost: (currency) => `Prix d'achat (${currency}) — facultatif`,
     costHelp: "Ce que le produit vous coûte. Il sert à calculer votre bénéfice ; vos clients ne le voient jamais.",
     margin: (amount, pct) => `Marge : ${amount} par unité (${pct} %)`,
@@ -149,6 +154,8 @@ const ht: CatalogCopy = {
     subcategory: "Sou-kategori",
     categoryPlaceholder: "Manje",
     categoryPick: "Chwazi…",
+    size: "Gwosè",
+    sizeHelp: "Gwosè ki disponib pou atik sa a : « M », « 38 a 42 », « Yon sèl gwosè »…",
     cost: (currency) => `Pri acha (${currency}) — si w vle`,
     costHelp: "Sa pwodwi a koute w. Li sèvi pou kalkile benefis ou ; kliyan ou yo pa janm wè l.",
     margin: (amount, pct) => `Maj : ${amount} pa inite (${pct} %)`,
@@ -208,6 +215,8 @@ const en: CatalogCopy = {
     subcategory: "Sub-category",
     categoryPlaceholder: "Food",
     categoryPick: "Choose…",
+    size: "Size",
+    sizeHelp: "The sizes available for this item: « M », « 38 to 42 », « One size »…",
     cost: (currency) => `Purchase cost (${currency}) — optional`,
     costHelp: "What the product costs you. It's used to work out your profit; customers never see it.",
     margin: (amount, pct) => `Margin: ${amount} per unit (${pct}%)`,

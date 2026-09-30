@@ -229,3 +229,28 @@ export function splitCategory(value: string | null | undefined, language: Langua
   const i = label.indexOf(" · ");
   return i < 0 ? { group: label, rayon: "" } : { group: label.slice(0, i), rayon: label.slice(i + 3) };
 }
+
+/**
+ * Tailles a proposer pour une categorie, ou `null` si la notion n a pas de
+ * sens.
+ *
+ * Un vetement se mesure en lettres, une chaussure en pointures, un bijou pas
+ * du tout. Proposer « 38, 39, 40 » sur un collier ferait douter le marchand
+ * de tout le reste du formulaire.
+ *
+ * Les valeurs ne sont que des suggestions : le marchand reste libre d ecrire
+ * « 38 a 42 », « Gran » ou « Taille unique ». Une liste fermee obligerait a
+ * prevoir toutes les faluches du monde, et bloquerait la premiere qui manque.
+ */
+export function sizesFor(category: string | null | undefined, language: Language): string[] | null {
+  if (!category) return null;
+  const rayon = splitCategory(category, language).rayon.toLowerCase();
+
+  // Le libelle du rayon vient du dictionnaire : on reconnait les trois langues.
+  const vetement = /v[êe]tement|rad|clothing/.test(rayon);
+  const chaussant = /chaussure|sandale|tennis|soulye|sandal|tenis|shoe|sneaker/.test(rayon);
+
+  if (vetement) return ["XS", "S", "M", "L", "XL", "XXL"];
+  if (chaussant) return ["36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46"];
+  return null;
+}

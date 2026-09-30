@@ -105,3 +105,41 @@ describe("galerie photo", () => {
     expect(designs, "les cartes de vitrine doivent montrer les trois photos").toContain("<ProductGallery");
   });
 });
+
+describe("la taille s affiche partout ou la categorie s affiche", () => {
+  // La correction de la categorie avait ete faite dans les cartes du catalogue
+  // et oubliee dans les seize designs. La taille passe par le meme composant,
+  // a un seul endroit — ce test verifie qu aucune vitrine ne la perde.
+  const rendre = (p: Product, verticalId: string, layout: LayoutKey) =>
+    renderToStaticMarkup(
+      <LanguageProvider>
+        <FeaturedSection
+          layout={layout}
+          verticalId={verticalId}
+          featured={[p]}
+          cart={{}}
+          ops={{ add: () => {}, sub: () => {} }}
+          onZoom={() => {}}
+          visitHref={() => "#"}
+          palette={{ strong: "#0F766E", soft: "#CCFBF1" }}
+        />
+      </LanguageProvider>,
+    );
+
+  const chaussure: Product = { ...product(1, "Homme · Chaussures"), size: "38 à 42" };
+
+  for (const verticalId of Object.keys(INDUSTRY_SECTORS)) {
+    for (const layout of LAYOUTS) {
+      it(`${verticalId} / ${layout} montre la taille`, () => {
+        expect(rendre(chaussure, verticalId, layout)).toContain("38 à 42");
+      });
+    }
+  }
+
+  it("sans taille, la categorie reste seule, sans separateur orphelin", () => {
+    const html = rendre(product(2, "Homme · Chaussures"), "commerce_vente", "design1");
+    expect(html).toContain("Homme · Chaussures");
+    // Un « · » colle a une balise trahirait un separateur sans rien apres.
+    expect(html).not.toMatch(/Chaussures\s*·\s*</);
+  });
+});

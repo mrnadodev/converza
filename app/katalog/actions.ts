@@ -19,6 +19,14 @@ export interface ProductInput {
   costGdes?: string;
   currency: "HTG" | "USD";
   unit: string;
+  /**
+   * Tailles disponibles, pour ce qui se porte ou se chausse (migration 14).
+   *
+   * Texte libre : « M », « 38 à 42 », « Taille unique ». Ce n'est pas un stock
+   * par taille — compter taille par taille demande des déclinaisons, donc une
+   * ligne de commande et un inventaire par déclinaison.
+   */
+  size?: string;
   stockQty: string;
   stockState: StockState;
   photoUrl: string | null;
@@ -77,6 +85,7 @@ export async function saveProduct(input: ProductInput) {
     price_cents: toCents(input.priceGdes),
     currency: input.currency,
     unit: input.unit.trim() || null,
+    size: input.size?.trim() || null,
     stock_qty: qty,
     stock_state: state,
     photo_url: photosList[0] || null,
@@ -143,6 +152,21 @@ export async function saveProduct(input: ProductInput) {
       .eq("business_id", bid);
     if (showcaseError && !/in_showcase|column|schema cache/i.test(showcaseError.message)) {
       console.warn("in_showcase:", showcaseError.message);
+    }
+  }
+
+  // Taille : écrite séparément pour la même raison que la mise en vitrine.
+  // Tant que la migration 14 n'est pas passée, la colonne n'existe pas, et la
+  // mêler au reste ferait perdre au marchand tout son produit en réglant une
+  // taille.
+  if (!res.error && productId && input.size !== undefined) {
+    const { error: sizeError } = await sb
+      .from("products")
+      .update({ size: input.size.trim() || null })
+      .eq("id", productId)
+      .eq("business_id", bid);
+    if (sizeError && !/size|column|schema cache/i.test(sizeError.message)) {
+      console.warn("size:", sizeError.message);
     }
   }
 

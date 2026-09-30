@@ -184,10 +184,38 @@ export function ProductGallery({
 export function ProductCategory({ p, className, style }: { p: Product; className?: string; style?: CSSProperties }) {
   const { language } = useLanguage();
   const label = categoryLabel(p.category, language);
-  if (!label) return null;
+
+  // La taille se joint à la catégorie plutôt que d'occuper sa propre ligne.
+  //
+  // Ce composant est le seul point de passage des seize vitrines : l'ajouter
+  // ici le montre partout d'un coup. La catégorie avait déjà été corrigée dans
+  // les cartes du catalogue et oubliée dans les designs — l'erreur ne se
+  // refait pas quand il n'y a qu'un endroit où écrire.
+  const taille = p.size?.trim();
+  const texte = [label, taille].filter(Boolean).join(" · ");
+  if (!texte) return null;
+
   return (
     <span className={className} style={style}>
-      {label}
+      {texte}
+    </span>
+  );
+}
+
+/**
+ * La taille seule, pour les vitrines qui n'affichent pas la catégorie.
+ *
+ * Dix des trente-trois mises en page sont dominées par la photo et ne portent
+ * que le nom et le prix. La catégorie y a été jugée superflue — la taille ne
+ * l'est pas : sans elle, le client demande « vous l'avez en 40 ? » dans la
+ * conversation, ce que ce champ existe précisément pour éviter.
+ */
+export function ProductSize({ p, className, style }: { p: Product; className?: string; style?: CSSProperties }) {
+  const taille = p.size?.trim();
+  if (!taille) return null;
+  return (
+    <span className={className} style={style}>
+      {taille}
     </span>
   );
 }

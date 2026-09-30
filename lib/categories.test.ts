@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { INDUSTRY_SECTORS } from "./verticals";
-import { categoriesFor, categoryLabel, isFashionShop } from "./categories";
+import { sizesFor, categoriesFor, categoryLabel, isFashionShop } from "./categories";
 
 describe("catégories proposées au marchand", () => {
   it("propose Homme, Femme et Enfant à une boutique de vêtements et chaussures", () => {
@@ -92,5 +92,30 @@ describe("affichage d'une catégorie enregistrée", () => {
   it("rend une chaîne vide quand il n'y a pas de catégorie", () => {
     expect(categoryLabel(null, "fr")).toBe("");
     expect(categoryLabel("   ", "fr")).toBe("");
+  });
+});
+
+describe("tailles proposees", () => {
+  // Proposer « 38, 39, 40 » sur un collier ferait douter le marchand de tout
+  // le reste du formulaire.
+  it("des lettres pour un vetement, des pointures pour ce qui se chausse", () => {
+    expect(sizesFor("Homme · Vêtements", "fr")).toContain("M");
+    for (const rayon of ["Homme · Chaussures", "Femme · Sandales", "Enfant · Tennis"]) {
+      expect(sizesFor(rayon, "fr"), rayon).toContain("40");
+    }
+  });
+
+  it("rien pour un bijou, rien hors de la mode", () => {
+    expect(sizesFor("Femme · Bijoux", "fr")).toBeNull();
+    expect(sizesFor("Alimentation", "fr")).toBeNull();
+    expect(sizesFor(null, "fr")).toBeNull();
+    expect(sizesFor("", "fr")).toBeNull();
+  });
+
+  it("reconnait les trois langues", () => {
+    expect(sizesFor("Gason · Rad", "ht")).toContain("L");
+    expect(sizesFor("Fanm · Soulye", "ht")).toContain("39");
+    expect(sizesFor("Men · Clothing", "en")).toContain("S");
+    expect(sizesFor("Women · Sneakers", "en")).toContain("42");
   });
 });

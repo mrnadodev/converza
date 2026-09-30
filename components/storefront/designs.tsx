@@ -8,6 +8,7 @@ import { designFor, type DesignCta, type DesignSkin, type SectorPalette } from "
 import {
   PriceText,
   ProductCategory,
+  ProductSize,
   ProductGallery,
   ProductImage,
   SoldBadge,
@@ -308,6 +309,10 @@ function Tile({ p, ctx, className, tone, shapeClass }: { p: Product; ctx: Ctx; c
       />
       <div className="relative z-10 flex flex-col gap-1 p-3">
         <h4 className="line-clamp-1 text-sm font-extrabold">{p.name}</h4>
+        {/* La catégorie est volontairement absente de cette tuile, dominée par
+            la photo. La taille y reste : c'est la question qu'un client pose
+            avant d'acheter, et qu'il posera sinon dans la conversation. */}
+        <ProductSize p={p} className={`text-[10.5px] font-bold uppercase tracking-wide ${light ? "text-ink-muted" : "text-white/75"}`} />
         <div className="flex flex-wrap items-center justify-between gap-2">
           <PriceText p={p} className="text-[13px]" style={light ? { color: ctx.pal.strong } : { color: vip ? "#FCD34D" : "#A7F3D0" }} />
           <Cta p={p} ctx={ctx} variant={vip ? "gold" : light ? "solid" : "white"} />
