@@ -17,6 +17,10 @@ export interface PosterCopy {
   link: string;
   style: string;
   styles: { shop: string; dark: string; light: string };
+  /** Mise en page : elle change ce que l'affiche raconte, pas sa couleur. */
+  layout: string;
+  layouts: { full: string; sheet: string; deal: string };
+  layoutHints: { full: string; sheet: string; deal: string };
   preview: string;
   caption: string;
   captionHint: string;
@@ -57,6 +61,13 @@ export const POSTER_COPY: Record<Language, PosterCopy> = {
     link: "Lien imprimé",
     style: "Style",
     styles: { shop: "Couleurs de ma boutique", dark: "Sombre élégant", light: "Clair épuré" },
+  layout: "Mise en page",
+  layouts: { full: "Plein cadre", sheet: "Fiche", deal: "Promo" },
+  layoutHints: {
+    full: "La photo occupe toute l'affiche, le texte passe dessus. C'est ce qui fonctionne sur un statut.",
+    sheet: "Photo encadrée, nom et prix en dessous. Quand il y a quelque chose à expliquer.",
+    deal: "Le prix mène, en grand et de travers. Pour annoncer une promotion.",
+  },
     preview: "Aperçu : l'image exacte qui sera publiée",
     caption: "Légende",
     captionHint: "Le texte à coller sous votre publication. Modifiez-le librement.",
@@ -96,6 +107,13 @@ export const POSTER_COPY: Record<Language, PosterCopy> = {
     link: "Lyen ki enprime",
     style: "Stil",
     styles: { shop: "Koulè boutik mwen", dark: "Nwa elegan", light: "Klè pwòp" },
+  layout: "Mizanpaj",
+  layouts: { full: "Tout kad la", sheet: "Fich", deal: "Pwomo" },
+  layoutHints: {
+    full: "Foto a pran tout afich la, tèks la pase sou li. Se sa ki mache sou yon estati.",
+    sheet: "Foto ankadre, non ak pri anba. Lè gen yon bagay pou eksplike.",
+    deal: "Pri a mennen, an gwo epi de travè. Pou anonse yon pwomosyon.",
+  },
     preview: "Apèsi : egzakteman imaj k ap pibliye a",
     caption: "Lejann",
     captionHint: "Tèks pou kole anba piblikasyon an. Ou ka chanje l.",
@@ -135,6 +153,13 @@ export const POSTER_COPY: Record<Language, PosterCopy> = {
     link: "Printed link",
     style: "Style",
     styles: { shop: "My shop's colors", dark: "Elegant dark", light: "Clean light" },
+  layout: "Layout",
+  layouts: { full: "Full frame", sheet: "Sheet", deal: "Deal" },
+  layoutHints: {
+    full: "The photo fills the poster, text sits over it. This is what works on a status.",
+    sheet: "Framed photo, name and price below. When there is something to explain.",
+    deal: "The price leads, large and at an angle. To announce a promotion.",
+  },
     preview: "Preview: the exact image that will be posted",
     caption: "Caption",
     captionHint: "The text to paste under your post. Edit it freely.",

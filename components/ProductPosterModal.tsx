@@ -98,37 +98,64 @@ export function drawCover(ctx: CanvasRenderingContext2D, img: HTMLImageElement, 
   ctx.drawImage(img, (img.width - sw) / 2, (img.height - sh) / 2, sw, sh, x, y, w, h);
 }
 
-interface Draft {
+
+/**
+ * Mise en page de l'affiche.
+ *
+ * Une seule existait : accroche, photo, nom, prix, encadré, tout empilé au
+ * centre. C'est lisible, mais c'est une fiche produit — et le prix, qu'on
+ * cherche d'abord des yeux, s'y trouvait coincé au milieu de la pile.
+ *
+ * Trois mises en page répondent à trois usages réels :
+ *
+ * `sheet`  — la fiche d'origine, quand il y a quelque chose à expliquer.
+ * `full`   — la photo occupe tout le cadre, le texte passe dessus. C'est ce
+ *            qui fonctionne sur un statut : l'image se voit avant le texte.
+ * `deal`   — le prix mène, en grand et de travers, pour une promotion.
+ */
+export type PosterLayout = "sheet" | "full" | "deal";
+
+export interface Draft {
   headline: string;
   name: string;
   price: string;
   cta: string;
   link: string;
   style: Style;
+  layout: PosterLayout;
 }
 
-async function drawPoster(
-  canvas: HTMLCanvasElement,
-  d: Draft,
-  shop: { name: string; logo: string | null; accent: string; soft: string },
-  photo: string | null,
-  noPhoto: string,
-) {
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return;
-  canvas.width = W;
-  canvas.height = H;
-  const p = paletteFor(d.style, shop.accent, shop.soft);
+interface Shop {
+  name: string;
+  logo: string | null;
+  accent: string;
+  soft: string;
+}
 
-  const bg = ctx.createLinearGradient(0, 0, 0, H);
-  bg.addColorStop(0, p.top);
-  bg.addColorStop(1, p.bottom);
-  ctx.fillStyle = bg;
-  ctx.fillRect(0, 0, W, H);
+/** Marque CONVERZA en pied d'affiche, avec le Z dans le vert de la marque. */
+function drawSignature(ctx: CanvasRenderingContext2D, couleur: string) {
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.font = `800 26px ${FONT}`;
+  const avant = "CONVER";
+  const z = "Z";
+  const apres = "A";
+  const total = ctx.measureText(avant + z + apres).width;
+  let x = W / 2 - total / 2;
+  ctx.textAlign = "left";
+  ctx.fillStyle = couleur;
+  ctx.fillText(avant, x, H - 50);
+  x += ctx.measureText(avant).width;
+  ctx.fillStyle = "#25D366";
+  ctx.fillText(z, x, H - 50);
+  x += ctx.measureText(z).width;
+  ctx.fillStyle = couleur;
+  ctx.fillText(apres, x, H - 50);
+  ctx.textAlign = "center";
+}
 
-  const [logo, img] = await Promise.all([shop.logo ? loadImage(shop.logo) : null, photo ? loadImage(photo) : null]);
-
-  // En-tête : logo et nom de la boutique.
+/** En-tête logo + nom, commun aux trois mises en page. */
+function drawHeader(ctx: CanvasRenderingContext2D, shop: Shop, logo: HTMLImageElement | null, couleur: string) {
   let x = 90;
   if (logo) {
     ctx.save();
@@ -139,13 +166,231 @@ async function drawPoster(
     ctx.restore();
     x = 230;
   }
-  ctx.fillStyle = p.text;
+  ctx.fillStyle = couleur;
   ctx.textAlign = "left";
   ctx.textBaseline = "middle";
   fit(ctx, shop.name, 800, 54, W - x - 90);
   ctx.fillText(shop.name, x, 145);
+}
 
-  // Accroche : seulement si le marchand en a écrit une.
+async function drawPoster(
+  canvas: HTMLCanvasElement,
+  d: Draft,
+  shop: Shop,
+  photo: string | null,
+  noPhoto: string,
+) {
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+  canvas.width = W;
+  canvas.height = H;
+  const p = paletteFor(d.style, shop.accent, shop.soft);
+  const [logo, img] = await Promise.all([shop.logo ? loadImage(shop.logo) : null, photo ? loadImage(photo) : null]);
+
+  if (d.layout === "full") return drawFull(ctx, d, shop, p, logo, img, noPhoto);
+  if (d.layout === "deal") return drawDeal(ctx, d, shop, p, logo, img, noPhoto);
+  return drawSheet(ctx, d, shop, p, logo, img, noPhoto);
+}
+
+/** Photo sur tout le cadre, texte par-dessus. La mise en page des statuts. */
+function drawFull(
+  ctx: CanvasRenderingContext2D,
+  d: Draft,
+  shop: Shop,
+  p: Palette,
+  logo: HTMLImageElement | null,
+  img: HTMLImageElement | null,
+  noPhoto: string,
+) {
+  if (img) {
+    drawCover(ctx, img, 0, 0, W, H);
+  } else {
+    const bg = ctx.createLinearGradient(0, 0, 0, H);
+    bg.addColorStop(0, p.top);
+    bg.addColorStop(1, p.bottom);
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = p.sub;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.font = `700 40px ${FONT}`;
+    ctx.fillText(noPhoto, W / 2, H / 2);
+  }
+
+  // Deux voiles : un en haut pour que le nom de la boutique se détache, un en
+  // bas, plus épais, pour porter le nom et le prix. Sans eux, un texte blanc
+  // sur une photo claire devient illisible — et on ne choisit pas les photos.
+  const haut = ctx.createLinearGradient(0, 0, 0, 340);
+  haut.addColorStop(0, "rgba(0,0,0,0.62)");
+  haut.addColorStop(1, "rgba(0,0,0,0)");
+  ctx.fillStyle = haut;
+  ctx.fillRect(0, 0, W, 340);
+
+  const bas = ctx.createLinearGradient(0, H - 900, 0, H);
+  bas.addColorStop(0, "rgba(0,0,0,0)");
+  bas.addColorStop(0.45, "rgba(0,0,0,0.70)");
+  bas.addColorStop(1, "rgba(0,0,0,0.94)");
+  ctx.fillStyle = bas;
+  ctx.fillRect(0, H - 900, W, 900);
+
+  drawHeader(ctx, shop, logo, "#FFFFFF");
+
+  let y = H - 300;
+
+  // Lien puis appel à l'action, remontés depuis le bas.
+  ctx.textAlign = "center";
+  ctx.fillStyle = "rgba(255,255,255,0.80)";
+  fit(ctx, d.link.trim(), 700, 38, W - 200, 22);
+  ctx.fillText(d.link.trim(), W / 2, H - 130);
+
+  if (d.cta.trim()) {
+    ctx.fillStyle = p.pillBg;
+    fit(ctx, d.cta.trim(), 800, 40, W - 300);
+    const tw = ctx.measureText(d.cta.trim()).width;
+    ctx.beginPath();
+    ctx.roundRect((W - tw) / 2 - 44, H - 244, tw + 88, 76, 38);
+    ctx.fill();
+    ctx.fillStyle = p.pillText;
+    ctx.fillText(d.cta.trim(), W / 2, H - 244 + 40);
+    y = H - 300;
+  }
+
+  // Prix : le plus gros élément après la photo.
+  if (d.price.trim()) {
+    ctx.fillStyle = "#FFFFFF";
+    fit(ctx, d.price.trim(), 900, 96, W - 200);
+    ctx.fillText(d.price.trim(), W / 2, y);
+    y -= 110;
+  }
+
+  ctx.fillStyle = "#FFFFFF";
+  ctx.font = `800 64px ${FONT}`;
+  const lignes = wrap(ctx, d.name.trim(), W - 180, 2);
+  for (let i = lignes.length - 1; i >= 0; i--) {
+    ctx.fillText(lignes[i], W / 2, y);
+    y -= 78;
+  }
+
+  if (d.headline.trim()) {
+    ctx.fillStyle = p.pillBg;
+    const s = fit(ctx, d.headline.trim(), 800, 42, W - 300);
+    const tw = ctx.measureText(d.headline.trim()).width;
+    ctx.beginPath();
+    ctx.roundRect((W - tw) / 2 - 40, y - s / 2 - 22, tw + 80, s + 44, (s + 44) / 2);
+    ctx.fill();
+    ctx.fillStyle = p.pillText;
+    ctx.fillText(d.headline.trim(), W / 2, y);
+  }
+
+  drawSignature(ctx, "rgba(255,255,255,0.72)");
+}
+
+/** Le prix mène, en grand et de travers. Pour une promotion. */
+function drawDeal(
+  ctx: CanvasRenderingContext2D,
+  d: Draft,
+  shop: Shop,
+  p: Palette,
+  logo: HTMLImageElement | null,
+  img: HTMLImageElement | null,
+  noPhoto: string,
+) {
+  const bg = ctx.createLinearGradient(0, 0, 0, H);
+  bg.addColorStop(0, p.top);
+  bg.addColorStop(1, p.bottom);
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+
+  drawHeader(ctx, shop, logo, p.text);
+
+  // Photo carrée, haute : elle laisse la moitié basse au prix.
+  const ph = 820;
+  const top = 250;
+  ctx.save();
+  ctx.beginPath();
+  ctx.roundRect(90, top, W - 180, ph, 56);
+  ctx.clip();
+  if (img) drawCover(ctx, img, 90, top, W - 180, ph);
+  else {
+    ctx.fillStyle = p.panel;
+    ctx.fillRect(90, top, W - 180, ph);
+    ctx.fillStyle = p.sub;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.font = `700 40px ${FONT}`;
+    ctx.fillText(noPhoto, W / 2, top + ph / 2);
+  }
+  ctx.restore();
+
+  // Bandeau incliné : c'est lui qui fait « promotion » d'un coup d'œil, sans
+  // qu'on ait besoin d'écrire le mot.
+  if (d.price.trim()) {
+    ctx.save();
+    ctx.translate(W / 2, top + ph - 30);
+    ctx.rotate(-0.07);
+    ctx.fillStyle = p.priceBg;
+    ctx.beginPath();
+    ctx.roundRect(-(W / 2) - 40, -86, W + 80, 172, 24);
+    ctx.fill();
+    ctx.fillStyle = p.priceText;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    fit(ctx, d.price.trim(), 900, 116, W - 220);
+    ctx.fillText(d.price.trim(), 0, 4);
+    ctx.restore();
+  }
+
+  let y = top + ph + 190;
+
+  if (d.headline.trim()) {
+    ctx.fillStyle = p.pillBg;
+    const s = fit(ctx, d.headline.trim(), 800, 44, W - 300);
+    const tw = ctx.measureText(d.headline.trim()).width;
+    ctx.textAlign = "center";
+    ctx.beginPath();
+    ctx.roundRect((W - tw) / 2 - 44, y - s / 2 - 24, tw + 88, s + 48, (s + 48) / 2);
+    ctx.fill();
+    ctx.fillStyle = p.pillText;
+    ctx.fillText(d.headline.trim(), W / 2, y);
+    y += 110;
+  }
+
+  ctx.fillStyle = p.text;
+  ctx.textAlign = "center";
+  ctx.font = `800 58px ${FONT}`;
+  for (const l of wrap(ctx, d.name.trim(), W - 180, 2)) {
+    ctx.fillText(l, W / 2, y);
+    y += 70;
+  }
+
+  ctx.fillStyle = p.sub;
+  fit(ctx, d.cta.trim(), 800, 40, W - 260);
+  ctx.fillText(d.cta.trim(), W / 2, H - 190);
+  ctx.fillStyle = p.text;
+  fit(ctx, d.link.trim(), 700, 38, W - 260, 22);
+  ctx.fillText(d.link.trim(), W / 2, H - 130);
+
+  drawSignature(ctx, p.sub);
+}
+
+/** La fiche d'origine : photo encadrée, nom, prix, encadré du lien. */
+function drawSheet(
+  ctx: CanvasRenderingContext2D,
+  d: Draft,
+  shop: Shop,
+  p: Palette,
+  logo: HTMLImageElement | null,
+  img: HTMLImageElement | null,
+  noPhoto: string,
+) {
+  const bg = ctx.createLinearGradient(0, 0, 0, H);
+  bg.addColorStop(0, p.top);
+  bg.addColorStop(1, p.bottom);
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+
+  drawHeader(ctx, shop, logo, p.text);
+
   let top = 250;
   if (d.headline.trim()) {
     const s = fit(ctx, d.headline.trim(), 800, 46, W - 260);
@@ -162,9 +407,6 @@ async function drawPoster(
     top += 20;
   }
 
-  // Mise en page du bas vers le haut : encadré du lien, prix, nom, puis la
-  // photo prend l'espace restant. Un nom sur deux lignes réduit la photo au
-  // lieu de chevaucher le prix.
   const boxY = H - 280;
   const priceH = d.price.trim() ? 104 : 0;
   const priceTop = boxY - 40 - priceH;
@@ -172,7 +414,6 @@ async function drawPoster(
   const lines = wrap(ctx, d.name.trim(), W - 180, 2);
   const nameTop = priceTop - (priceH ? 30 : 0) - lines.length * 74;
 
-  // Photo du produit, recadrée sans déformation.
   const ph = Math.max(360, nameTop - 40 - top);
   const pw = 860;
   const px = (W - pw) / 2;
@@ -191,13 +432,11 @@ async function drawPoster(
   }
   ctx.restore();
 
-  // Nom du produit (2 lignes au plus).
   ctx.fillStyle = p.text;
   ctx.textAlign = "center";
   ctx.font = `800 62px ${FONT}`;
   lines.forEach((l, i) => ctx.fillText(l, W / 2, nameTop + 37 + i * 74));
 
-  // Prix.
   if (priceH) {
     fit(ctx, d.price.trim(), 900, 60, W - 360);
     const tw = ctx.measureText(d.price.trim()).width;
@@ -209,7 +448,6 @@ async function drawPoster(
     ctx.fillText(d.price.trim(), W / 2, priceTop + priceH / 2 + 2);
   }
 
-  // Appel à l'action et lien de la vitrine.
   ctx.fillStyle = p.panel;
   ctx.beginPath();
   ctx.roundRect(90, boxY, W - 180, 180, 40);
@@ -221,9 +459,7 @@ async function drawPoster(
   fit(ctx, d.link.trim(), 700, 40, W - 260, 22);
   ctx.fillText(d.link.trim(), W / 2, boxY + 126);
 
-  ctx.fillStyle = p.sub;
-  ctx.font = `700 26px ${FONT}`;
-  ctx.fillText("CONVERZA", W / 2, H - 50);
+  drawSignature(ctx, p.sub);
 }
 
 export function ProductPosterModal({ business, products, onClose }: { business: Business; products: Product[]; onClose: () => void }) {
@@ -246,6 +482,9 @@ export function ProductPosterModal({ business, products, onClose }: { business: 
     cta: t.ctaDefault,
     link: storeUrl.replace(/^https?:\/\//, ""),
     style: "shop",
+    // « Plein cadre » par défaut : c'est la mise en page qui fonctionne sur un
+    // statut, où l'image se voit avant le texte.
+    layout: "full",
   }));
   const set = (patch: Partial<Draft>) => setDraft((d) => ({ ...d, ...patch }));
 
@@ -422,6 +661,27 @@ export function ProductPosterModal({ business, products, onClose }: { business: 
               </div>
             </fieldset>
 
+            {/* La mise en page d'abord : elle change ce que l'affiche
+                raconte, là où le style ne change que ses couleurs. */}
+            <div className="flex flex-col gap-1.5">
+              <span className={label}>{t.layout}</span>
+              <div className="grid grid-cols-3 gap-2">
+                {(["full", "sheet", "deal"] as const).map((l) => (
+                  <button
+                    key={l}
+                    type="button"
+                    onClick={() => set({ layout: l })}
+                    aria-pressed={draft.layout === l}
+                    className={`flex h-auto cursor-pointer flex-col items-center gap-1 rounded-xl border px-2 py-2 text-[12px] font-bold ${draft.layout === l ? "border-brand bg-[#F3F8F6] text-brand" : "border-line bg-white text-ink-soft"}`}
+                  >
+                    <LayoutSketch layout={l} accent={theme.accent} />
+                    <span className="truncate">{t.layouts[l]}</span>
+                  </button>
+                ))}
+              </div>
+              <span className="text-[11px] leading-snug text-ink-muted">{t.layoutHints[draft.layout]}</span>
+            </div>
+
             <div className="flex flex-col gap-1.5">
               <span className={label}>{t.style}</span>
               <div className="grid grid-cols-3 gap-2">
@@ -529,5 +789,40 @@ export function ProductPosterModal({ business, products, onClose }: { business: 
         </div>
       </div>
     </div>
+  );
+}
+
+/**
+ * Miniature d une mise en page : trois rectangles valent mieux qu un nom.
+ *
+ * Un marchand qui lit « Plein cadre » ne sait pas ce qu il va obtenir ; un
+ * marchand qui voit la photo occuper toute la vignette le sait d un coup.
+ */
+function LayoutSketch({ layout, accent }: { layout: PosterLayout; accent: string }) {
+  const cadre = "h-10 w-7 shrink-0 overflow-hidden rounded-[5px] ring-1 ring-black/10";
+  if (layout === "full") {
+    return (
+      <span className={`${cadre} relative`} style={{ background: accent }} aria-hidden="true">
+        <span className="absolute inset-x-0 bottom-0 h-3.5 bg-black/55" />
+        <span className="absolute inset-x-1 bottom-2 h-[3px] rounded-full bg-white/90" />
+        <span className="absolute inset-x-1 bottom-0.5 h-[2px] rounded-full bg-white/60" />
+      </span>
+    );
+  }
+  if (layout === "deal") {
+    return (
+      <span className={`${cadre} relative bg-slate-100`} aria-hidden="true">
+        <span className="absolute inset-x-1 top-1 h-4 rounded-[3px]" style={{ background: accent }} />
+        <span className="absolute inset-x-0 top-[18px] h-2.5 -rotate-6 bg-slate-800" />
+        <span className="absolute inset-x-1 bottom-1 h-[2px] rounded-full bg-slate-400" />
+      </span>
+    );
+  }
+  return (
+    <span className={`${cadre} relative bg-slate-100`} aria-hidden="true">
+      <span className="absolute inset-x-1 top-1 h-5 rounded-[3px]" style={{ background: accent }} />
+      <span className="absolute inset-x-1 top-[26px] h-[2px] rounded-full bg-slate-500" />
+      <span className="absolute inset-x-2 bottom-1.5 h-2 rounded-[3px] bg-slate-300" />
+    </span>
   );
 }
