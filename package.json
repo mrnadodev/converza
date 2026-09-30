@@ -5,6 +5,7 @@
   "description": "CONVERZA — WhatsApp Sales & Customer Management pou biznis an Ayiti",
   "scripts": {
     "dev": "next dev",
+    "dev:staging": "node scripts/dev-staging.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
