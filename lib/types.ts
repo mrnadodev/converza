@@ -123,6 +123,8 @@ export interface Product {
   in_showcase?: boolean | null;
   sold_count: number;
   is_active: boolean;
+  /** Date de mise en catalogue : sert au repère « Nouveau » sur la vitrine. */
+  created_at?: string;
   /** Prix d'achat unitaire (migration 6), pour le calcul du bénéfice. */
   cost_cents?: number | null;
 }

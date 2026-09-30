@@ -8,7 +8,6 @@ import { designFor, type DesignCta, type DesignSkin, type SectorPalette } from "
 import {
   PriceText,
   ProductCategory,
-  ProductSize,
   ProductGallery,
   ProductImage,
   SoldBadge,
@@ -300,7 +299,7 @@ function Tile({ p, ctx, className, tone, shapeClass }: { p: Product; ctx: Ctx; c
       style={ctx.skin === "neon" ? skinOf("neon", ctx.pal).style : undefined}
     >
       <div className="absolute inset-0">
-        <ProductGallery photos={photos} name={p.name} dark={!light} onZoom={ctx.onZoom} controls="arrows" />
+        <ProductGallery product={p} photos={photos} name={p.name} dark={!light} onZoom={ctx.onZoom} controls="arrows" />
       </div>
       <div
         className={`pointer-events-none absolute inset-0 ${
@@ -309,10 +308,6 @@ function Tile({ p, ctx, className, tone, shapeClass }: { p: Product; ctx: Ctx; c
       />
       <div className="relative z-10 flex flex-col gap-1 p-3">
         <h4 className="line-clamp-1 text-sm font-extrabold">{p.name}</h4>
-        {/* La catégorie est volontairement absente de cette tuile, dominée par
-            la photo. La taille y reste : c'est la question qu'un client pose
-            avant d'acheter, et qu'il posera sinon dans la conversation. */}
-        <ProductSize p={p} className={`text-[10.5px] font-bold uppercase tracking-wide ${light ? "text-ink-muted" : "text-white/75"}`} />
         <div className="flex flex-wrap items-center justify-between gap-2">
           <PriceText p={p} className="text-[13px]" style={light ? { color: ctx.pal.strong } : { color: vip ? "#FCD34D" : "#A7F3D0" }} />
           <Cta p={p} ctx={ctx} variant={vip ? "gold" : light ? "solid" : "white"} />
@@ -333,7 +328,7 @@ function Sheet({ p, ctx, aspect, compact }: { p: Product; ctx: Ctx; aspect: stri
   return (
     <div className={`flex h-full min-w-0 flex-col overflow-hidden rounded-2xl ${s.shell}`} style={s.style}>
       <div className={`relative w-full overflow-hidden ${aspect}`}>
-        <ProductGallery photos={photos} name={p.name} dark={ctx.skin === "vip" || ctx.skin === "neon" || ctx.skin === "executive"} onZoom={ctx.onZoom} />
+        <ProductGallery product={p} photos={photos} name={p.name} dark={ctx.skin === "vip" || ctx.skin === "neon" || ctx.skin === "executive"} onZoom={ctx.onZoom} />
         <SoldBadge p={p} className={`absolute left-2 top-2 rounded-full bg-white/90 px-2 py-0.5 text-[10.5px] font-bold text-slate-900 shadow-sm ${hideSmall}`} />
       </div>
       <div className={`flex flex-1 flex-col justify-between gap-2 ${compact ? "p-2 sm:p-3" : "p-3"}`}>
@@ -356,7 +351,7 @@ function Circle({ p, ctx }: { p: Product; ctx: Ctx }) {
       <div className="relative h-28 w-28 overflow-hidden rounded-full border-4 shadow-md md:h-32 md:w-32" style={{ borderColor: ctx.pal.strong }}>
         {/* Pas de galerie ici : 112 px de diamètre, des flèches y seraient
             plus gênantes qu'utiles. La photo se voit en entier au zoom. */}
-        <ProductImage photos={photosOf(p)} name={p.name} onZoom={ctx.onZoom} />
+        <ProductImage product={p} photos={photosOf(p)} name={p.name} onZoom={ctx.onZoom} />
       </div>
       <ProductCategory p={p} className="text-[10px] font-extrabold uppercase" style={{ color: ctx.pal.strong }} />
       <h4 className="line-clamp-1 text-[13px] font-extrabold">{p.name}</h4>
@@ -371,7 +366,7 @@ function Arch({ p, ctx }: { p: Product; ctx: Ctx }) {
   return (
     <div className="flex flex-col items-center gap-2 rounded-[28px] p-3 text-center text-ink" style={{ background: `${ctx.pal.soft}66` }}>
       <div className="relative aspect-[4/5] w-full overflow-hidden rounded-b-2xl rounded-t-full border-4 border-white shadow-sm">
-        <ProductGallery photos={photosOf(p)} name={p.name} onZoom={ctx.onZoom} />
+        <ProductGallery product={p} photos={photosOf(p)} name={p.name} onZoom={ctx.onZoom} />
       </div>
       <ProductCategory p={p} className="text-[10.5px] font-bold uppercase tracking-wide" style={{ color: ctx.pal.strong }} />
       <h4 className="line-clamp-2 text-[13.5px] font-extrabold leading-snug">{p.name}</h4>
@@ -388,7 +383,7 @@ function Row({ p, ctx }: { p: Product; ctx: Ctx }) {
   return (
     <div className={`flex items-center gap-3 rounded-2xl p-2.5 ${s.shell}`} style={s.style}>
       <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl">
-        <ProductImage photos={photosOf(p)} name={p.name} compact onZoom={ctx.onZoom} />
+        <ProductImage product={p} photos={photosOf(p)} name={p.name} compact onZoom={ctx.onZoom} />
       </div>
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         <ProductCategory p={p} className={`truncate text-[10.5px] font-bold uppercase tracking-wide ${s.sub}`} />
@@ -425,7 +420,7 @@ function PricingColumn({ p, ctx, highlight }: { p: Product; ctx: Ctx; highlight:
         </span>
       )}
       <div className="relative h-14 w-14 overflow-hidden rounded-2xl">
-        <ProductImage photos={photosOf(p)} name={p.name} compact onZoom={ctx.onZoom} />
+        <ProductImage product={p} photos={photosOf(p)} name={p.name} compact onZoom={ctx.onZoom} />
       </div>
       <ProductCategory p={p} className={`text-[10.5px] font-bold uppercase tracking-wide ${neon ? "text-slate-400" : "text-ink-muted"}`} />
       <h4 className="line-clamp-2 text-[15px] font-extrabold">{p.name}</h4>
@@ -458,7 +453,7 @@ function TableView({ items, ctx }: { items: Product[]; ctx: Ctx }) {
           <div key={p.id} className={`grid grid-cols-[1fr_auto] items-center gap-3 border-t px-3.5 py-2.5 md:grid-cols-[1fr_160px_auto] ${dark ? "border-white/10" : "border-slate-100"}`}>
             <div className="flex min-w-0 items-center gap-3">
               <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg">
-                <ProductImage photos={photosOf(p)} name={p.name} compact onZoom={ctx.onZoom} />
+                <ProductImage product={p} photos={photosOf(p)} name={p.name} compact onZoom={ctx.onZoom} />
               </div>
               <div className="flex min-w-0 flex-col">
                 <span className="line-clamp-1 text-[13.5px] font-extrabold">{p.name}</span>

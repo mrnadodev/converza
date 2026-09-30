@@ -1,4 +1,4 @@
-﻿import type { Language } from "./translations";
+import type { Language } from "./translations";
 
 // Textes de la vitrine publique, celle que voient les clients des marchands.
 //
@@ -19,6 +19,10 @@ export interface StorefrontCopy {
   addToCart: string;
   add: string;
   sold: (n: number) => string;
+  /** Pastille sur un produit arrive cette semaine. */
+  isNew: string;
+  /** Bandeau calme en haut de la vitrine, quand il y a des nouveautes. */
+  newArrivals: (n: number) => string;
   soldOut: string;
   unavailable: string;
   bestSeller: string;
@@ -113,6 +117,8 @@ const fr: StorefrontCopy = {
   addToCart: "Ajouter au panier",
   add: "Ajouter",
   sold: (n) => `${n} vendus`,
+  isNew: "Nouveau",
+  newArrivals: (n) => (n === 1 ? "1 nouveauté cette semaine" : `${n} nouveautés cette semaine`),
   soldOut: "Épuisé",
   unavailable: "Indisponible",
   bestSeller: "Best-seller",
@@ -217,6 +223,8 @@ const ht: StorefrontCopy = {
   addToCart: "Mete nan panye",
   add: "Ajoute",
   sold: (n) => `${n} vann`,
+  isNew: "Nouvo",
+  newArrivals: (n) => (n === 1 ? "1 nouvote semèn sa a" : `${n} nouvote semèn sa a`),
   soldOut: "Fini",
   unavailable: "Pa disponib",
   bestSeller: "Pi vann",
@@ -321,6 +329,8 @@ const en: StorefrontCopy = {
   addToCart: "Add to cart",
   add: "Add",
   sold: (n) => `${n} sold`,
+  isNew: "New",
+  newArrivals: (n) => (n === 1 ? "1 new item this week" : `${n} new items this week`),
   soldOut: "Sold out",
   unavailable: "Unavailable",
   bestSeller: "Best seller",

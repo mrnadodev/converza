@@ -143,3 +143,106 @@ describe("la taille s affiche partout ou la categorie s affiche", () => {
     expect(html).not.toMatch(/Chaussures\s*·\s*</);
   });
 });
+
+describe("la pastille Nouveau apparait sur toutes les vitrines", () => {
+  // Meme lecon que la taille : une pastille cablee dans deux designs sur seize
+  // ne se voit pas, et personne ne s en apercoit avant un marchand.
+  const rendre = (p: Product, verticalId: string, layout: LayoutKey) =>
+    renderToStaticMarkup(
+      <LanguageProvider>
+        <FeaturedSection
+          layout={layout}
+          verticalId={verticalId}
+          featured={[p]}
+          cart={{}}
+          ops={{ add: () => {}, sub: () => {} }}
+          onZoom={() => {}}
+          visitHref={() => "#"}
+          palette={{ strong: "#0F766E", soft: "#CCFBF1" }}
+        />
+      </LanguageProvider>,
+    );
+
+  const recent: Product = { ...product(1, "Homme · Chaussures"), created_at: new Date().toISOString() };
+  const ancien: Product = { ...product(2, "Homme · Chaussures"), created_at: new Date(Date.now() - 60 * 86400000).toISOString() };
+
+  for (const verticalId of Object.keys(INDUSTRY_SECTORS)) {
+    for (const layout of LAYOUTS) {
+      it(`${verticalId} / ${layout} marque le produit recent`, () => {
+        expect(rendre(recent, verticalId, layout)).toContain("Nouveau");
+      });
+    }
+  }
+
+  it("ne marque pas un produit ancien", () => {
+    // Une pastille qui ment partout ne vaut rien nulle part.
+    expect(rendre(ancien, "commerce_vente", "design1")).not.toContain("Nouveau");
+  });
+
+  it("ne marque pas un produit sans date", () => {
+    expect(rendre(product(3, "Homme · Chaussures"), "commerce_vente", "design1")).not.toContain("Nouveau");
+  });
+});
+describe("les pastilles de photo ne se recouvrent pas", () => {
+  // « 2 vendus » se pose en haut a gauche, « epuise » en haut a droite. La
+  // pastille Nouveau et la taille visent les memes coins : superposees, aucune
+  // des deux ne se lit, et le marchand voit une bouillie sur sa plus belle
+  // photo. Chaque cote descend d une rangee quand son coin est occupe.
+  const rendre = (p: Product) =>
+    renderToStaticMarkup(
+      <LanguageProvider>
+        <FeaturedSection
+          layout="design1"
+          verticalId="commerce_vente"
+          featured={[p]}
+          cart={{}}
+          ops={{ add: () => {}, sub: () => {} }}
+          onZoom={() => {}}
+          visitHref={() => "#"}
+          palette={{ strong: "#0F766E", soft: "#CCFBF1" }}
+        />
+      </LanguageProvider>,
+    );
+
+  const neuf = (): Product => ({
+    ...product(0, "Homme · Chaussures"),
+    created_at: new Date().toISOString(),
+    size: "40",
+  });
+
+  // La classe de position de chaque pastille, retrouvee par son texte.
+  const rangee = (html: string, texte: string): string => {
+    const span = html.match(new RegExp(`<span[^>]*>${texte}</span>`));
+    expect(span, `pastille « ${texte} » absente du rendu`).not.toBeNull();
+    const top = span![0].match(/top-[\d.]+/);
+    expect(top, `pastille « ${texte} » sans position verticale`).not.toBeNull();
+    return top![0];
+  };
+
+  it("Nouveau reste en haut quand rien n occupe le coin gauche", () => {
+    expect(rangee(rendre({ ...neuf(), sold_count: 0 }), "Nouveau")).toBe("top-1.5");
+  });
+
+  it("Nouveau descend sous « vendus »", () => {
+    const html = rendre({ ...neuf(), sold_count: 2 });
+    expect(html).toContain("2 vendus");
+    expect(rangee(html, "Nouveau")).toBe("top-9");
+  });
+
+  it("la taille reste en haut quand le produit est en stock", () => {
+    expect(rangee(rendre(neuf()), "40")).toBe("top-1.5");
+  });
+
+  it("la taille descend quand « epuise » occupe le coin droit", () => {
+    expect(rangee(rendre({ ...neuf(), stock_state: "fini" }), "40")).toBe("top-9");
+  });
+
+  it("un produit neuf et deja vendu montre bien les trois pastilles", () => {
+    const html = rendre({ ...neuf(), sold_count: 2 });
+    expect(html).toContain("2 vendus");
+    expect(html).toContain("Nouveau");
+    expect(html).toContain("40");
+    // Et pas a la meme hauteur que le badge des ventes.
+    expect(rangee(html, "Nouveau")).not.toBe("top-1.5");
+  });
+});

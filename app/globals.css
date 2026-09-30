@@ -186,3 +186,19 @@ html, body {
     height: 0 !important;
   }
 }
+
+/* Bandeau des nouveautés : il glisse une fois, puis ne bouge plus.
+   `forwards` fige l'état final ; sans lui le bandeau reviendrait à son point
+   de départ à la fin de l'animation. Pas de boucle : un mouvement répété
+   devient du bruit qu'on apprend à ignorer, et un clignotement peut
+   déclencher une crise chez un épileptique. */
+@keyframes cvz-arrivage {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.cvz-arrivage { animation: cvz-arrivage 0.45s cubic-bezier(0.22, 0.61, 0.36, 1) 0.25s both; }
+
+/* Mouvement réduit demandé : le bandeau est simplement là. */
+@media (prefers-reduced-motion: reduce) {
+  .cvz-arrivage { animation: none; }
+}

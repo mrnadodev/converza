@@ -4,6 +4,7 @@ import { useState, type CSSProperties } from "react";
 import { formatMoney } from "@/lib/money";
 import type { Product } from "@/lib/types";
 import { categoryLabel } from "@/lib/categories";
+import { isNew } from "@/lib/nouveautes";
 import { storefrontCopy, type StorefrontCopy } from "@/lib/i18n/storefront";
 import { useLanguage } from "@/components/LanguageContext";
 
@@ -51,6 +52,7 @@ export function ProductImage({
   compact,
   onZoom,
   index = 0,
+  product,
 }: {
   photos: string[];
   name: string;
@@ -58,11 +60,14 @@ export function ProductImage({
   compact?: boolean;
   onZoom?: (photos: string[], index: number) => void;
   index?: number;
+  /** Fournit la taille et la date d'arrivée, posées en pastilles sur la photo. */
+  product?: Product;
 }) {
   if (photos.length === 0) {
     return (
-      <div className={`flex h-full w-full items-center justify-center ${dark ? "bg-slate-800" : "bg-[#F1F4F2]"}`} aria-label={name}>
+      <div className={`relative flex h-full w-full items-center justify-center ${dark ? "bg-slate-800" : "bg-[#F1F4F2]"}`} aria-label={name}>
         <BagIcon color={dark ? "#64748B" : "#A3B5AF"} size={compact ? 18 : 34} />
+        {product && <PhotoBadges p={product} compact={compact} />}
       </div>
     );
   }
@@ -89,7 +94,56 @@ export function ProductImage({
         onClick={onZoom ? () => onZoom(photos, index) : undefined}
         className={`absolute inset-0 h-full w-full object-contain ${onZoom ? "cursor-zoom-in" : ""}`}
       />
+      {product && <PhotoBadges p={product} compact={compact} />}
     </div>
+  );
+}
+
+/**
+ * Pastilles posées sur la photo : ce qui vient d'arriver, et en quelle taille.
+ *
+ * Sur la photo et non en dessous : c'est là que l'œil va, et la taille décide
+ * un achat de vêtement avant même le prix.
+ *
+ * Chacune porte un fond plein. La catégorie, elle, reste sous la photo pour
+ * une raison qui vaut toujours — beaucoup de produits sont photographiés sur
+ * fond chargé, et du texte nu y devient illisible. Une pastille opaque tient,
+ * du texte nu non.
+ *
+ * Aucun clignotement : un contenu qui clignote peut déclencher une crise chez
+ * un épileptique, et se lit comme une bannière des années 2000. Immobile, la
+ * pastille attire autant et n'agresse personne.
+ */
+function PhotoBadges({ p, compact }: { p: Product; compact?: boolean }) {
+  const c = useCopy();
+  const taille = p.size?.trim();
+  const neuf = isNew(p);
+  if (!taille && !neuf) return null;
+
+  const pastille = compact
+    ? "rounded-full px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wide shadow-sm"
+    : "rounded-full px-2 py-0.5 text-[10.5px] font-black uppercase tracking-wide shadow-sm";
+
+  // Les deux coins du haut sont déjà pris ailleurs : « 2 vendus » à gauche,
+  // « épuisé » à droite. Deux pastilles superposées ne se lisent ni l'une ni
+  // l'autre, alors chaque côté descend d'une rangée quand le coin est occupé.
+  // Les mêmes champs décident : pas de devinette possible.
+  const gauche = p.sold_count > 0 ? "top-9" : "top-1.5";
+  const droite = p.stock_state === "fini" ? "top-9" : "top-1.5";
+
+  return (
+    <>
+      {neuf && (
+        <span className={`pointer-events-none absolute left-1.5 z-10 ${gauche} ${pastille} bg-[#25D366] text-[#05261B]`}>
+          {c.isNew}
+        </span>
+      )}
+      {taille && (
+        <span className={`pointer-events-none absolute right-1.5 z-10 ${droite} ${pastille} bg-white/92 text-ink`}>
+          {taille}
+        </span>
+      )}
+    </>
   );
 }
 
@@ -111,12 +165,15 @@ export function ProductGallery({
   dark,
   onZoom,
   controls = "full",
+  product,
 }: {
   photos: string[];
   name: string;
   dark?: boolean;
   onZoom?: (photos: string[], index: number) => void;
   controls?: "full" | "arrows";
+  /** Transmis à l'image : c'est elle qui porte les pastilles. */
+  product?: Product;
 }) {
   const c = useCopy();
   const [index, setIndex] = useState(0);
@@ -140,7 +197,7 @@ export function ProductGallery({
       onTouchStart={(e) => setDepart(e.touches[0].clientX)}
       onTouchEnd={(e) => finDuGeste(e.changedTouches[0].clientX)}
     >
-      <ProductImage photos={photos} name={name} dark={dark} onZoom={onZoom} index={index} />
+      <ProductImage photos={photos} name={name} dark={dark} onZoom={onZoom} index={index} product={product} />
 
       {photos.length > 1 && (
         <>
@@ -183,39 +240,14 @@ export function ProductGallery({
  */
 export function ProductCategory({ p, className, style }: { p: Product; className?: string; style?: CSSProperties }) {
   const { language } = useLanguage();
+  // La taille vivait ici, jointe à la catégorie. Elle est passée sur la photo :
+  // c'est là que l'œil va, et elle décide un achat de vêtement avant le prix.
   const label = categoryLabel(p.category, language);
-
-  // La taille se joint à la catégorie plutôt que d'occuper sa propre ligne.
-  //
-  // Ce composant est le seul point de passage des seize vitrines : l'ajouter
-  // ici le montre partout d'un coup. La catégorie avait déjà été corrigée dans
-  // les cartes du catalogue et oubliée dans les designs — l'erreur ne se
-  // refait pas quand il n'y a qu'un endroit où écrire.
-  const taille = p.size?.trim();
-  const texte = [label, taille].filter(Boolean).join(" · ");
-  if (!texte) return null;
+  if (!label) return null;
 
   return (
     <span className={className} style={style}>
-      {texte}
-    </span>
-  );
-}
-
-/**
- * La taille seule, pour les vitrines qui n'affichent pas la catégorie.
- *
- * Dix des trente-trois mises en page sont dominées par la photo et ne portent
- * que le nom et le prix. La catégorie y a été jugée superflue — la taille ne
- * l'est pas : sans elle, le client demande « vous l'avez en 40 ? » dans la
- * conversation, ce que ce champ existe précisément pour éviter.
- */
-export function ProductSize({ p, className, style }: { p: Product; className?: string; style?: CSSProperties }) {
-  const taille = p.size?.trim();
-  if (!taille) return null;
-  return (
-    <span className={className} style={style}>
-      {taille}
+      {label}
     </span>
   );
 }

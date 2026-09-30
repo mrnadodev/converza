@@ -1,10 +1,11 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { formatMoney } from "@/lib/money";
 import { waMeLink } from "@/lib/whatsapp";
 import { etatBoutique, type EtatBoutique } from "@/lib/horaires";
+import { countNew } from "@/lib/nouveautes";
 import { buildOrderMessage, type CartLine } from "@/lib/order";
 import { verticalOf } from "@/lib/verticals";
 import { paletteOfTheme, themeOf } from "@/lib/themes";
@@ -109,6 +110,12 @@ export function Storefront({
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [sending, setSending] = useState(false);
+  // Le decompte des nouveautes depend de l heure : calcule au rendu, il
+  // differerait entre le serveur et le navigateur. Il est donc pose apres le
+  // montage, comme l etat d ouverture.
+  const [nouveautes, setNouveautes] = useState(0);
+  useEffect(() => { setNouveautes(countNew(products)); }, [products]);
+
   const [sendFailed, setSendFailed] = useState(false);
   /** Accusé de réception affiché après l'enregistrement d'une commande. */
   const [confirmation, setConfirmation] = useState<{ ref: string; token: string | null; code: string | null } | null>(null);
@@ -363,6 +370,22 @@ export function Storefront({
                       ? [c.open, business.hours].filter(Boolean).join(" · ")
                       : c.closedUntil(etat.reouvreA, etat.jours)
                     : business.hours}
+                </span>
+              </div>
+            )}
+            {/* Nouveautés : un bandeau qui apparaît une fois, en glissant, et
+                ne bouge plus. Un bandeau qui clignote peut déclencher une
+                crise chez un épileptique, et se lit comme une publicité des
+                années 2000 — le mouvement attire une fois, répété il devient
+                du bruit qu'on apprend à ignorer. */}
+            {nouveautes > 0 && (
+              <div
+                className="cvz-arrivage mt-2 flex items-center gap-2 rounded-full px-3 py-1.5"
+                style={{ background: theme.accentSoft }}
+              >
+                <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-brand-green" />
+                <span className="text-[12px] font-extrabold" style={{ color: theme.accentText }}>
+                  {c.newArrivals(nouveautes)}
                 </span>
               </div>
             )}

@@ -37,7 +37,7 @@ export function GridCard({
   return (
     <div className={`flex flex-col overflow-hidden rounded-2xl shadow-[0_2px_10px_rgba(17,27,33,0.06)] ring-1 ${dark ? "bg-[#1F2937] text-white ring-gray-700" : "bg-white text-ink ring-line"}`}>
       <div className="relative aspect-[4/5] w-full">
-        <ProductGallery photos={photos} name={p.name} dark={dark} onZoom={onZoom} />
+        <ProductGallery product={p} photos={photos} name={p.name} dark={dark} onZoom={onZoom} />
 
         <SoldBadge p={p} className="absolute left-2 top-2 z-10 rounded-full bg-white/90 px-2 py-0.5 text-[10.5px] font-bold text-brand shadow-sm" />
         {p.stock_state === "fini" && (
@@ -66,7 +66,7 @@ export function MenuRow({ p, qty, ops, dark, boxed }: { p: Product; qty: number;
   return (
     <div className={`flex items-center gap-3 ${shell}`}>
       <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-2xl">
-        <ProductImage photos={photos} name={p.name} dark={dark} compact />
+        <ProductImage product={p} photos={photos} name={p.name} dark={dark} compact />
       </div>
       <div className="flex min-w-0 flex-1 flex-col gap-1">
         <span className="line-clamp-1 text-[15px] font-bold leading-snug">{p.name}</span>
@@ -99,7 +99,7 @@ export function FoodCard({
     <div className={`group relative flex flex-col overflow-hidden rounded-2xl border shadow-md transition-shadow hover:shadow-xl sm:rounded-3xl ${dark ? "border-slate-700 bg-[#1E293B] text-white" : "border-slate-200 bg-white text-ink"}`}>
       {/* Format 4:5 pour voir le plat en entier */}
       <div className="relative aspect-[4/5] w-full overflow-hidden">
-        <ProductImage photos={photos} name={p.name} dark={dark} onZoom={onZoom} />
+        <ProductImage product={p} photos={photos} name={p.name} dark={dark} onZoom={onZoom} />
         <div className="absolute left-2 top-2 z-10 flex flex-wrap gap-1">
           {p.sold_count > 0 && (
             <span className="hidden rounded-full bg-emerald-500 px-2 py-0.5 text-[10px] font-extrabold text-white sm:inline-block">{c.bestSeller}</span>
