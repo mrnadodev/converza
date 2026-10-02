@@ -1,5 +1,5 @@
 -- ============================================================
--- CONVERZA — migration 12 (horaires d'ouverture structurés)
+-- PASRÈL — migration 12 (horaires d'ouverture structurés)
 -- À exécuter dans l'éditeur SQL Supabase après
 -- migrate-2026-11-annuaire.sql. Le script est rejouable.
 --

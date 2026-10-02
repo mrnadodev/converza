@@ -18,7 +18,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>("light");
 
   useEffect(() => {
-    const saved = localStorage.getItem("converza_theme") as Theme | null;
+    const saved = localStorage.getItem("pasrel_theme") as Theme | null;
     const initial = saved || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
     setTheme(initial);
     document.documentElement.setAttribute("data-theme", initial);
@@ -27,7 +27,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   function toggleTheme() {
     const next = theme === "light" ? "dark" : "light";
     setTheme(next);
-    localStorage.setItem("converza_theme", next);
+    localStorage.setItem("pasrel_theme", next);
     document.documentElement.setAttribute("data-theme", next);
   }
 

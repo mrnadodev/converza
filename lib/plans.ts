@@ -1,4 +1,4 @@
-// Plans d'abonnement CONVERZA (modèle de revenus).
+// Plans d'abonnement PASRÈL (modèle de revenus).
 export interface Plan {
   key: string;
   name: string;
@@ -91,7 +91,7 @@ export const DEFAULT_PLANS: Plan[] = [
  * Coordonnées d'encaissement de la plateforme, avant toute configuration.
  *
  * Elles sont vides à dessein : les valeurs de démonstration livrées ici
- * (numéro MonCash, comptes bancaires « CONVERZA S.A. ») s'affichaient aux
+ * (numéro MonCash, comptes bancaires « PASRÈL S.A. ») s'affichaient aux
  * marchands sur la page Abonnement comme le compte où envoyer leur paiement.
  * Tant que le super-admin n'a pas saisi les vraies coordonnées, la page le dit
  * au lieu d'inventer un numéro.

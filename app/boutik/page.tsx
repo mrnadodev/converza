@@ -6,9 +6,9 @@ import { BackToTop } from "@/components/BackToTop";
 import { Audience } from "@/components/Audience";
 import { ShopLink } from "@/components/ShopLink";
 
-// Annuaire public des boutiques CONVERZA.
+// Annuaire public des boutiques PASRÈL.
 //
-// CONVERZA donnait à chaque marchand un lien à partager, mais ne l'exposait
+// PASRÈL donnait à chaque marchand un lien à partager, mais ne l'exposait
 // nulle part : celui qui n'est pas sur Facebook n'était découvert par personne.
 // Cette page répond à la seule question qui compte pour un acheteur — « qui
 // vend ce produit ? » — et renvoie vers la vitrine du marchand.
@@ -18,7 +18,7 @@ import { ShopLink } from "@/components/ShopLink";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Trouver un produit — CONVERZA",
+  title: "Trouver un produit — PASRÈL",
   description: "Cherchez un produit et découvrez les boutiques qui le vendent, avec leur vitrine et leur WhatsApp.",
 };
 
@@ -36,7 +36,7 @@ export default async function AnnuairePage({ searchParams }: { searchParams?: { 
       <header className="bg-brand px-5 py-8 sm:py-12">
         <div className="mx-auto w-full max-w-[900px]">
           <Link href="/" className="text-[12.5px] font-bold text-[#B9F5E4] hover:text-white">
-            CONVERZA
+            PASRÈL
           </Link>
           <h1 className="pt-2 text-[26px] font-extrabold leading-tight tracking-tight text-white sm:text-[32px]">
             Trouvez un produit, découvrez la boutique
@@ -165,7 +165,7 @@ function Boutiques({ shops }: { shops: Awaited<ReturnType<typeof listDirectorySh
   return (
     <div className="flex flex-col gap-3">
       <p className="px-1 text-[12.5px] font-semibold text-ink-muted">
-        {shops.length} boutique{shops.length > 1 ? "s" : ""} sur CONVERZA
+        {shops.length} boutique{shops.length > 1 ? "s" : ""} sur PASRÈL
       </p>
       <ul className="grid gap-2.5 sm:grid-cols-2">
         {shops.map((b) => (

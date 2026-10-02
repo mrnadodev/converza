@@ -38,7 +38,7 @@ export function Subscription({
   const c = useDict(COMMON_COPY);
   // Plan réellement dû : un abonnement échu n'est plus « actuel ».
   const current = effectivePlan(business.plan, business.plan_until);
-  // Seuls les moyens de paiement que CONVERZA a renseignés sont proposés :
+  // Seuls les moyens de paiement que PASRÈL a renseignés sont proposés :
   // choisir un virement sans compte bancaire menait à une impasse.
   const methods = PAY_METHODS.filter((m) =>
     m.key === "moncash"

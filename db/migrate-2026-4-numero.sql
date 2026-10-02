@@ -1,10 +1,10 @@
 -- ============================================================
--- CONVERZA — migration 4 (changement de numéro WhatsApp)
+-- PASRÈL — migration 4 (changement de numéro WhatsApp)
 -- À exécuter dans l'éditeur SQL Supabase après migrate-2026-3-admin.sql.
 -- Le script peut être relancé sans risque.
 --
 -- Un compte WhatsApp piraté ne doit plus coûter sa clientèle au marchand :
--- il demande un nouveau numéro avec preuves, CONVERZA vérifie, et la vitrine
+-- il demande un nouveau numéro avec preuves, PASRÈL vérifie, et la vitrine
 -- bascule. En contrepartie, le numéro ne se modifie plus librement : c'est
 -- lui qui reçoit les commandes et l'argent des clients.
 -- ============================================================

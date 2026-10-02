@@ -1,5 +1,5 @@
 -- ============================================================
--- CONVERZA — le compte de sauvegarde est-il vraiment en lecture seule ?
+-- PASRÈL — le compte de sauvegarde est-il vraiment en lecture seule ?
 --
 -- À lancer dans l'éditeur SQL de la production, après db/role-sauvegarde.sql.
 -- Ne modifie rien.

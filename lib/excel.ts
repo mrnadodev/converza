@@ -34,7 +34,7 @@ export interface ImportResult {
 }
 
 /**
- * Parse un fichier CSV / Excel importé en liste de produits pour Converza.
+ * Parse un fichier CSV / Excel importé en liste de produits pour Pasrèl.
  */
 export function parseBulkProducts(csvText: string, businessId: string): ImportResult {
   const errors: string[] = [];

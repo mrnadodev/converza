@@ -1,5 +1,5 @@
 -- ============================================================
--- CONVERZA — contrôle d'isolation entre marchands
+-- PASRÈL — contrôle d'isolation entre marchands
 --
 -- À lancer dans l'éditeur SQL, sur la production comme sur le staging.
 -- Ne modifie rien : la requête ne fait que lire l'état de la base.

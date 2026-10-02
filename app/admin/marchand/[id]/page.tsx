@@ -140,4 +140,4 @@ export default async function SupportPage({ params }: { params: { id: string } }
   return <SupportView data={data} />;
 }
 
-export const metadata = { title: "Vue support · CONVERZA", robots: { index: false, follow: false } };
+export const metadata = { title: "Vue support · PASRÈL", robots: { index: false, follow: false } };

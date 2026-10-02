@@ -31,16 +31,16 @@ const fr: LegalCopy = {
   contactTitle: "Nous joindre",
   noContact:
     "Les coordonnées de contact ne sont pas encore publiées. En attendant, écris au commerçant chez qui tu as commandé, ou passe par la page d'aide de l'application.",
-  entityFallback: "CONVERZA",
+  entityFallback: "PASRÈL",
   terms: {
     title: "Conditions d'utilisation",
-    subtitle: "Ce que CONVERZA fait, ce qu'elle ne fait pas, et ce que chacun s'engage à respecter.",
+    subtitle: "Ce que PASRÈL fait, ce qu'elle ne fait pas, et ce que chacun s'engage à respecter.",
     sections: [
       {
-        title: "1. Ce que fait CONVERZA",
+        title: "1. Ce que fait PASRÈL",
         body: [
-          "CONVERZA donne à un commerçant une vitrine à partager par un lien, un catalogue, et un suivi de ses commandes de la première demande jusqu'au paiement encaissé.",
-          "Les conversations passent par WhatsApp, et l'argent passe par le moyen de paiement choisi entre le commerçant et son client. CONVERZA ne transporte ni les messages, ni l'argent, ni les marchandises : elle prépare, enregistre et suit.",
+          "PASRÈL donne à un commerçant une vitrine à partager par un lien, un catalogue, et un suivi de ses commandes de la première demande jusqu'au paiement encaissé.",
+          "Les conversations passent par WhatsApp, et l'argent passe par le moyen de paiement choisi entre le commerçant et son client. PASRÈL ne transporte ni les messages, ni l'argent, ni les marchandises : elle prépare, enregistre et suit.",
         ],
       },
       {
@@ -55,7 +55,7 @@ const fr: LegalCopy = {
         body: [
           "Les prix sont affichés en gourdes, par mois. Le paiement se fait à la main (MonCash, NatCash, virement), puis l'abonnement est activé après vérification : il peut donc s'écouler quelques heures entre l'envoi et l'activation.",
           "L'abonnement court jusqu'à la date affichée dans la page Abonnement. Passé cette date, et après trois jours de tolérance, le compte retombe au plan Gratis : les fonctions payantes se referment, mais aucune donnée n'est perdue. Un renouvellement les rouvre.",
-          "Un mois commencé n'est pas remboursé, sauf si l'interruption vient de CONVERZA.",
+          "Un mois commencé n'est pas remboursé, sauf si l'interruption vient de PASRÈL.",
         ],
       },
       {
@@ -63,8 +63,8 @@ const fr: LegalCopy = {
         body: [
           "Le commerçant est responsable de ses produits, de ses prix, de ses photos et de ses promesses de livraison.",
           "Sont interdits : les produits illégaux, la contrefaçon, les armes, les médicaments vendus sans autorisation, le contenu sexuel, et la publication des données d'une autre personne sans son accord.",
-          "CONVERZA peut suspendre une boutique qui enfreint ces règles, ou qui sert manifestement à tromper des acheteurs. Le compte suspendu garde ses données et son propriétaire peut demander une explication.",
-          "CONVERZA peut présenter le nom, le logo et le lien de la vitrine d'une boutique qui vend sur sa page d'accueil. Le commerçant peut le refuser à tout moment dans Paramètres → Boutique ; son choix est appliqué dans les minutes qui suivent.",
+          "PASRÈL peut suspendre une boutique qui enfreint ces règles, ou qui sert manifestement à tromper des acheteurs. Le compte suspendu garde ses données et son propriétaire peut demander une explication.",
+          "PASRÈL peut présenter le nom, le logo et le lien de la vitrine d'une boutique qui vend sur sa page d'accueil. Le commerçant peut le refuser à tout moment dans Paramètres → Boutique ; son choix est appliqué dans les minutes qui suivent.",
         ],
       },
       {
@@ -77,7 +77,7 @@ const fr: LegalCopy = {
       {
         title: "6. Disponibilité du service",
         body: [
-          "Le service est fourni tel quel. Il dépend d'éléments que CONVERZA ne maîtrise pas : WhatsApp, la connexion internet, l'électricité, nos hébergeurs.",
+          "Le service est fourni tel quel. Il dépend d'éléments que PASRÈL ne maîtrise pas : WhatsApp, la connexion internet, l'électricité, nos hébergeurs.",
           "Nous faisons de notre mieux pour prévenir des interruptions prévisibles, mais nous ne garantissons pas un fonctionnement sans coupure.",
         ],
       },
@@ -92,13 +92,13 @@ const fr: LegalCopy = {
         title: "8. Changement de numéro WhatsApp",
         body: [
           "Un commerçant dont le compte WhatsApp a été piraté peut demander à changer le numéro de sa boutique. La demande exige une preuve et une pièce d'identité, et elle est vérifiée avant d'être appliquée.",
-          "CONVERZA peut refuser une demande insuffisamment prouvée : ce contrôle protège le commerçant lui-même, puisque changer le numéro d'une boutique redirige toutes ses commandes.",
+          "PASRÈL peut refuser une demande insuffisamment prouvée : ce contrôle protège le commerçant lui-même, puisque changer le numéro d'une boutique redirige toutes ses commandes.",
         ],
       },
       {
         title: "9. Modifications de ces conditions",
         body: [
-          "Ces conditions peuvent évoluer avec le service. Les changements importants sont annoncés dans l'application. Continuer à utiliser CONVERZA après un changement vaut acceptation.",
+          "Ces conditions peuvent évoluer avec le service. Les changements importants sont annoncés dans l'application. Continuer à utiliser PASRÈL après un changement vaut acceptation.",
         ],
       },
       {
@@ -131,7 +131,7 @@ const fr: LegalCopy = {
           "Est public, parce que c'est le but de la vitrine : le nom de la boutique, sa catégorie, son adresse, ses horaires, ses photos, ses produits, ses prix, ses zones de livraison et son numéro WhatsApp.",
           "N'est jamais public : les comptes MonCash, NatCash, bancaires ou USDT du commerçant, ses prix d'achat et ses marges, sa liste de clients, ses commandes, ses dépenses, et les pièces d'un changement de numéro.",
           "Une boutique suspendue disparaît de la vitrine publique.",
-          "Le nom et le logo d'une boutique qui vend peuvent apparaître sur la page d'accueil de CONVERZA, avec un lien vers sa vitrine, sauf si le commerçant l'a refusé dans ses réglages.",
+          "Le nom et le logo d'une boutique qui vend peuvent apparaître sur la page d'accueil de PASRÈL, avec un lien vers sa vitrine, sauf si le commerçant l'a refusé dans ses réglages.",
         ],
       },
       {
@@ -148,14 +148,14 @@ const fr: LegalCopy = {
         body: [
           "Le commerçant voit tout de sa boutique. Ses agents ne voient que ce que leurs droits permettent.",
           "Un commerçant ne peut pas voir les données d'un autre commerçant : la base l'empêche, compte par compte.",
-          "L'équipe CONVERZA n'ouvre un compte que pour dépanner, et chaque consultation d'un compte marchand est inscrite au journal des actions.",
+          "L'équipe PASRÈL n'ouvre un compte que pour dépanner, et chaque consultation d'un compte marchand est inscrite au journal des actions.",
           "Nos prestataires techniques hébergent le service : la base de données et les fichiers chez Supabase, l'application chez Vercel.",
         ],
       },
       {
         title: "5. WhatsApp",
         body: [
-          "Les conversations ne passent pas par CONVERZA. L'application prépare un message ; c'est WhatsApp qui l'envoie, depuis le téléphone du commerçant ou de son client.",
+          "Les conversations ne passent pas par PASRÈL. L'application prépare un message ; c'est WhatsApp qui l'envoie, depuis le téléphone du commerçant ou de son client.",
           "Ce qui se passe dans WhatsApp relève de WhatsApp et de ses propres règles, pas de cette politique.",
         ],
       },
@@ -170,7 +170,7 @@ const fr: LegalCopy = {
       {
         title: "7. Si tu es client d'une boutique",
         body: [
-          "Les informations que tu saisis en commandant (nom, téléphone, adresse) appartiennent au commerçant chez qui tu commandes. CONVERZA les héberge pour lui.",
+          "Les informations que tu saisis en commandant (nom, téléphone, adresse) appartiennent au commerçant chez qui tu commandes. PASRÈL les héberge pour lui.",
           "Pour les corriger ou les faire supprimer, adresse-toi au commerçant. Si tu n'obtiens pas de réponse, écris-nous.",
         ],
       },
@@ -203,16 +203,16 @@ const ht: LegalCopy = {
   contactTitle: "Kontakte nou",
   noContact:
     "Kowòdone kontak yo poko pibliye. Pandan tan sa a, ekri machann kote ou te kòmande a, oswa pase sou paj èd aplikasyon an.",
-  entityFallback: "CONVERZA",
+  entityFallback: "PASRÈL",
   terms: {
     title: "Kondisyon itilizasyon",
-    subtitle: "Sa CONVERZA fè, sa li pa fè, ak sa chak moun angaje l respekte.",
+    subtitle: "Sa PASRÈL fè, sa li pa fè, ak sa chak moun angaje l respekte.",
     sections: [
       {
-        title: "1. Sa CONVERZA fè",
+        title: "1. Sa PASRÈL fè",
         body: [
-          "CONVERZA bay yon machann yon vitrin pou l pataje ak yon lyen, yon katalòg, ak yon swivi kòmand li depi premye demann jiska lajan an antre.",
-          "Konvèsasyon yo pase nan WhatsApp, epi lajan an pase nan mwayen peman machann lan ak kliyan an chwazi. CONVERZA pa pote ni mesaj, ni lajan, ni machandiz : li prepare, li anrejistre, li swiv.",
+          "PASRÈL bay yon machann yon vitrin pou l pataje ak yon lyen, yon katalòg, ak yon swivi kòmand li depi premye demann jiska lajan an antre.",
+          "Konvèsasyon yo pase nan WhatsApp, epi lajan an pase nan mwayen peman machann lan ak kliyan an chwazi. PASRÈL pa pote ni mesaj, ni lajan, ni machandiz : li prepare, li anrejistre, li swiv.",
         ],
       },
       {
@@ -227,7 +227,7 @@ const ht: LegalCopy = {
         body: [
           "Pri yo afiche an goud, pa mwa. Peman fèt alamen (MonCash, NatCash, vireman), epi abònman an aktive apre verifikasyon : konsa kèk èdtan ka pase ant voye a ak aktivasyon an.",
           "Abònman an kouri jiska dat ki afiche nan paj Abònman. Apre dat sa a, ak twa jou tolerans, kont lan tounen nan plan Gratis : fonksyon peyan yo fèmen, men anyen pa pèdi. Yon renouvèlman rouvri yo.",
-          "Yon mwa ki kòmanse pa ranbouse, sof si se CONVERZA ki lakòz koupi a.",
+          "Yon mwa ki kòmanse pa ranbouse, sof si se PASRÈL ki lakòz koupi a.",
         ],
       },
       {
@@ -235,8 +235,8 @@ const ht: LegalCopy = {
         body: [
           "Machann lan responsab pwodwi l, pri l, foto l ak pwomès livrezon l.",
           "Entèdi : pwodwi ilegal, kontrefason, zam, medikaman san otorizasyon, kontni seksyèl, ak pibliye done yon lòt moun san akò l.",
-          "CONVERZA ka sispann yon boutik ki kraze règ sa yo, oswa ki klèman ap twonpe achtè. Kont ki sispann kenbe done l epi patwon l ka mande yon eksplikasyon.",
-          "CONVERZA ka montre non, logo ak lyen vitrin yon boutik k ap vann sou paj akèy li. Machann lan ka refize sa nenpòt lè nan Reglaj → Boutik ; chwa l aplike nan kèk minit.",
+          "PASRÈL ka sispann yon boutik ki kraze règ sa yo, oswa ki klèman ap twonpe achtè. Kont ki sispann kenbe done l epi patwon l ka mande yon eksplikasyon.",
+          "PASRÈL ka montre non, logo ak lyen vitrin yon boutik k ap vann sou paj akèy li. Machann lan ka refize sa nenpòt lè nan Reglaj → Boutik ; chwa l aplike nan kèk minit.",
         ],
       },
       {
@@ -249,7 +249,7 @@ const ht: LegalCopy = {
       {
         title: "6. Disponibilite sèvis la",
         body: [
-          "Sèvis la bay jan l ye. Li depann de bagay CONVERZA pa kontwole : WhatsApp, koneksyon entènèt, kouran, ak moun k ap loje sèvis la.",
+          "Sèvis la bay jan l ye. Li depann de bagay PASRÈL pa kontwole : WhatsApp, koneksyon entènèt, kouran, ak moun k ap loje sèvis la.",
           "Nou fè sa nou kapab pou avèti lè yon koupi previzib ap rive, men nou pa garanti yon fonksyònman san kase.",
         ],
       },
@@ -264,13 +264,13 @@ const ht: LegalCopy = {
         title: "8. Chanje nimewo WhatsApp",
         body: [
           "Yon machann ki pèdi kont WhatsApp li nan men pirat ka mande chanje nimewo boutik la. Demann lan mande yon prèv ak yon pyès idantite, epi li verifye anvan li aplike.",
-          "CONVERZA ka refize yon demann ki pa gen ase prèv : kontwòl sa a pwoteje machann lan li menm, paske chanje nimewo yon boutik voye tout kòmand li sou yon lòt nimewo.",
+          "PASRÈL ka refize yon demann ki pa gen ase prèv : kontwòl sa a pwoteje machann lan li menm, paske chanje nimewo yon boutik voye tout kòmand li sou yon lòt nimewo.",
         ],
       },
       {
         title: "9. Chanjman nan kondisyon sa yo",
         body: [
-          "Kondisyon sa yo ka chanje ak sèvis la. Chanjman enpòtan yo anonse nan aplikasyon an. Kontinye sèvi ak CONVERZA apre yon chanjman vle di ou dakò.",
+          "Kondisyon sa yo ka chanje ak sèvis la. Chanjman enpòtan yo anonse nan aplikasyon an. Kontinye sèvi ak PASRÈL apre yon chanjman vle di ou dakò.",
         ],
       },
       {
@@ -301,7 +301,7 @@ const ht: LegalCopy = {
           "Piblik, paske se sa vitrin lan la pou : non boutik la, kategori l, adrès li, lè l louvri, foto l, pwodwi l, pri l, zòn livrezon l ak nimewo WhatsApp li.",
           "Pa janm piblik : kont MonCash, NatCash, bankè oswa USDT machann lan, pri acha l ak maj li, lis kliyan l, kòmand li, depans li, ak pyès yon chanjman nimewo.",
           "Yon boutik ki sispann disparèt nan vitrin piblik la.",
-          "Non ak logo yon boutik k ap vann ka parèt sou paj akèy CONVERZA, ak yon lyen sou vitrin li, sof si machann lan refize sa nan reglaj li.",
+          "Non ak logo yon boutik k ap vann ka parèt sou paj akèy PASRÈL, ak yon lyen sou vitrin li, sof si machann lan refize sa nan reglaj li.",
         ],
       },
       {
@@ -318,14 +318,14 @@ const ht: LegalCopy = {
         body: [
           "Machann lan wè tout bagay nan boutik li. Ajan l yo wè sèlman sa dwa yo pèmèt.",
           "Yon machann pa ka wè done yon lòt machann : baz la bloke sa, kont pa kont.",
-          "Ekip CONVERZA louvri yon kont sèlman pou depane, epi chak fwa yon kont machann konsilte sa ekri nan jounal aksyon yo.",
+          "Ekip PASRÈL louvri yon kont sèlman pou depane, epi chak fwa yon kont machann konsilte sa ekri nan jounal aksyon yo.",
           "Founisè teknik nou yo loje sèvis la : baz done ak fichye yo lakay Supabase, aplikasyon an lakay Vercel.",
         ],
       },
       {
         title: "5. WhatsApp",
         body: [
-          "Konvèsasyon yo pa pase nan CONVERZA. Aplikasyon an prepare yon mesaj ; se WhatsApp ki voye l, depi telefòn machann lan oswa kliyan an.",
+          "Konvèsasyon yo pa pase nan PASRÈL. Aplikasyon an prepare yon mesaj ; se WhatsApp ki voye l, depi telefòn machann lan oswa kliyan an.",
           "Sa ki pase anndan WhatsApp se zafè WhatsApp ak règ pa l, pa politik sa a.",
         ],
       },
@@ -340,7 +340,7 @@ const ht: LegalCopy = {
       {
         title: "7. Si ou se kliyan yon boutik",
         body: [
-          "Enfòmasyon ou tape lè w ap kòmande (non, telefòn, adrès) se pou machann kote w ap kòmande a. CONVERZA loje yo pou li.",
+          "Enfòmasyon ou tape lè w ap kòmande (non, telefòn, adrès) se pou machann kote w ap kòmande a. PASRÈL loje yo pou li.",
           "Pou korije yo oswa fè efase yo, pale ak machann lan. Si li pa reponn, ekri nou.",
         ],
       },
@@ -373,16 +373,16 @@ const en: LegalCopy = {
   contactTitle: "Contact us",
   noContact:
     "Contact details are not published yet. In the meantime, write to the merchant you ordered from, or use the help page in the app.",
-  entityFallback: "CONVERZA",
+  entityFallback: "PASRÈL",
   terms: {
     title: "Terms of use",
-    subtitle: "What CONVERZA does, what it does not do, and what each side commits to.",
+    subtitle: "What PASRÈL does, what it does not do, and what each side commits to.",
     sections: [
       {
-        title: "1. What CONVERZA does",
+        title: "1. What PASRÈL does",
         body: [
-          "CONVERZA gives a merchant a storefront to share as a link, a catalogue, and order tracking from the first message to the money collected.",
-          "Conversations go through WhatsApp, and money goes through whatever payment method the merchant and the customer agree on. CONVERZA carries neither the messages, nor the money, nor the goods: it prepares, records and tracks.",
+          "PASRÈL gives a merchant a storefront to share as a link, a catalogue, and order tracking from the first message to the money collected.",
+          "Conversations go through WhatsApp, and money goes through whatever payment method the merchant and the customer agree on. PASRÈL carries neither the messages, nor the money, nor the goods: it prepares, records and tracks.",
         ],
       },
       {
@@ -397,7 +397,7 @@ const en: LegalCopy = {
         body: [
           "Prices are shown in gourdes, per month. Payment is made by hand (MonCash, NatCash, bank transfer), then the plan is activated after verification, so a few hours may pass between sending and activation.",
           "A plan runs until the date shown on the Subscription page. After that date, plus three days of grace, the account falls back to the Free plan: paid features close, but no data is lost. Renewing reopens them.",
-          "A started month is not refunded, unless the interruption comes from CONVERZA.",
+          "A started month is not refunded, unless the interruption comes from PASRÈL.",
         ],
       },
       {
@@ -405,8 +405,8 @@ const en: LegalCopy = {
         body: [
           "The merchant is responsible for their products, prices, photos and delivery promises.",
           "Forbidden: illegal goods, counterfeits, weapons, medicines sold without authorisation, sexual content, and publishing another person's data without their consent.",
-          "CONVERZA may suspend a shop that breaks these rules, or that plainly exists to mislead buyers. A suspended account keeps its data and its owner may ask for an explanation.",
-          "CONVERZA may feature the name, logo and storefront link of a shop that is selling on its home page. The merchant can refuse this at any time in Settings → Store; the choice takes effect within minutes.",
+          "PASRÈL may suspend a shop that breaks these rules, or that plainly exists to mislead buyers. A suspended account keeps its data and its owner may ask for an explanation.",
+          "PASRÈL may feature the name, logo and storefront link of a shop that is selling on its home page. The merchant can refuse this at any time in Settings → Store; the choice takes effect within minutes.",
         ],
       },
       {
@@ -419,7 +419,7 @@ const en: LegalCopy = {
       {
         title: "6. Availability",
         body: [
-          "The service is provided as is. It depends on things CONVERZA does not control: WhatsApp, internet access, electricity, our hosting providers.",
+          "The service is provided as is. It depends on things PASRÈL does not control: WhatsApp, internet access, electricity, our hosting providers.",
           "We do our best to warn about foreseeable interruptions, but we do not guarantee uninterrupted service.",
         ],
       },
@@ -434,13 +434,13 @@ const en: LegalCopy = {
         title: "8. Changing the WhatsApp number",
         body: [
           "A merchant whose WhatsApp account has been hijacked can ask to change the shop's number. The request requires proof and an identity document, and is verified before being applied.",
-          "CONVERZA may refuse a request that is not sufficiently proven: this check protects the merchant, since changing a shop's number redirects all of its orders.",
+          "PASRÈL may refuse a request that is not sufficiently proven: this check protects the merchant, since changing a shop's number redirects all of its orders.",
         ],
       },
       {
         title: "9. Changes to these terms",
         body: [
-          "These terms may change with the service. Significant changes are announced in the app. Continuing to use CONVERZA after a change means accepting it.",
+          "These terms may change with the service. Significant changes are announced in the app. Continuing to use PASRÈL after a change means accepting it.",
         ],
       },
       {
@@ -473,7 +473,7 @@ const en: LegalCopy = {
           "Public, because that is what a storefront is for: the shop name, category, address, opening hours, photos, products, prices, delivery zones and WhatsApp number.",
           "Never public: the merchant's MonCash, NatCash, bank or USDT accounts, their purchase costs and margins, their customer list, their orders, their expenses, and the documents of a number-change request.",
           "A suspended shop disappears from the public storefront.",
-          "The name and logo of a shop that is selling may appear on the CONVERZA home page, with a link to its storefront, unless the merchant has refused this in their settings.",
+          "The name and logo of a shop that is selling may appear on the PASRÈL home page, with a link to its storefront, unless the merchant has refused this in their settings.",
         ],
       },
       {
@@ -490,14 +490,14 @@ const en: LegalCopy = {
         body: [
           "The merchant sees everything in their shop. Their agents see only what their permissions allow.",
           "One merchant cannot see another merchant's data: the database prevents it, account by account.",
-          "The CONVERZA team opens an account only to provide support, and every visit to a merchant account is written to the action log.",
+          "The PASRÈL team opens an account only to provide support, and every visit to a merchant account is written to the action log.",
           "Our technical providers host the service: the database and files at Supabase, the application at Vercel.",
         ],
       },
       {
         title: "5. WhatsApp",
         body: [
-          "Conversations do not pass through CONVERZA. The app prepares a message; WhatsApp sends it, from the merchant's or the customer's phone.",
+          "Conversations do not pass through PASRÈL. The app prepares a message; WhatsApp sends it, from the merchant's or the customer's phone.",
           "What happens inside WhatsApp is governed by WhatsApp and its own rules, not by this policy.",
         ],
       },
@@ -512,7 +512,7 @@ const en: LegalCopy = {
       {
         title: "7. If you are a shop's customer",
         body: [
-          "The information you enter when ordering (name, phone, address) belongs to the merchant you order from. CONVERZA hosts it on their behalf.",
+          "The information you enter when ordering (name, phone, address) belongs to the merchant you order from. PASRÈL hosts it on their behalf.",
           "To correct it or have it deleted, contact the merchant. If you get no answer, write to us.",
         ],
       },

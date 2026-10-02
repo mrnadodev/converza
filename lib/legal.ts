@@ -1,4 +1,4 @@
-// Identité et coordonnées de CONVERZA, telles qu'elles apparaissent dans les
+// Identité et coordonnées de PASRÈL, telles qu'elles apparaissent dans les
 // conditions d'utilisation et la politique de confidentialité.
 //
 // Rien n'est pré-rempli : une adresse de contact inventée dans un document

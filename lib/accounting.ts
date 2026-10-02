@@ -4,7 +4,7 @@ import type { Currency } from "./types";
 //
 // Un comptable haïtien ne veut ni tableau de bord ni graphique : il veut des
 // lignes datées, avec un tiers, un libellé, une entrée ou une sortie. Tant que
-// CONVERZA n'exporte pas cela, le marchand tient un cahier en parallèle — et
+// PASRÈL n'exporte pas cela, le marchand tient un cahier en parallèle — et
 // les deux finissent par se contredire.
 //
 // Le fichier produit s'ouvre dans Excel, LibreOffice ou Google Sheets :

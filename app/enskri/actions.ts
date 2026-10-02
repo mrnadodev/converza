@@ -37,8 +37,8 @@ function setDisplayCookies(ownerName: string) {
     secure: process.env.NODE_ENV === "production",
   };
   try {
-    cookies().set("converza_role", "owner", opts);
-    cookies().set("converza_user_name", ownerName, opts);
+    cookies().set("pasrel_role", "owner", opts);
+    cookies().set("pasrel_user_name", ownerName, opts);
   } catch {
     // hors contexte de requête
   }

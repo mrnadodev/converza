@@ -1,6 +1,6 @@
 // Vérifie qu'une sauvegarde est vraiment restaurable.
 //
-//   node scripts/verifier-sauvegarde.mjs chemin/vers/converza_....sql.gz
+//   node scripts/verifier-sauvegarde.mjs chemin/vers/pasrel_....sql.gz
 //
 // Le dump est rejoué sur une base PostgreSQL vide et jetable (PGlite), puis on
 // compte ce qui s'y trouve. Aucune connexion réseau, aucun mot de passe, et

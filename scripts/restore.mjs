@@ -1,4 +1,4 @@
-// Réécriture d'une sauvegarde dans une base CONVERZA — destinée à remplir une
+// Réécriture d'une sauvegarde dans une base PASRÈL — destinée à remplir une
 // base de PRÉPRODUCTION, pas à réparer la production.
 //
 //   node scripts/restore.mjs backups/2026-09-19T02-47-24 --env .env.preprod

@@ -1,5 +1,5 @@
 -- ============================================================
--- CONVERZA — migration 3 (console super-admin)
+-- PASRÈL — migration 3 (console super-admin)
 -- À exécuter dans l'éditeur SQL Supabase après migrate-2026-2-schema.sql.
 -- Sans elle, la console fonctionne : les colonnes ajoutées ici s'affichent
 -- simplement comme « — » (dernière commande, chiffre encaissé).

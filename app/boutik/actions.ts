@@ -5,7 +5,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 
 // Mesure d'audience du site public.
 //
-// CONVERZA ne comptait que les commandes : on savait ce qui se vendait, jamais
+// PASRÈL ne comptait que les commandes : on savait ce qui se vendait, jamais
 // ce qui avait conduit à la vente — ni, surtout, ce qui n'y avait pas conduit.
 // L'annuaire venait d'ouvrir sans aucun moyen de savoir s'il servait.
 //

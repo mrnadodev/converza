@@ -142,7 +142,7 @@ export function buildPromoMessage(
 export function storefrontBaseUrl(): string {
   const vercel = process.env.NEXT_PUBLIC_VERCEL_URL;
   const raw = process.env.NEXT_PUBLIC_SITE_URL || (vercel ? `https://${vercel}` : "");
-  return raw.trim().replace(/\/+$/, "") || "https://converza.app";
+  return raw.trim().replace(/\/+$/, "") || "https://pasrel.app";
 }
 
 /** Code de sécurité à 4 chiffres, imprévisible, tiré une seule fois à la création. */

@@ -59,7 +59,7 @@ export async function updateSession(request: NextRequest) {
     path === "/icon.svg" ||
     path === "/apple-touch-icon.png";
 
-  // NOTE: le cookie `converza_role` ne vaut PAS authentification. Il n'est
+  // NOTE: le cookie `pasrel_role` ne vaut PAS authentification. Il n'est
   // qu'un indice d'affichage, écrit par le serveur après connexion — un visiteur
   // peut le poser lui-même depuis la console. Seule la session Supabase compte.
   if (!user && !isPublic) {
@@ -68,7 +68,7 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(redirectUrl);
   }
 
-  // Boutique suspendue par CONVERZA : l'espace de travail se ferme, mais la
+  // Boutique suspendue par PASRÈL : l'espace de travail se ferme, mais la
   // personne reste connectée et voit pourquoi (migration 7).
   if (user && !isPublic) {
     const { data, error } = await supabase

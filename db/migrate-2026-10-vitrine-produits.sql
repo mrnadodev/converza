@@ -1,5 +1,5 @@
 -- ============================================================
--- CONVERZA — migration 10 (produits mis en vitrine)
+-- PASRÈL — migration 10 (produits mis en vitrine)
 -- À exécuter dans l'éditeur SQL Supabase après
 -- migrate-2026-9-vitrine-accueil.sql. Le script est rejouable.
 --

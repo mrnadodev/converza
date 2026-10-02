@@ -342,7 +342,7 @@ export function InvoiceModal({
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={businessLogoUrl} alt="" className="h-full w-full object-cover" />
                     ) : (
-                      <CvzMark size={isThermal ? 28 : 40} id="invoice-mark" />
+                      <CvzMark size={isThermal ? 28 : 40} />
                     )}
                   </div>
                   <div className="flex min-w-0 flex-col">

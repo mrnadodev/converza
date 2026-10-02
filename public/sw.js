@@ -1,5 +1,5 @@
 // Service worker minimal : rend l'app installable + offline de base (network-first).
-const CACHE = "converza-v1";
+const CACHE = "pasrel-v1";
 
 self.addEventListener("install", () => self.skipWaiting());
 self.addEventListener("activate", (e) => e.waitUntil(self.clients.claim()));

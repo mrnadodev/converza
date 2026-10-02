@@ -383,6 +383,8 @@ function NotifyCard({
   const { language } = useLanguage();
   const [msgLang, setMsgLang] = useState<Language>(language);
   const [sent, setSent] = useState<string[]>([]);
+  // Prefixe herite de l ancien nom : le renommer ferait reapparaitre des
+  // bandeaux que le marchand a deja fermes.
   const storageKey = `cvz-notified-${requestId}`;
 
   // Suivi local de l'avancement : une commodité de cet appareil, pas une donnée

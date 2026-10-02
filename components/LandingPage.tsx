@@ -76,7 +76,7 @@ export function LandingPage({
 
         {/* En-tête */}
         <header
-          className={`cvz-nav sticky top-0 z-50 ${scrolled ? "shadow-[0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-md" : ""}`}
+          className={`psr-nav sticky top-0 z-50 ${scrolled ? "shadow-[0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-md" : ""}`}
           style={{ background: scrolled ? "rgba(6,35,28,0.88)" : "transparent" }}
         >
           <div className="mx-auto flex h-[72px] w-full max-w-[1240px] items-center justify-between px-5 sm:px-8 lg:px-12">
@@ -192,7 +192,7 @@ export function LandingPage({
 
             {/* Carte commande, côté marchand */}
             <div data-reveal="left"
-              className="cvz-float mt-5 w-[238px] rounded-2xl bg-white p-4 lg:absolute lg:-left-8 lg:top-14 lg:mt-0"
+              className="psr-float mt-5 w-[238px] rounded-2xl bg-white p-4 lg:absolute lg:-left-8 lg:top-14 lg:mt-0"
               style={{ ["--reveal-delay" as string]: "320ms", boxShadow: "0 24px 54px rgba(0,0,0,0.34)" }}>
               <div className="flex items-center justify-between pb-2.5">
                 <span className="text-[11.5px] font-semibold text-[#7D9A92]">CMD-4471</span>
@@ -207,7 +207,7 @@ export function LandingPage({
 
             {/* Bulle du message */}
             <div data-reveal="right"
-              className="cvz-float-slow mt-4 w-full max-w-[286px] rounded-[16px_16px_4px_16px] p-4 sm:max-w-[264px] lg:absolute lg:-right-10 lg:bottom-10 lg:mt-0"
+              className="psr-float-slow mt-4 w-full max-w-[286px] rounded-[16px_16px_4px_16px] p-4 sm:max-w-[264px] lg:absolute lg:-right-10 lg:bottom-10 lg:mt-0"
               style={{ ["--reveal-delay" as string]: "400ms", background: ACTION, boxShadow: "0 24px 54px rgba(0,0,0,0.34)" }}>
               <p className="whitespace-pre-line text-[13px] font-medium leading-[1.62]" style={{ color: INK }}>
                 {c.message.text}
@@ -265,7 +265,7 @@ export function LandingPage({
             const dark = i === 2;
             return (
               <div key={step.title} data-reveal
-                className="cvz-lift flex flex-col gap-4 rounded-[20px] p-8"
+                className="psr-lift flex flex-col gap-4 rounded-[20px] p-8"
                 style={{ ["--reveal-delay" as string]: `${i * 110}ms`, background: dark ? INK : "#F2F6F4" }}>
                 <span className="text-[52px] font-extrabold leading-none tracking-[-2.5px]" style={{ color: dark ? ACTION : "#00A884" }}>
                   0{i + 1}
@@ -383,7 +383,7 @@ export function LandingPage({
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {c.features.items.map((item, i) => (
             <div key={item.title} data-reveal
-              className="cvz-lift flex flex-col gap-3.5 rounded-[18px] border p-7"
+              className="psr-lift flex flex-col gap-3.5 rounded-[18px] border p-7"
               style={{ ["--reveal-delay" as string]: `${(i % 3) * 90}ms`, borderColor: "#E6ECEA" }}>
               <div className="flex h-11 w-11 items-center justify-center rounded-xl" style={{ background: i === 3 ? "#FFF3DF" : "#E7F7F1" }}>
                 <FeatureIcon index={i} />
@@ -412,7 +412,7 @@ export function LandingPage({
             <div
               key={sector.id}
               data-reveal
-              className="cvz-lift flex items-center gap-4 rounded-[16px] border px-5 py-4"
+              className="psr-lift flex items-center gap-4 rounded-[16px] border px-5 py-4"
               style={{ ["--reveal-delay" as string]: `${(i % 3) * 80}ms`, borderColor: "#E6ECEA" }}
             >
               <span aria-hidden="true" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-[21px]" style={{ background: "#E7F7F1" }}>
@@ -484,7 +484,7 @@ export function LandingPage({
               const highlighted = offer.key === "pro";
               return (
                 <div key={offer.key} data-reveal
-                  className="cvz-lift relative flex flex-col gap-5 rounded-[20px] p-8"
+                  className="psr-lift relative flex flex-col gap-5 rounded-[20px] p-8"
                   style={{
                     ["--reveal-delay" as string]: `${i * 90}ms`,
                     ...(highlighted

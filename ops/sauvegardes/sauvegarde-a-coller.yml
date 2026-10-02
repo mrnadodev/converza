@@ -1,4 +1,4 @@
-name: Sauvegarde CONVERZA
+name: Sauvegarde PASRÈL
 
 on:
   schedule:
@@ -76,10 +76,10 @@ jobs:
             pg_dump --schema=public --schema=auth \
                     --no-owner --no-privileges \
                     --quote-all-identifiers \
-            | gzip -9 > "dumps/converza_${horodatage}.sql.gz"
+            | gzip -9 > "dumps/pasrel_${horodatage}.sql.gz"
 
-          taille=$(stat -c%s "dumps/converza_${horodatage}.sql.gz")
-          echo "Sauvegarde : dumps/converza_${horodatage}.sql.gz ($taille octets)"
+          taille=$(stat -c%s "dumps/pasrel_${horodatage}.sql.gz")
+          echo "Sauvegarde : dumps/pasrel_${horodatage}.sql.gz ($taille octets)"
 
           # Une sauvegarde vide est pire qu'aucune : elle rassure à tort. Un
           # contrôle de taille ne suffit pas — un dump de structure sans aucune
@@ -88,7 +88,7 @@ jobs:
           #
           # Seuls les NOMS et les NOMBRES sont affichés, jamais le contenu :
           # ces tables portent les téléphones et les commandes des clients.
-          gunzip -c "dumps/converza_${horodatage}.sql.gz" > /tmp/inv.sql
+          gunzip -c "dumps/pasrel_${horodatage}.sql.gz" > /tmp/inv.sql
           echo "tables créées : $(grep -c '^CREATE TABLE' /tmp/inv.sql)"
           echo "lignes exportées, par table :"
           awk '
@@ -110,8 +110,8 @@ jobs:
       - name: Ne garder que les 60 dernières
         run: |
           cd dumps
-          ls -1t converza_*.sql.gz | tail -n +61 | xargs -r rm -v
-          echo "$(ls -1 converza_*.sql.gz | wc -l) sauvegardes conservées (environ 15 jours)"
+          ls -1t pasrel_*.sql.gz | tail -n +61 | xargs -r rm -v
+          echo "$(ls -1 pasrel_*.sql.gz | wc -l) sauvegardes conservées (environ 15 jours)"
 
       - name: Commiter
         run: |

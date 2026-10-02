@@ -7,7 +7,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { ORDRE_MONTAGE } from "../db/ordre.mjs";
 
 const entete = `-- ============================================================
--- CONVERZA — montage complet d'une base neuve
+-- PASRÈL — montage complet d'une base neuve
 --
 -- GÉNÉRÉ par scripts/build-staging-sql.mjs — ne pas modifier à la main.
 -- Source : les ${ORDRE_MONTAGE.length} fichiers de db/, dans l'ordre de montage.

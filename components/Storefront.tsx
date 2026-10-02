@@ -388,7 +388,7 @@ export function Storefront({
                 du bruit qu'on apprend à ignorer. */}
             {nouveautes > 0 && (
               <div
-                className="cvz-arrivage mt-2 flex items-center gap-2 rounded-full px-3 py-1.5"
+                className="psr-arrivage mt-2 flex items-center gap-2 rounded-full px-3 py-1.5"
                 style={{ background: theme.accentSoft }}
               >
                 <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-brand-green" />

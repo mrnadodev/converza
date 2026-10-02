@@ -1,5 +1,5 @@
 -- ============================================================
--- CONVERZA — migration 6 (Kès, achats, livraison)
+-- PASRÈL — migration 6 (Kès, achats, livraison)
 -- À exécuter dans l'éditeur SQL Supabase après migrate-2026-5-stock.sql.
 -- Le script peut être relancé sans risque.
 --

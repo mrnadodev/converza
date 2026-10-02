@@ -10,19 +10,19 @@ export const metadata: Metadata = {
   // Les vignettes de lien sont des URL absolues : sans cette base, elles
   // pointeraient sur localhost une fois déployées.
   metadataBase: new URL(siteUrl),
-  title: "CONVERZA — Gestion des Ventes & Clients WhatsApp",
+  title: "PASRÈL — Gestion des Ventes & Clients WhatsApp",
   description:
     "Plateforme de gestion de ventes WhatsApp. Gérez vos clients, commandes et catalogue en un seul endroit.",
   manifest: "/manifest.webmanifest",
-  applicationName: "CONVERZA",
+  applicationName: "PASRÈL",
   icons: {
-    icon: [{ url: "/cvz-icon.svg", type: "image/svg+xml" }, { url: "/cvz-icon-192.png", sizes: "192x192" }],
-    apple: [{ url: "/cvz-apple.png", sizes: "180x180" }],
+    icon: [{ url: "/pasrel-icon-192.png", sizes: "192x192" }],
+    apple: [{ url: "/pasrel-apple.png", sizes: "180x180" }],
   },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "CONVERZA",
+    title: "PASRÈL",
   },
 };
 

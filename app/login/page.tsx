@@ -3,7 +3,7 @@ import { CvzMark } from "@/components/CvzMark";
 import { LoginForm } from "@/components/LoginForm";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { hasSupabase } from "@/lib/data";
-import { Wordmark } from "@/components/Wordmark";
+import { Slogan } from "@/components/Slogan";
 
 // Écran de connexion (owner / agent).
 export default function LoginPage({
@@ -27,14 +27,16 @@ export default function LoginPage({
           </defs>
           <rect width="100%" height="100%" fill="url(#bubbles)" />
         </svg>
+        {/* Le logo porte déjà le mot : l'écrire une seconde fois en dessous le
+            donnait deux fois, et réduit à 84 px le mot gravé dans l'image
+            n'était plus lisible. Il est donc posé en grand, sur sa plaque
+            blanche — un fichier au fond blanc sur une bannière verte doit être
+            assumé comme une plaque, sinon il ressemble à un autocollant. */}
         <div className="relative flex flex-col items-center gap-4">
-          <div className="rounded-[26px] shadow-[0_10px_30px_rgba(0,0,0,0.25)]">
-            <CvzMark size={84} />
+          <div className="rounded-[26px] bg-white px-5 py-3 shadow-[0_10px_30px_rgba(0,0,0,0.25)]">
+            <CvzMark size={132} />
           </div>
-          <div className="flex flex-col items-center gap-1 text-center">
-            <Wordmark tone="onBrand" className="text-[28px] font-extrabold tracking-tight text-white" />
-            <span className="text-[13.5px] font-medium text-[#CFF5E7]">Turn conversations into customers</span>
-          </div>
+          <Slogan className="text-center text-[13.5px] font-medium text-[#CFF5E7]" />
         </div>
       </div>
 
@@ -51,7 +53,7 @@ export default function LoginPage({
 
           {/* 1. Marie Joseph */}
           <form action={signIn} className="flex flex-col gap-1 rounded-xl bg-white p-2.5 border border-blue-200 shadow-2xs">
-            <input type="hidden" name="email" value="marie@converza.ht" />
+            <input type="hidden" name="email" value="marie@pasrel.ht" />
             <input type="hidden" name="password" value="Marie2026!" />
             <div className="flex items-center justify-between">
               <span className="font-extrabold text-ink">💳 Marie Joseph (Caissière / Pèman)</span>
@@ -67,7 +69,7 @@ export default function LoginPage({
 
           {/* 2. Jean Baptiste */}
           <form action={signIn} className="flex flex-col gap-1 rounded-xl bg-white p-2.5 border border-slate-200 shadow-2xs">
-            <input type="hidden" name="email" value="jean@converza.ht" />
+            <input type="hidden" name="email" value="jean@pasrel.ht" />
             <input type="hidden" name="password" value="Jean2026!" />
             <div className="flex items-center justify-between">
               <span className="font-extrabold text-ink">💬 Jean Baptiste (Commercial / Ventes)</span>
@@ -83,7 +85,7 @@ export default function LoginPage({
 
           {/* 3. Pierre-Louis K. */}
           <form action={signIn} className="flex flex-col gap-1 rounded-xl bg-white p-2.5 border border-purple-200 shadow-2xs">
-            <input type="hidden" name="email" value="pierre@converza.ht" />
+            <input type="hidden" name="email" value="pierre@pasrel.ht" />
             <input type="hidden" name="password" value="Pierre2026!" />
             <div className="flex items-center justify-between">
               <span className="font-extrabold text-ink">📦 Pierre-Louis K. (Stockist / Livrezon)</span>
@@ -99,7 +101,7 @@ export default function LoginPage({
 
           {/* 4. Florence Désir */}
           <form action={signIn} className="flex flex-col gap-1 rounded-xl bg-white p-2.5 border border-amber-200 shadow-2xs">
-            <input type="hidden" name="email" value="florence@converza.ht" />
+            <input type="hidden" name="email" value="florence@pasrel.ht" />
             <input type="hidden" name="password" value="Florence2026!" />
             <div className="flex items-center justify-between">
               <span className="font-extrabold text-ink">🏷️ Florence Désir (Sèvis Kliyan & Dèt)</span>
@@ -115,7 +117,7 @@ export default function LoginPage({
 
           {/* 5. Andro Charles (Admin) */}
           <form action={signIn} className="flex flex-col gap-1 rounded-xl bg-white p-2.5 border border-emerald-300 shadow-2xs">
-            <input type="hidden" name="email" value="andro@converza.ht" />
+            <input type="hidden" name="email" value="andro@pasrel.ht" />
             <input type="hidden" name="password" value="Andro2026!" />
             <div className="flex items-center justify-between">
               <span className="font-extrabold text-ink">👑 Andro Charles (Fondateur / Admin)</span>
@@ -132,7 +134,7 @@ export default function LoginPage({
         )}
 
         <p className="pb-6 text-center text-[13px] text-ink-muted">
-          <span className="sr-only">CONVERZA</span>
+          <span className="sr-only">PASRÈL</span>
         </p>
       </div>
     </div>

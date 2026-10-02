@@ -1,5 +1,5 @@
 -- ============================================================
--- CONVERZA — correctif urgent de la migration 5 (stock)
+-- PASRÈL — correctif urgent de la migration 5 (stock)
 -- À exécuter dans l'éditeur SQL Supabase si migrate-2026-5-stock.sql a
 -- déjà été exécuté. Le script peut être relancé sans risque.
 --

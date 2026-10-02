@@ -14,6 +14,8 @@ export function ThemeToggle({ className }: { className?: string }) {
     const next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
     document.documentElement.dataset.theme = next;
     try {
+      // Le prefixe est celui de l ancien nom : le renommer reinitialiserait
+      // le theme choisi par chaque marchand deja installe.
       localStorage.setItem("cvz-theme", next);
     } catch {
       /* ignore */

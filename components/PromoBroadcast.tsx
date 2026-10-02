@@ -22,6 +22,8 @@ import type { Customer } from "@/lib/types";
  * disent donc « ouvert », ce qui est la seule chose dont on soit sûr.
  */
 
+// Prefixe herite de l ancien nom, garde volontairement : le changer perdrait
+// les envois en cours dans le navigateur des marchands.
 const REPRISE = "cvz-promo-encours";
 
 interface Reprise {

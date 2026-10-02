@@ -37,7 +37,7 @@ function contexteEspion() {
 const brand: ReelBrand = {
   shopName: "N&J LUXURY",
   logo: null,
-  link: "converza.ht/b/nj",
+  link: "pasrel.ht/b/nj",
   top: "#008069",
   bottom: "#0B1220",
   text: "#FFFFFF",
@@ -90,7 +90,7 @@ describe("image du diaporama", () => {
       drawReelFrame(ctx, slides, brand, ms, "sans-serif");
       const textes = textesDe(appels);
       expect(textes, `à ${ms} ms`).toContain("N&J LUXURY");
-      expect(textes, `à ${ms} ms`).toContain("converza.ht/b/nj");
+      expect(textes, `à ${ms} ms`).toContain("pasrel.ht/b/nj");
     }
   });
 

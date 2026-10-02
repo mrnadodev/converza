@@ -36,4 +36,4 @@ export default async function TrackingPage({ params }: { params: { token: string
   return <TrackingView data={data} />;
 }
 
-export const metadata = { title: "Suivi de commande · CONVERZA", robots: { index: false, follow: false } };
+export const metadata = { title: "Suivi de commande · PASRÈL", robots: { index: false, follow: false } };

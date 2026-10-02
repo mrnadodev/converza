@@ -42,7 +42,7 @@ export interface BusinessInput {
   zelle_qr_url?: string | null;
   usdt_qr_url?: string | null;
   delivery_zones: DeliveryZone[];
-  /** Refus d'apparaître sur la page d'accueil de CONVERZA (migration 9). */
+  /** Refus d'apparaître sur la page d'accueil de PASRÈL (migration 9). */
   showcase_opt_out?: boolean;
   /**
    * Inscription à l'annuaire public (migration 11), vraie par défaut.

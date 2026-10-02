@@ -7,7 +7,7 @@ export async function GET() {
     status: 200,
     headers: {
       "Content-Type": "text/csv; charset=utf-8",
-      "Content-Disposition": 'attachment; filename="modele_katalog_converza.csv"',
+      "Content-Disposition": 'attachment; filename="modele_katalog_pasrel.csv"',
     },
   });
 }

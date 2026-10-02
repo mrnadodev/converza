@@ -69,12 +69,12 @@ export interface Business {
   zelle_qr_url?: string | null;
   usdt_qr_url?: string | null;
   delivery_zones: DeliveryZone[];
-  /** Refus d’apparaître sur la page d’accueil de CONVERZA (migration 9). */
+  /** Refus d’apparaître sur la page d’accueil de PASRÈL (migration 9). */
   showcase_opt_out?: boolean | null;
   /** Inscrit dans l'annuaire public (migration 11). Vrai par defaut. */
   listed?: boolean | null;
   default_currency: Currency;
-  // Changement de numéro validé par CONVERZA (db/migrate-2026-4-numero.sql).
+  // Changement de numéro validé par PASRÈL (db/migrate-2026-4-numero.sql).
   previous_phone_e164?: string | null;
   phone_changed_at?: string | null;
   phone_notice_until?: string | null;

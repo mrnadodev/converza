@@ -1,5 +1,5 @@
 -- ============================================================
--- CONVERZA — Migration corrective, FICHIER 1 sur 2
+-- PASRÈL — Migration corrective, FICHIER 1 sur 2
 --
 -- ⚠️  EXÉCUTER CE FICHIER SEUL, PUIS SEULEMENT APRÈS LE FICHIER 2
 --     (db/migrate-2026-2-schema.sql).

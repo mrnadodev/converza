@@ -1,5 +1,5 @@
 -- ============================================================
--- CONVERZA — migration 7 (support et supervision)
+-- PASRÈL — migration 7 (support et supervision)
 -- À exécuter dans l'éditeur SQL Supabase après migrate-2026-6-gestion.sql.
 -- Le script peut être relancé sans risque.
 --

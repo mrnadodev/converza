@@ -1,5 +1,5 @@
 -- ============================================================
--- CONVERZA — Données de démo (Ti Kòk Boutik)
+-- PASRÈL — Données de démo (Ti Kòk Boutik)
 -- À exécuter APRÈS schema.sql, avec le rôle service (bypass RLS)
 -- ou dans l'éditeur SQL Supabase.
 -- ============================================================

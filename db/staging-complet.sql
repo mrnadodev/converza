@@ -1,5 +1,5 @@
 -- ============================================================
--- CONVERZA — montage complet d'une base neuve
+-- PASRÈL — montage complet d'une base neuve
 --
 -- GÉNÉRÉ par scripts/build-staging-sql.mjs — ne pas modifier à la main.
 -- Source : les 17 fichiers de db/, dans l'ordre de montage.
@@ -16,7 +16,7 @@
 -- ══════════════════════════════════════════════════════════
 
 -- ============================================================
--- CONVERZA — Schéma de base de données (Supabase / PostgreSQL)
+-- PASRÈL — Schéma de base de données (Supabase / PostgreSQL)
 -- WhatsApp Sales & Customer Management pour les entreprises en Haïti
 -- Multi-tenant : chaque ligne appartient à un business_id.
 -- ============================================================
@@ -51,7 +51,7 @@ create type stock_state   as enum ('en_stok', 'ba_stok', 'fini');            -- 
 create table businesses (
   id            uuid primary key default gen_random_uuid(),
   name          text not null,
-  slug          text unique not null,                 -- pour l'URL publique de la vitrine : converza.ht/b/<slug>
+  slug          text unique not null,                 -- pour l'URL publique de la vitrine : pasrel.ht/b/<slug>
   category      text,                                 -- ex: "Boutik alimantè"
   address       text,                                 -- ex: "Delmas 31, Pòtoprens"
   phone_e164    text,                                 -- numéro WhatsApp principal, format +509...
@@ -277,7 +277,7 @@ create table security_audit_logs (
 create index on security_audit_logs (created_at desc);
 
 -- ------------------------------------------------------------
--- PLATFORM SETTINGS — tarifs, coordonnées de paiement CONVERZA,
+-- PLATFORM SETTINGS — tarifs, coordonnées de paiement PASRÈL,
 -- feature flags. Une ligne par clé, lue/écrite via la clé service role.
 -- ------------------------------------------------------------
 create table platform_settings (
@@ -368,7 +368,7 @@ create policy biz_isolation on order_items
 -- ══════════════════════════════════════════════════════════
 
 -- ============================================================
--- CONVERZA — Migration corrective, FICHIER 1 sur 2
+-- PASRÈL — Migration corrective, FICHIER 1 sur 2
 --
 -- ⚠️  EXÉCUTER CE FICHIER SEUL, PUIS SEULEMENT APRÈS LE FICHIER 2
 --     (db/migrate-2026-2-schema.sql).
@@ -418,7 +418,7 @@ alter type pay_method add value if not exists 'banque_locale';
 -- ══════════════════════════════════════════════════════════
 
 -- ============================================================
--- CONVERZA — Migration corrective, FICHIER 2 sur 2
+-- PASRÈL — Migration corrective, FICHIER 2 sur 2
 --
 -- ⚠️  N'exécuter qu'APRÈS db/migrate-2026-1-enums.sql, dans une requête
 --     séparée. Sinon la première mise à jour de statut ci-dessous échoue
@@ -671,7 +671,7 @@ create policy member_owner_delete on members
 
 
 -- ------------------------------------------------------------
--- 8. CONFIGURATION PLATEFORME (tarifs, coordonnées de paiement CONVERZA,
+-- 8. CONFIGURATION PLATEFORME (tarifs, coordonnées de paiement PASRÈL,
 --    feature flags). Elle vivait dans des variables de module : chaque
 --    instance serverless avait sa copie et un redéploiement remettait les
 --    prix d'origine. Un changement de tarif ne tenait pas une heure.
@@ -747,7 +747,7 @@ $$;
 -- ══════════════════════════════════════════════════════════
 
 -- ============================================================
--- CONVERZA — migration 3 (console super-admin)
+-- PASRÈL — migration 3 (console super-admin)
 -- À exécuter dans l'éditeur SQL Supabase après migrate-2026-2-schema.sql.
 -- Sans elle, la console fonctionne : les colonnes ajoutées ici s'affichent
 -- simplement comme « — » (dernière commande, chiffre encaissé).
@@ -832,12 +832,12 @@ revoke all on security_audit_logs from anon, authenticated;
 -- ══════════════════════════════════════════════════════════
 
 -- ============================================================
--- CONVERZA — migration 4 (changement de numéro WhatsApp)
+-- PASRÈL — migration 4 (changement de numéro WhatsApp)
 -- À exécuter dans l'éditeur SQL Supabase après migrate-2026-3-admin.sql.
 -- Le script peut être relancé sans risque.
 --
 -- Un compte WhatsApp piraté ne doit plus coûter sa clientèle au marchand :
--- il demande un nouveau numéro avec preuves, CONVERZA vérifie, et la vitrine
+-- il demande un nouveau numéro avec preuves, PASRÈL vérifie, et la vitrine
 -- bascule. En contrepartie, le numéro ne se modifie plus librement : c'est
 -- lui qui reçoit les commandes et l'argent des clients.
 -- ============================================================
@@ -973,7 +973,7 @@ on conflict (id) do update set public = false;
 -- ══════════════════════════════════════════════════════════
 
 -- ============================================================
--- CONVERZA — migration 5 (stock fiable)
+-- PASRÈL — migration 5 (stock fiable)
 -- À exécuter dans l'éditeur SQL Supabase après migrate-2026-4-numero.sql.
 -- Le script peut être relancé sans risque.
 --
@@ -1204,7 +1204,7 @@ create trigger products_stock_log
 -- ══════════════════════════════════════════════════════════
 
 -- ============================================================
--- CONVERZA — correctif urgent de la migration 5 (stock)
+-- PASRÈL — correctif urgent de la migration 5 (stock)
 -- À exécuter dans l'éditeur SQL Supabase si migrate-2026-5-stock.sql a
 -- déjà été exécuté. Le script peut être relancé sans risque.
 --
@@ -1285,7 +1285,7 @@ revoke all on function apply_stock_movement(uuid, uuid, text, numeric, uuid, tex
 -- ══════════════════════════════════════════════════════════
 
 -- ============================================================
--- CONVERZA — migration 6 (Kès, achats, livraison)
+-- PASRÈL — migration 6 (Kès, achats, livraison)
 -- À exécuter dans l'éditeur SQL Supabase après migrate-2026-5-stock.sql.
 -- Le script peut être relancé sans risque.
 --
@@ -1525,7 +1525,7 @@ create policy purchase_items_read on purchase_items for select to authenticated
 -- ══════════════════════════════════════════════════════════
 
 -- ============================================================
--- CONVERZA — migration 7 (support et supervision)
+-- PASRÈL — migration 7 (support et supervision)
 -- À exécuter dans l'éditeur SQL Supabase après migrate-2026-6-gestion.sql.
 -- Le script peut être relancé sans risque.
 --
@@ -1628,7 +1628,7 @@ revoke all on app_errors from anon, authenticated;
 -- ══════════════════════════════════════════════════════════
 
 -- ============================================================
--- CONVERZA — migration 8 (abonnement réellement dû)
+-- PASRÈL — migration 8 (abonnement réellement dû)
 -- À exécuter dans l'éditeur SQL Supabase après migrate-2026-7-support.sql.
 -- Le script peut être relancé sans risque.
 --
@@ -1685,7 +1685,7 @@ on conflict (key) do update
 -- ══════════════════════════════════════════════════════════
 
 -- ============================================================
--- CONVERZA — migration 9 (présence sur la page d'accueil)
+-- PASRÈL — migration 9 (présence sur la page d'accueil)
 -- À exécuter dans l'éditeur SQL Supabase après migrate-2026-8-abonnement.sql.
 -- Le script peut être relancé sans risque.
 --
@@ -1742,7 +1742,7 @@ on conflict (key) do update
 -- ══════════════════════════════════════════════════════════
 
 -- ============================================================
--- CONVERZA — migration 10 (produits mis en vitrine)
+-- PASRÈL — migration 10 (produits mis en vitrine)
 -- À exécuter dans l'éditeur SQL Supabase après
 -- migrate-2026-9-vitrine-accueil.sql. Le script est rejouable.
 --
@@ -1776,7 +1776,7 @@ on conflict (key) do update
 -- ══════════════════════════════════════════════════════════
 
 -- ============================================================
--- CONVERZA — migration 11 (annuaire des boutiques, fournisseurs partagés)
+-- PASRÈL — migration 11 (annuaire des boutiques, fournisseurs partagés)
 -- À exécuter dans l'éditeur SQL Supabase après
 -- migrate-2026-10-vitrine-produits.sql. Le script est rejouable.
 --
@@ -1902,7 +1902,7 @@ on conflict (key) do update
 -- ══════════════════════════════════════════════════════════
 
 -- ============================================================
--- CONVERZA — migration 12 (horaires d'ouverture structurés)
+-- PASRÈL — migration 12 (horaires d'ouverture structurés)
 -- À exécuter dans l'éditeur SQL Supabase après
 -- migrate-2026-11-annuaire.sql. Le script est rejouable.
 --
@@ -1972,11 +1972,11 @@ on conflict (key) do update
 -- ══════════════════════════════════════════════════════════
 
 -- ============================================================
--- CONVERZA — migration 13 (audience du site public)
+-- PASRÈL — migration 13 (audience du site public)
 -- À exécuter dans l'éditeur SQL Supabase après
 -- migrate-2026-12-horaires.sql. Le script est rejouable.
 --
--- Jusqu'ici, CONVERZA ne mesurait que les commandes. On savait ce qui se
+-- Jusqu'ici, PASRÈL ne mesurait que les commandes. On savait ce qui se
 -- vendait, jamais ce qui avait conduit à la vente — ni, surtout, ce qui n'y
 -- avait pas conduit. L'annuaire venait d'ouvrir sans aucun moyen de savoir
 -- s'il servait à quelque chose.
@@ -2034,7 +2034,7 @@ on conflict (key) do update
 -- ══════════════════════════════════════════════════════════
 
 -- ============================================================
--- CONVERZA — migration 14 (taille des articles de mode)
+-- PASRÈL — migration 14 (taille des articles de mode)
 -- À exécuter dans l'éditeur SQL Supabase après
 -- migrate-2026-13-audience.sql. Le script est rejouable.
 --
@@ -2068,7 +2068,7 @@ on conflict (key) do update
 -- ══════════════════════════════════════════════════════════
 
 -- ============================================================
--- CONVERZA — migration 15 (prix promotionnel par produit)
+-- PASRÈL — migration 15 (prix promotionnel par produit)
 -- À exécuter dans l'éditeur SQL Supabase après
 -- migrate-2026-14-taille.sql. Le script est rejouable.
 --
