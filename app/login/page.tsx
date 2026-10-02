@@ -4,6 +4,7 @@ import { LoginForm } from "@/components/LoginForm";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { hasSupabase } from "@/lib/data";
 import { Slogan } from "@/components/Slogan";
+import { Wordmark } from "@/components/Wordmark";
 
 // Écran de connexion (owner / agent).
 export default function LoginPage({
@@ -27,16 +28,19 @@ export default function LoginPage({
           </defs>
           <rect width="100%" height="100%" fill="url(#bubbles)" />
         </svg>
-        {/* Le logo porte déjà le mot : l'écrire une seconde fois en dessous le
-            donnait deux fois, et réduit à 84 px le mot gravé dans l'image
-            n'était plus lisible. Il est donc posé en grand, sur sa plaque
-            blanche — un fichier au fond blanc sur une bannière verte doit être
-            assumé comme une plaque, sinon il ressemble à un autocollant. */}
-        <div className="relative flex flex-col items-center gap-4">
-          <div className="rounded-[26px] bg-white px-5 py-3 shadow-[0_10px_30px_rgba(0,0,0,0.25)]">
-            <CvzMark size={132} />
+        {/* L'arche seule, pas le logo complet : celui-ci porte déjà le mot, et
+            l'écrire une seconde fois en dessous le donnait deux fois. La
+            plaque blanche est assumée — un fichier au fond blanc posé sur une
+            bannière verte doit ressembler à une plaque, sinon il ressemble à
+            un autocollant. */}
+        <div className="relative flex flex-col items-center gap-3.5">
+          <div className="rounded-[22px] bg-white px-5 py-4 shadow-[0_10px_30px_rgba(0,0,0,0.25)]">
+            <CvzMark size={128} />
           </div>
-          <Slogan className="text-center text-[13.5px] font-medium text-[#CFF5E7]" />
+          <div className="flex flex-col items-center gap-1 text-center">
+            <Wordmark tone="onBrand" className="text-[28px] font-extrabold tracking-tight text-white" />
+            <Slogan className="text-[13.5px] font-medium text-[#CFF5E7]" />
+          </div>
         </div>
       </div>
 
