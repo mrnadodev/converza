@@ -78,24 +78,24 @@ html, body {
 }
 
 /* Flottement lent des cartes de l'accroche. */
-@keyframes cvz-float {
+@keyframes psr-float {
   0%, 100% { transform: translateY(0); }
   50%      { transform: translateY(-10px); }
 }
-.cvz-float      { animation: cvz-float 6s ease-in-out infinite; }
-.cvz-float-slow { animation: cvz-float 8s ease-in-out infinite 1.2s; }
+.psr-float      { animation: psr-float 6s ease-in-out infinite; }
+.psr-float-slow { animation: psr-float 8s ease-in-out infinite 1.2s; }
 
 /* Élévation au survol des cartes. */
-.cvz-lift {
+.psr-lift {
   transition: transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1), box-shadow 0.35s ease;
 }
-.cvz-lift:hover {
+.psr-lift:hover {
   transform: translateY(-4px);
   box-shadow: 0 18px 40px rgba(6, 35, 28, 0.1);
 }
 
 /* En-tête qui se densifie au défilement. */
-.cvz-nav {
+.psr-nav {
   transition: background-color 0.3s ease, backdrop-filter 0.3s ease, box-shadow 0.3s ease;
 }
 
@@ -105,8 +105,8 @@ html, body {
     transform: none !important;
     transition: none !important;
   }
-  .cvz-float, .cvz-float-slow { animation: none !important; }
-  .cvz-lift:hover { transform: none; }
+  .psr-float, .psr-float-slow { animation: none !important; }
+  .psr-lift:hover { transform: none; }
   html { scroll-behavior: auto !important; }
 }
 /* ==================================================================== */
@@ -192,13 +192,13 @@ html, body {
    de départ à la fin de l'animation. Pas de boucle : un mouvement répété
    devient du bruit qu'on apprend à ignorer, et un clignotement peut
    déclencher une crise chez un épileptique. */
-@keyframes cvz-arrivage {
+@keyframes psr-arrivage {
   from { opacity: 0; transform: translateY(-6px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-.cvz-arrivage { animation: cvz-arrivage 0.45s cubic-bezier(0.22, 0.61, 0.36, 1) 0.25s both; }
+.psr-arrivage { animation: psr-arrivage 0.45s cubic-bezier(0.22, 0.61, 0.36, 1) 0.25s both; }
 
 /* Mouvement réduit demandé : le bandeau est simplement là. */
 @media (prefers-reduced-motion: reduce) {
-  .cvz-arrivage { animation: none; }
+  .psr-arrivage { animation: none; }
 }

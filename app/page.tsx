@@ -11,7 +11,7 @@ import { loadLandingOverrides, loadPlans } from "@/lib/platform-store";
 export default async function TabloPage({ searchParams }: { searchParams?: { view?: string } }) {
   const session = getCurrentUserSession();
   const permissions = getRolePermissions(session);
-  const roleCookie = cookies().get("converza_role")?.value;
+  const roleCookie = cookies().get("pasrel_role")?.value;
 
   if (searchParams?.view === "landing") {
     return <LandingPage plans={await loadPlans()} overrides={await loadLandingOverrides()} showcase={await getShowcaseMerchants()} />;

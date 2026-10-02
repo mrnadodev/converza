@@ -1,5 +1,5 @@
 -- ============================================================
--- CONVERZA — enregistrer le plan « Menu QR Express » à 1 000 gourdes
+-- PASRÈL — enregistrer le plan « Menu QR Express » à 1 000 gourdes
 --
 -- À exécuter une fois dans l'éditeur SQL Supabase, sur la production.
 -- Le script est rejouable : relancé, il ne crée pas de doublon.

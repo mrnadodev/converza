@@ -68,12 +68,12 @@ export const PHONE_COPY: Record<Language, PhoneCopy> = {
     title: "Changer de numéro WhatsApp",
     subtitle: "Votre clientèle reste avec vous",
     intro:
-      "Compte piraté, téléphone perdu ou nouvelle puce : vos clients, votre vitrine et vos commandes sont chez CONVERZA, pas dans WhatsApp. Une fois votre demande validée, votre vitrine envoie les clients vers le nouveau numéro, et vous pouvez les prévenir un par un.",
+      "Compte piraté, téléphone perdu ou nouvelle puce : vos clients, votre vitrine et vos commandes sont chez PASRÈL, pas dans WhatsApp. Une fois votre demande validée, votre vitrine envoie les clients vers le nouveau numéro, et vous pouvez les prévenir un par un.",
     current: "Numéro actuel",
     none: "Aucun",
     steps: [
       "Vous envoyez le nouveau numéro, une preuve et votre pièce d'identité.",
-      "CONVERZA vérifie que la demande vient bien de vous, en général sous 24 h.",
+      "PASRÈL vérifie que la demande vient bien de vous, en général sous 24 h.",
       "La vitrine bascule sur le nouveau numéro ; vos documents sont supprimés.",
     ],
     form: {
@@ -94,7 +94,7 @@ export const PHONE_COPY: Record<Language, PhoneCopy> = {
       addFile: "Ajouter un fichier",
       remove: "Retirer",
       uploading: "Envoi…",
-      privacy: "Vos documents sont stockés dans un espace privé, vus uniquement par l'équipe CONVERZA, et supprimés dès la décision prise.",
+      privacy: "Vos documents sont stockés dans un espace privé, vus uniquement par l'équipe PASRÈL, et supprimés dès la décision prise.",
       privacyLink: "Lire la politique de confidentialité",
       submit: "Envoyer la demande",
       submitting: "Envoi de la demande…",
@@ -150,12 +150,12 @@ export const PHONE_COPY: Record<Language, PhoneCopy> = {
     title: "Chanje nimewo WhatsApp",
     subtitle: "Kliyan ou yo rete avè w",
     intro:
-      "Kont pirate, telefòn pèdi oswa nouvo chip : kliyan ou yo, vitrin ou ak kòmand ou yo nan CONVERZA, yo pa nan WhatsApp. Lè nou valide demann nan, vitrin ou voye kliyan yo sou nouvo nimewo a, epi ou ka avèti yo youn apre lòt.",
+      "Kont pirate, telefòn pèdi oswa nouvo chip : kliyan ou yo, vitrin ou ak kòmand ou yo nan PASRÈL, yo pa nan WhatsApp. Lè nou valide demann nan, vitrin ou voye kliyan yo sou nouvo nimewo a, epi ou ka avèti yo youn apre lòt.",
     current: "Nimewo kounye a",
     none: "Okenn",
     steps: [
       "Ou voye nouvo nimewo a, yon prèv ak pyès idantite w.",
-      "CONVERZA verifye se ou menm ki fè demann nan, jeneralman nan 24 è.",
+      "PASRÈL verifye se ou menm ki fè demann nan, jeneralman nan 24 è.",
       "Vitrin nan pase sou nouvo nimewo a ; dokiman ou yo efase.",
     ],
     form: {
@@ -176,7 +176,7 @@ export const PHONE_COPY: Record<Language, PhoneCopy> = {
       addFile: "Ajoute yon fichye",
       remove: "Retire",
       uploading: "N ap voye…",
-      privacy: "Dokiman ou yo nan yon espas prive, se ekip CONVERZA sèlman ki wè yo, epi yo efase lè desizyon an pran.",
+      privacy: "Dokiman ou yo nan yon espas prive, se ekip PASRÈL sèlman ki wè yo, epi yo efase lè desizyon an pran.",
       privacyLink: "Li politik konfidansyalite a",
       submit: "Voye demann nan",
       submitting: "N ap voye demann nan…",
@@ -232,12 +232,12 @@ export const PHONE_COPY: Record<Language, PhoneCopy> = {
     title: "Change WhatsApp number",
     subtitle: "Your customers stay with you",
     intro:
-      "Hacked account, lost phone or new SIM: your customers, storefront and orders live in CONVERZA, not in WhatsApp. Once your request is approved, your storefront sends customers to the new number, and you can notify them one by one.",
+      "Hacked account, lost phone or new SIM: your customers, storefront and orders live in PASRÈL, not in WhatsApp. Once your request is approved, your storefront sends customers to the new number, and you can notify them one by one.",
     current: "Current number",
     none: "None",
     steps: [
       "You send the new number, a proof and your ID.",
-      "CONVERZA checks the request really comes from you, usually within 24 h.",
+      "PASRÈL checks the request really comes from you, usually within 24 h.",
       "The storefront switches to the new number; your documents are deleted.",
     ],
     form: {
@@ -258,7 +258,7 @@ export const PHONE_COPY: Record<Language, PhoneCopy> = {
       addFile: "Add a file",
       remove: "Remove",
       uploading: "Uploading…",
-      privacy: "Your documents are kept in a private space, seen only by the CONVERZA team, and deleted as soon as a decision is made.",
+      privacy: "Your documents are kept in a private space, seen only by the PASRÈL team, and deleted as soon as a decision is made.",
       privacyLink: "Read the privacy policy",
       submit: "Send request",
       submitting: "Sending request…",

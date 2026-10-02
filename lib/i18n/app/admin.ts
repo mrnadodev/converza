@@ -1,6 +1,6 @@
 import type { Language } from "../translations";
 
-// Console super-admin CONVERZA (plateforme), en français, kreyòl et anglais.
+// Console super-admin PASRÈL (plateforme), en français, kreyòl et anglais.
 export interface AdminCopy {
   header: { title: string; subtitle: string; signOut: string };
   tabs: { overview: string; merchants: string; billing: string; phones: string; qrMenu: string; platform: string; landing: string; audience: string; security: string };
@@ -383,7 +383,7 @@ export interface AdminCopy {
 }
 
 const fr: AdminCopy = {
-  header: { title: "Console CONVERZA", subtitle: "Supervision de la plateforme et des abonnements", signOut: "Se déconnecter" },
+  header: { title: "Console PASRÈL", subtitle: "Supervision de la plateforme et des abonnements", signOut: "Se déconnecter" },
   tabs: { overview: "Vue d'ensemble", merchants: "Marchands", billing: "Abonnements", phones: "Numéros", qrMenu: "Menu QR", platform: "Plateforme", landing: "Page d'accueil", audience: "Audience", security: "Sécurité" },
   audience: {
     title: "Audience du site public",
@@ -545,7 +545,7 @@ const fr: AdminCopy = {
     qrReady: "QR code enregistré",
     qrRemove: "Retirer l'image",
     noQr: "Aucune image de QR code.",
-    banksTitle: "Comptes bancaires CONVERZA",
+    banksTitle: "Comptes bancaires PASRÈL",
     addBank: "Ajouter un compte",
     noBank: "Aucun compte bancaire enregistré.",
     bankName: "Banque",
@@ -699,10 +699,10 @@ const fr: AdminCopy = {
     transferConfirm: (name) => `Donner la propriété de la boutique à ${name} ?`,
     remind: "Relancer",
     remindMessage: ({ shop, plan, date }) =>
-      `Bonjour ${shop}, votre abonnement ${plan} chez CONVERZA se termine le ${date}. Renouvelez-le pour garder votre vitrine et vos outils.`,
+      `Bonjour ${shop}, votre abonnement ${plan} chez PASRÈL se termine le ${date}. Renouvelez-le pour garder votre vitrine et vos outils.`,
     nudge: "Aider à démarrer",
     nudgeMessage: ({ shop, step }) =>
-      `Bonjour ${shop} ! Ici CONVERZA. Votre vitrine est presque prête : il reste ${step}. Voulez-vous qu'on le fasse ensemble maintenant ? Ça prend cinq minutes.`,
+      `Bonjour ${shop} ! Ici PASRÈL. Votre vitrine est presque prête : il reste ${step}. Voulez-vous qu'on le fasse ensemble maintenant ? Ça prend cinq minutes.`,
     nudgeSteps: {
       noProducts: "à publier votre premier produit",
       noPayMethod: "à indiquer comment vous être payé",
@@ -850,7 +850,7 @@ const fr: AdminCopy = {
   },
   notice: {
     noSupabase: { title: "Console indisponible", body: "Supabase n'est pas configuré sur cet environnement." },
-    forbidden: { title: "Accès refusé", body: "Cette page est réservée aux super-administrateurs CONVERZA." },
+    forbidden: { title: "Accès refusé", body: "Cette page est réservée aux super-administrateurs PASRÈL." },
     noServiceKey: {
       title: "Configuration incomplète",
       body: "Ajoutez SUPABASE_SERVICE_ROLE_KEY aux variables d'environnement (Vercel et .env.local).",
@@ -859,7 +859,7 @@ const fr: AdminCopy = {
 };
 
 const ht: AdminCopy = {
-  header: { title: "Konsòl CONVERZA", subtitle: "Sipèvizyon plataform lan ak abònman yo", signOut: "Dekonekte" },
+  header: { title: "Konsòl PASRÈL", subtitle: "Sipèvizyon plataform lan ak abònman yo", signOut: "Dekonekte" },
   tabs: { overview: "Apèsi", merchants: "Machann", billing: "Abònman", phones: "Nimewo", qrMenu: "Meni QR", platform: "Plataform", landing: "Paj akèy", audience: "Odyans", security: "Sekirite" },
   audience: {
     title: "Odyans sit piblik la",
@@ -1021,7 +1021,7 @@ const ht: AdminCopy = {
     qrReady: "QR kòd anrejistre",
     qrRemove: "Retire imaj la",
     noQr: "Pa gen imaj QR kòd.",
-    banksTitle: "Kont labank CONVERZA",
+    banksTitle: "Kont labank PASRÈL",
     addBank: "Ajoute yon kont",
     noBank: "Pa gen kont labank ki anrejistre.",
     bankName: "Bank",
@@ -1175,10 +1175,10 @@ const ht: AdminCopy = {
     transferConfirm: (name) => `Bay ${name} pwopriyete boutik la ?`,
     remind: "Raple",
     remindMessage: ({ shop, plan, date }) =>
-      `Bonjou ${shop}, abònman ${plan} ou a nan CONVERZA ap fini ${date}. Renouvle l pou w kenbe vitrin ou ak zouti ou yo.`,
+      `Bonjou ${shop}, abònman ${plan} ou a nan PASRÈL ap fini ${date}. Renouvle l pou w kenbe vitrin ou ak zouti ou yo.`,
     nudge: "Ede l kòmanse",
     nudgeMessage: ({ shop, step }) =>
-      `Bonjou ${shop} ! Se CONVERZA. Vitrin ou prèske pare : rete ${step}. Ou vle nou fè l ansanm kounye a ? Se senk minit.`,
+      `Bonjou ${shop} ! Se PASRÈL. Vitrin ou prèske pare : rete ${step}. Ou vle nou fè l ansanm kounye a ? Se senk minit.`,
     nudgeSteps: {
       noProducts: "pou w pibliye premye pwodwi w",
       noPayMethod: "pou w di kijan pou yo peye w",
@@ -1326,7 +1326,7 @@ const ht: AdminCopy = {
   },
   notice: {
     noSupabase: { title: "Konsòl la pa disponib", body: "Supabase pa konfigire sou anviwonman sa a." },
-    forbidden: { title: "Aksè refize", body: "Paj sa a se pou super-administratè CONVERZA sèlman." },
+    forbidden: { title: "Aksè refize", body: "Paj sa a se pou super-administratè PASRÈL sèlman." },
     noServiceKey: {
       title: "Konfigirasyon pa konplè",
       body: "Ajoute SUPABASE_SERVICE_ROLE_KEY nan varyab anviwonman yo (Vercel ak .env.local).",
@@ -1335,7 +1335,7 @@ const ht: AdminCopy = {
 };
 
 const en: AdminCopy = {
-  header: { title: "CONVERZA console", subtitle: "Platform and subscription oversight", signOut: "Sign out" },
+  header: { title: "PASRÈL console", subtitle: "Platform and subscription oversight", signOut: "Sign out" },
   tabs: { overview: "Overview", merchants: "Merchants", billing: "Billing", phones: "Numbers", qrMenu: "QR menu", platform: "Platform", landing: "Home page", audience: "Audience", security: "Security" },
   audience: {
     title: "Public site audience",
@@ -1497,7 +1497,7 @@ const en: AdminCopy = {
     qrReady: "QR code saved",
     qrRemove: "Remove the image",
     noQr: "No QR code image.",
-    banksTitle: "CONVERZA bank accounts",
+    banksTitle: "PASRÈL bank accounts",
     addBank: "Add an account",
     noBank: "No bank account saved.",
     bankName: "Bank",
@@ -1651,10 +1651,10 @@ const en: AdminCopy = {
     transferConfirm: (name) => `Give ownership of the shop to ${name}?`,
     remind: "Remind",
     remindMessage: ({ shop, plan, date }) =>
-      `Hello ${shop}, your ${plan} subscription with CONVERZA ends on ${date}. Renew it to keep your storefront and tools.`,
+      `Hello ${shop}, your ${plan} subscription with PASRÈL ends on ${date}. Renew it to keep your storefront and tools.`,
     nudge: "Help them start",
     nudgeMessage: ({ shop, step }) =>
-      `Hello ${shop}! This is CONVERZA. Your storefront is nearly ready: what is left is ${step}. Shall we do it together now? It takes five minutes.`,
+      `Hello ${shop}! This is PASRÈL. Your storefront is nearly ready: what is left is ${step}. Shall we do it together now? It takes five minutes.`,
     nudgeSteps: {
       noProducts: "publishing your first product",
       noPayMethod: "telling customers how to pay you",
@@ -1802,7 +1802,7 @@ const en: AdminCopy = {
   },
   notice: {
     noSupabase: { title: "Console unavailable", body: "Supabase is not configured on this environment." },
-    forbidden: { title: "Access denied", body: "This page is for CONVERZA super-administrators only." },
+    forbidden: { title: "Access denied", body: "This page is for PASRÈL super-administrators only." },
     noServiceKey: {
       title: "Incomplete configuration",
       body: "Add SUPABASE_SERVICE_ROLE_KEY to the environment variables (Vercel and .env.local).",

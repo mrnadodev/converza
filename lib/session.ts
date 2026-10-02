@@ -25,8 +25,8 @@ export const DEFAULT_OWNER_SESSION: UserSession = {
 // écraserait l'identité de tous les autres.
 export function getCurrentUserSession(): UserSession {
   try {
-    const roleCookie = cookies().get("converza_role")?.value;
-    const userNameCookie = cookies().get("converza_user_name")?.value;
+    const roleCookie = cookies().get("pasrel_role")?.value;
+    const userNameCookie = cookies().get("pasrel_user_name")?.value;
 
     // Le cookie porte le profil métier ; le nom affiché reste celui du vrai
     // membre, pas celui du persona qui sert de gabarit de permissions.

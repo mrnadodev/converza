@@ -20,7 +20,7 @@ interface LanguageContextType {
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
-const STORAGE_KEY = "converza_lang";
+const STORAGE_KEY = "pasrel_lang";
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
   // Par défaut Français ("fr") comme demandé

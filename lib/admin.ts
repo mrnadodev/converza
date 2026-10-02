@@ -1,4 +1,4 @@
-// Liste des emails autorisés à accéder au panneau super-admin de CONVERZA.
+// Liste des emails autorisés à accéder au panneau super-admin de PASRÈL.
 // Défini via la variable d'env ADMIN_EMAILS (séparés par des virgules).
 export function adminEmails(): string[] {
   return (process.env.ADMIN_EMAILS ?? "")

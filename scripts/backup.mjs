@@ -1,4 +1,4 @@
-// Sauvegarde de la base CONVERZA : chaque table est exportée ligne par ligne,
+// Sauvegarde de la base PASRÈL : chaque table est exportée ligne par ligne,
 // avec l'inventaire des fichiers stockés.
 //
 //   node scripts/backup.mjs                 → backups/<date>/

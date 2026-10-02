@@ -1,9 +1,9 @@
 -- ============================================================
--- CONVERZA — migration 13 (audience du site public)
+-- PASRÈL — migration 13 (audience du site public)
 -- À exécuter dans l'éditeur SQL Supabase après
 -- migrate-2026-12-horaires.sql. Le script est rejouable.
 --
--- Jusqu'ici, CONVERZA ne mesurait que les commandes. On savait ce qui se
+-- Jusqu'ici, PASRÈL ne mesurait que les commandes. On savait ce qui se
 -- vendait, jamais ce qui avait conduit à la vente — ni, surtout, ce qui n'y
 -- avait pas conduit. L'annuaire venait d'ouvrir sans aucun moyen de savoir
 -- s'il servait à quelque chose.

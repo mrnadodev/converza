@@ -1,4 +1,4 @@
-// Configuration par type de business : CONVERZA s'adapte à chaque secteur
+// Configuration par type de business : PASRÈL s'adapte à chaque secteur
 // (vocabulaire, mise en page de la vitrine, catégories par défaut, rôles d'équipe autorisés).
 
 export type IndustrySectorKey =
@@ -305,7 +305,7 @@ export function verticalOf(type: string | null | undefined): IndustrySectorConfi
 }
 
 /**
- * Combien de secteurs et de métiers CONVERZA couvre réellement.
+ * Combien de secteurs et de métiers PASRÈL couvre réellement.
  *
  * Ces deux nombres sont annoncés sur la page d'accueil. Les écrire à la main
  * dans le texte aurait garanti qu'ils deviennent faux au premier secteur

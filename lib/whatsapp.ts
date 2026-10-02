@@ -1,5 +1,5 @@
 // ============================================================
-// Cœur de CONVERZA : générer des liens wa.me pré-remplis.
+// Cœur de PASRÈL : générer des liens wa.me pré-remplis.
 // Aucune API WhatsApp payante — on ouvre le WhatsApp du marchand
 // avec le message déjà écrit. Gratuit, zéro risque de bannissement.
 // ============================================================

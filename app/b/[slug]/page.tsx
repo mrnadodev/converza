@@ -4,7 +4,7 @@ import { getStorefront } from "@/lib/data";
 import { loadPlatformSettings } from "@/lib/platform-store";
 import { isLayoutKey, resolveLayout } from "@/lib/storefront-layouts";
 
-// Vitrine publique partageable : converza.ht/b/<slug>
+// Vitrine publique partageable : pasrel.ht/b/<slug>
 // Page d'atterrissage des pubs TikTok / Instagram / Facebook.
 export default async function StorefrontPage({
   params,
@@ -29,7 +29,7 @@ export default async function StorefrontPage({
 // SEO / partage social (Open Graph) — pour que le lien soit joli dans les pubs.
 export async function generateMetadata({ params }: { params: { slug: string } }) {
   const data = await getStorefront(params.slug);
-  if (!data) return { title: "Boutique introuvable · CONVERZA" };
+  if (!data) return { title: "Boutique introuvable · PASRÈL" };
   const { business } = data;
   // Le titre et la description apparaissent dans l'aperçu du lien partagé sur
   // WhatsApp : on n'y met que des informations réelles du marchand.

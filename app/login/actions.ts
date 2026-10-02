@@ -22,8 +22,8 @@ function setDisplayCookies(role: string, fullName?: string | null) {
     sameSite: "lax" as const,
     secure: process.env.NODE_ENV === "production",
   };
-  c.set("converza_role", role, opts);
-  if (fullName) c.set("converza_user_name", fullName, opts);
+  c.set("pasrel_role", role, opts);
+  if (fullName) c.set("pasrel_user_name", fullName, opts);
 }
 
 function clearSupabaseCookies() {
@@ -108,8 +108,8 @@ export async function requestPasswordReset(email: string): Promise<{ ok: boolean
 
 export async function signOut() {
   const c = cookies();
-  c.delete("converza_role");
-  c.delete("converza_user_name");
+  c.delete("pasrel_role");
+  c.delete("pasrel_user_name");
   clearSupabaseCookies();
   if (hasSupabase()) {
     const sb = createClient();

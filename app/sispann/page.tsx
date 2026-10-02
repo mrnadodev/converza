@@ -3,7 +3,7 @@ import { SuspendedNotice } from "@/components/SuspendedNotice";
 import { createClient } from "@/lib/supabase/server";
 import { hasSupabase } from "@/lib/data";
 
-// Écran affiché à un marchand dont la boutique est suspendue par CONVERZA.
+// Écran affiché à un marchand dont la boutique est suspendue par PASRÈL.
 // Ses données restent intactes ; il voit le motif et peut nous écrire.
 export default async function SuspendedPage() {
   if (!hasSupabase()) redirect("/");

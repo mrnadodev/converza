@@ -6,7 +6,7 @@ import type { LandingOverrides } from "./landing-overrides";
 import type { Language } from "./i18n/translations";
 
 // Persistance de la configuration plateforme (tarifs, coordonnées de paiement
-// CONVERZA, feature flags).
+// PASRÈL, feature flags).
 //
 // Ces valeurs vivaient dans des `let` de module : sur Vercel, chaque instance
 // serverless gardait sa propre copie et tout redéploiement remettait les prix

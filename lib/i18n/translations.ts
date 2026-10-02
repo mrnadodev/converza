@@ -31,7 +31,7 @@ export const translations = {
     },
     // Dashboard & Metrics
     admin: {
-      welcome: "Bienvenue sur CONVERZA",
+      welcome: "Bienvenue sur PASRÈL",
       subtitle: "Gérez vos ventes, commandes et clients WhatsApp en un seul endroit.",
       totalRevenue: "Chiffre d'affaires",
       totalOrders: "Commandes totales",
@@ -254,7 +254,7 @@ export const translations = {
     },
     // Dashboard & Metrics
     admin: {
-      welcome: "Byenvini sou CONVERZA",
+      welcome: "Byenvini sou PASRÈL",
       subtitle: "Jere vant, kòmand ak kliyan WhatsApp ou yo nan yon sèl kote.",
       totalRevenue: "Revni Total",
       totalOrders: "Kòmand yo",
@@ -477,7 +477,7 @@ export const translations = {
     },
     // Dashboard & Metrics
     admin: {
-      welcome: "Welcome to CONVERZA",
+      welcome: "Welcome to PASRÈL",
       subtitle: "Manage your sales, orders, and WhatsApp customers all in one place.",
       totalRevenue: "Total Revenue",
       totalOrders: "Total Orders",

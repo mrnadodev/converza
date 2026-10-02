@@ -155,6 +155,17 @@ export interface LandingCopy {
     secondary: string;
   };
   footer: {
+    /**
+     * Les trois signatures de la marque, chacune a son emploi — melanger les
+     * trois revient a n'en imposer aucune.
+     *
+     *  - `slogan`     : LA signature. Elle part avec le logo, partout.
+     *  - `philosophie`: pourquoi la marque existe. Page d'histoire, pitch.
+     *  - `action`     : ce que la plateforme fait. Titres des blocs, accueil.
+     */
+    slogan: string;
+    philosophie: string;
+    action: string;
     tagline: string;
     productCol: string;
     companyCol: string;
@@ -163,8 +174,6 @@ export interface LandingCopy {
     companyLinks: string[];
     rights: string;
     city: string;
-    /** Signature de la marque, en pied de page et sous le tableau de bord. */
-    slogan: string;
     /** Nom accessible de la flèche de retour en haut. */
     home: string;
   };
@@ -181,7 +190,7 @@ const fr: LandingCopy = {
     forgot: "Mot de passe oublié ?",
     noAccount: "Vous n'avez pas encore de compte ?",
     createOne: "Créez votre commerce",
-    registerTitle: "Créez votre commerce sur CONVERZA",
+    registerTitle: "Créez votre commerce sur PASRÈL",
     registerSubtitle: "Configuration adaptée à votre secteur et à votre équipe",
     finishTitle: "Terminez la création de votre commerce",
     finishSubtitle: "Votre compte existe déjà. Il ne manque que la boutique.",
@@ -227,7 +236,7 @@ const fr: LandingCopy = {
     delivery: "Livraison Delmas",
     send: "Envoyer",
   },
-  proof: { label: "Ils vendent déjà avec CONVERZA" },
+  proof: { label: "Ils vendent déjà avec PASRÈL" },
   how: {
     eyebrow: "Comment ça marche",
     title: "Trois étapes, et vous vendez",
@@ -235,7 +244,7 @@ const fr: LandingCopy = {
     steps: [
       {
         title: "Vous créez votre vitrine",
-        body: "Nom du commerce, photos, prix, zones de livraison. Vous obtenez une adresse à vous, du type converza.ht/b/votre-boutique.",
+        body: "Nom du commerce, photos, prix, zones de livraison. Vous obtenez une adresse à vous, du type pasrel.ht/b/votre-boutique.",
       },
       {
         title: "Vous partagez le lien",
@@ -263,7 +272,7 @@ const fr: LandingCopy = {
   message: {
     eyebrow: "Sans API payante",
     title: "Votre numéro WhatsApp, celui que vos clients connaissent déjà",
-    body: "CONVERZA n'utilise aucune API WhatsApp facturée et ne vous demande pas de changer de numéro. Le lien ouvre simplement la conversation avec le message déjà rédigé.",
+    body: "PASRÈL n'utilise aucune API WhatsApp facturée et ne vous demande pas de changer de numéro. Le lien ouvre simplement la conversation avec le message déjà rédigé.",
     points: [
       "Aucun risque de blocage de compte",
       "Aucun abonnement WhatsApp Business à souscrire",
@@ -288,7 +297,7 @@ const fr: LandingCopy = {
   sectors: {
     eyebrow: "Pour qui",
     title: "Onze secteurs, un seul outil",
-    body: "CONVERZA ne se contente pas de changer de couleur : la vitrine, le vocabulaire, les catégories et les rôles de l'équipe s'ajustent au métier que vous exercez.",
+    body: "PASRÈL ne se contente pas de changer de couleur : la vitrine, le vocabulaire, les catégories et les rôles de l'équipe s'ajustent au métier que vous exercez.",
     names: {
       commerce_vente: "Commerce & Vente",
       restauration: "Restauration & Alimentation",
@@ -359,9 +368,11 @@ const fr: LandingCopy = {
     languageCol: "Langue",
     productLinks: ["Vitrine", "Commandes", "Menu QR"],
     companyLinks: ["Tarifs", "Conditions d'utilisation", "Confidentialité"],
-    rights: "© 2026 CONVERZA",
+    rights: "© 2026 PASRÈL",
     city: "Port-au-Prince, Haïti",
-    slogan: "Turn conversations into customers",
+    slogan: "Là où les conversations deviennent des clients.",
+    philosophie: "Le pont entre les conversations et la croissance.",
+    action: "Connecter. Convertir. Grandir.",
     home: "Haut de page",
   },
 };
@@ -377,7 +388,7 @@ const ht: LandingCopy = {
     forgot: "Modpas bliye ?",
     noAccount: "Ou poko gen yon kont ?",
     createOne: "Kreye biznis ou",
-    registerTitle: "Kreye biznis ou sou CONVERZA",
+    registerTitle: "Kreye biznis ou sou PASRÈL",
     registerSubtitle: "Konfigirasyon ki adapte ak sektè ak ekip ou",
     finishTitle: "Fini kreyasyon biznis ou",
     finishSubtitle: "Kont ou egziste deja. Se boutik la ki manke.",
@@ -423,7 +434,7 @@ const ht: LandingCopy = {
     delivery: "Livrezon Delmas",
     send: "Voye",
   },
-  proof: { label: "Yo deja ap vann ak CONVERZA" },
+  proof: { label: "Yo deja ap vann ak PASRÈL" },
   how: {
     eyebrow: "Kijan li mache",
     title: "Twa etap, epi w ap vann",
@@ -431,7 +442,7 @@ const ht: LandingCopy = {
     steps: [
       {
         title: "Ou kreye vitrin ou",
-        body: "Non biznis la, foto, pri, zòn livrezon. Ou jwenn yon adrès pa w, tankou converza.ht/b/boutik-ou.",
+        body: "Non biznis la, foto, pri, zòn livrezon. Ou jwenn yon adrès pa w, tankou pasrel.ht/b/boutik-ou.",
       },
       {
         title: "Ou pataje lyen an",
@@ -459,7 +470,7 @@ const ht: LandingCopy = {
   message: {
     eyebrow: "San API peye",
     title: "Nimewo WhatsApp ou, sa kliyan w yo deja konnen",
-    body: "CONVERZA pa sèvi ak okenn API WhatsApp ki fakti epi li pa mande w chanje nimewo. Lyen an jis louvri konvèsasyon an ak mesaj la deja ekri.",
+    body: "PASRÈL pa sèvi ak okenn API WhatsApp ki fakti epi li pa mande w chanje nimewo. Lyen an jis louvri konvèsasyon an ak mesaj la deja ekri.",
     points: [
       "Pa gen risk pou kont ou bloke",
       "Pa gen abònman WhatsApp Business pou peye",
@@ -484,7 +495,7 @@ const ht: LandingCopy = {
   sectors: {
     eyebrow: "Pou ki moun",
     title: "Onz sektè, yon sèl zouti",
-    body: "CONVERZA pa jis chanje koulè : vitrin nan, mo yo, kategori yo ak wòl ekip la ajiste yo ak metye w ap fè a.",
+    body: "PASRÈL pa jis chanje koulè : vitrin nan, mo yo, kategori yo ak wòl ekip la ajiste yo ak metye w ap fè a.",
     names: {
       commerce_vente: "Komès & Vant",
       restauration: "Restoran & Manje",
@@ -555,9 +566,11 @@ const ht: LandingCopy = {
     languageCol: "Lang",
     productLinks: ["Vitrin", "Kòmand", "Menu QR"],
     companyLinks: ["Pri", "Kondisyon itilizasyon", "Konfidansyalite"],
-    rights: "© 2026 CONVERZA",
+    rights: "© 2026 PASRÈL",
     city: "Pòtoprens, Ayiti",
-    slogan: "Turn conversations into customers",
+    slogan: "Kote konvèsasyon tounen kliyan.",
+    philosophie: "Pon ki mennen biznis ou pi lwen.",
+    action: "Konekte. Konvèti. Grandi.",
     home: "Anlè paj la",
   },
 };
@@ -573,7 +586,7 @@ const en: LandingCopy = {
     forgot: "Forgot your password?",
     noAccount: "Don't have an account yet?",
     createOne: "Create your business",
-    registerTitle: "Create your business on CONVERZA",
+    registerTitle: "Create your business on PASRÈL",
     registerSubtitle: "Set up around your sector and your team",
     finishTitle: "Finish setting up your business",
     finishSubtitle: "Your account already exists. Only the shop is missing.",
@@ -619,7 +632,7 @@ const en: LandingCopy = {
     delivery: "Delmas delivery",
     send: "Send",
   },
-  proof: { label: "Already selling with CONVERZA" },
+  proof: { label: "Already selling with PASRÈL" },
   how: {
     eyebrow: "How it works",
     title: "Three steps, and you are selling",
@@ -627,7 +640,7 @@ const en: LandingCopy = {
     steps: [
       {
         title: "You build your storefront",
-        body: "Business name, photos, prices, delivery zones. You get your own address, like converza.ht/b/your-shop.",
+        body: "Business name, photos, prices, delivery zones. You get your own address, like pasrel.ht/b/your-shop.",
       },
       {
         title: "You share the link",
@@ -655,7 +668,7 @@ const en: LandingCopy = {
   message: {
     eyebrow: "No paid API",
     title: "Your WhatsApp number, the one your customers already know",
-    body: "CONVERZA uses no billed WhatsApp API and does not ask you to change numbers. The link simply opens the conversation with the message already written.",
+    body: "PASRÈL uses no billed WhatsApp API and does not ask you to change numbers. The link simply opens the conversation with the message already written.",
     points: [
       "No risk of your account being blocked",
       "No WhatsApp Business subscription to buy",
@@ -680,7 +693,7 @@ const en: LandingCopy = {
   sectors: {
     eyebrow: "Who it is for",
     title: "Eleven sectors, one tool",
-    body: "CONVERZA does more than change colour: the storefront, the wording, the categories and the team roles all adjust to the trade you actually practise.",
+    body: "PASRÈL does more than change colour: the storefront, the wording, the categories and the team roles all adjust to the trade you actually practise.",
     names: {
       commerce_vente: "Retail & Sales",
       restauration: "Food & Restaurants",
@@ -751,9 +764,11 @@ const en: LandingCopy = {
     languageCol: "Language",
     productLinks: ["Storefront", "Orders", "QR Menu"],
     companyLinks: ["Pricing", "Terms of use", "Privacy"],
-    rights: "© 2026 CONVERZA",
+    rights: "© 2026 PASRÈL",
     city: "Port-au-Prince, Haiti",
-    slogan: "Turn conversations into customers",
+    slogan: "Where conversations become customers.",
+    philosophie: "The bridge between conversations and growth.",
+    action: "Connect. Convert. Grow.",
     home: "Back to top",
   },
 };

@@ -14,6 +14,6 @@ export default async function TermsPage() {
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Conditions d'utilisation · CONVERZA",
-  description: "Ce que CONVERZA fait, ce qu'elle ne fait pas, et ce que chacun s'engage à respecter.",
+  title: "Conditions d'utilisation · PASRÈL",
+  description: "Ce que PASRÈL fait, ce qu'elle ne fait pas, et ce que chacun s'engage à respecter.",
 };

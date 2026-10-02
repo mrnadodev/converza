@@ -14,6 +14,6 @@ export default async function PrivacyPage() {
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Politique de confidentialité · CONVERZA",
-  description: "Quelles données CONVERZA détient, pourquoi, combien de temps, et qui peut les voir.",
+  title: "Politique de confidentialité · PASRÈL",
+  description: "Quelles données PASRÈL détient, pourquoi, combien de temps, et qui peut les voir.",
 };

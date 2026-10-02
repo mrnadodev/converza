@@ -14,7 +14,7 @@ import { paletteFor } from "@/lib/storefront-designs";
 // intégrée se charge sans passer par le système de fichiers (en mode Node,
 // elle échouait sous Windows).
 export const runtime = "edge";
-export const alt = "Boutique sur CONVERZA";
+export const alt = "Boutique sur PASRÈL";
 // 600 × 315 plutôt que 1200 × 630, à proportions identiques.
 //
 // La vignette est un PNG, donc sans perte : à pleine taille, une photo de
@@ -147,7 +147,7 @@ export default async function Image({ params }: { params: { slug: string } }) {
       >
         Commandez sur WhatsApp
       </div>
-      <div style={{ display: "flex", fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.7)" }}>converza</div>
+      <div style={{ display: "flex", fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.7)" }}>pasrel</div>
     </div>
   );
 

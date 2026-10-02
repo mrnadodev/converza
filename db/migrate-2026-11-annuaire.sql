@@ -1,5 +1,5 @@
 -- ============================================================
--- CONVERZA — migration 11 (annuaire des boutiques, fournisseurs partagés)
+-- PASRÈL — migration 11 (annuaire des boutiques, fournisseurs partagés)
 -- À exécuter dans l'éditeur SQL Supabase après
 -- migrate-2026-10-vitrine-produits.sql. Le script est rejouable.
 --

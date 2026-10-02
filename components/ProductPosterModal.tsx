@@ -133,26 +133,37 @@ interface Shop {
   soft: string;
 }
 
-/** Marque CONVERZA en pied d'affiche, avec le Z dans le vert de la marque. */
+/** Marque PASRÈL en pied d'affiche, avec le Z dans le vert de la marque. */
 function drawSignature(ctx: CanvasRenderingContext2D, couleur: string) {
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.font = `800 26px ${FONT}`;
-  const avant = "CONVER";
-  const z = "Z";
-  const apres = "A";
-  const total = ctx.measureText(avant + z + apres).width;
+  // L'accent est la seule lettre colorée : c'est lui qui dit que le mot est
+  // créole, et c'est la signature de la marque.
+  const avant = "PASR";
+  const accent = "È";
+  const apres = "L";
+  const total = ctx.measureText(avant + accent + apres).width;
   let x = W / 2 - total / 2;
   ctx.textAlign = "left";
   ctx.fillStyle = couleur;
-  ctx.fillText(avant, x, H - 50);
+  ctx.fillText(avant, x, H - 62);
   x += ctx.measureText(avant).width;
   ctx.fillStyle = "#25D366";
-  ctx.fillText(z, x, H - 50);
-  x += ctx.measureText(z).width;
+  ctx.fillText(accent, x, H - 62);
+  x += ctx.measureText(accent).width;
   ctx.fillStyle = couleur;
-  ctx.fillText(apres, x, H - 50);
+  ctx.fillText(apres, x, H - 62);
+
+  // La promesse sous le nom. Ces affiches partent sur WhatsApp et Facebook,
+  // vues par des gens qui ne connaissent pas encore le produit : c'est la
+  // surface de diffusion la plus large, et elle ne coûte rien.
   ctx.textAlign = "center";
+  ctx.font = `600 14px ${FONT}`;
+  ctx.fillStyle = couleur;
+  ctx.globalAlpha = 0.78;
+  ctx.fillText("Where conversations become customers", W / 2, H - 38);
+  ctx.globalAlpha = 1;
 }
 
 /** En-tête logo + nom, commun aux trois mises en page. */

@@ -1,5 +1,5 @@
 -- ============================================================
--- CONVERZA — un compte de base réservé aux sauvegardes
+-- PASRÈL — un compte de base réservé aux sauvegardes
 --
 -- À exécuter une fois dans l'éditeur SQL Supabase, sur la production.
 --

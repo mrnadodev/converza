@@ -32,7 +32,7 @@ export interface SupplierRow {
   phone: string | null;
   note: string | null;
   /**
-   * Visible par les autres boutiques de CONVERZA. Faux par défaut : un carnet
+   * Visible par les autres boutiques de PASRÈL. Faux par défaut : un carnet
    * d'adresses fournisseurs est un actif concurrentiel, et le partage est un
    * choix explicite, fournisseur par fournisseur.
    */
@@ -1050,7 +1050,7 @@ function Suppliers({
 
           {/* Décochée par défaut, et jamais cochée à la place du marchand : le
               numéro d'un fournisseur appartient à la relation entre eux deux,
-              pas à CONVERZA. */}
+              pas à PASRÈL. */}
           <label className="flex cursor-pointer items-start gap-2.5 rounded-xl bg-[#F7F8F9] p-3">
             <input
               type="checkbox"

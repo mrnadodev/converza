@@ -22,7 +22,7 @@ export function LegalView({ doc, info }: { doc: "terms" | "privacy"; info: Legal
       <header className="border-b border-line bg-white">
         <div className="app-page flex items-center justify-between gap-3 px-5 py-4">
           <Link href="/" className="text-[15px] font-extrabold text-ink">
-            CONVERZA
+            PASRÈL
           </Link>
           <div className="flex items-center gap-3">
             <Link href={other.href} className="text-[12.5px] font-bold text-ink-muted underline-offset-2 hover:underline">

@@ -537,7 +537,7 @@ function MerchantsTab({
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = "converza-marchands.csv";
+    link.download = "pasrel-marchands.csv";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -1003,7 +1003,7 @@ function LegalInfoCard({
       )}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field label={a.billing.legal.entity}>
-          <input value={entity} onChange={(e) => setEntity(e.target.value)} placeholder="CONVERZA" className={inputCls} />
+          <input value={entity} onChange={(e) => setEntity(e.target.value)} placeholder="PASRÈL" className={inputCls} />
         </Field>
         <Field label={a.billing.legal.email}>
           <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="contact@…" className={inputCls} />
@@ -1172,7 +1172,7 @@ function PlatformPaymentCard({
 
       <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
         <Field label={a.billing.zelle}>
-          <input value={zelle} onChange={(e) => setZelle(e.target.value)} placeholder="payments@converza.ht" className={inputCls} />
+          <input value={zelle} onChange={(e) => setZelle(e.target.value)} placeholder="payments@pasrel.ht" className={inputCls} />
         </Field>
         <Field label={a.billing.usdt}>
           <input value={usdt} onChange={(e) => setUsdt(e.target.value)} placeholder="T..." className={inputCls} />
@@ -2133,7 +2133,7 @@ function CockpitModal({ merchant, onClose, onRefresh }: { merchant: AdminMerchan
     const href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(merchant, null, 2));
     const link = document.createElement("a");
     link.href = href;
-    link.download = `converza-${merchant.slug}.json`;
+    link.download = `pasrel-${merchant.slug}.json`;
     document.body.appendChild(link);
     link.click();
     link.remove();
@@ -2160,7 +2160,7 @@ function CockpitModal({ merchant, onClose, onRefresh }: { merchant: AdminMerchan
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `converza-${merchant.slug}.csv`;
+    link.download = `pasrel-${merchant.slug}.csv`;
     document.body.appendChild(link);
     link.click();
     link.remove();

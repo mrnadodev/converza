@@ -1,4 +1,4 @@
-# CONVERZA
+# PASRÈL
 
 **WhatsApp Sales & Customer Management pou biznis an Ayiti.**
 Jere kliyan, kòmand ak katalòg ou nan yon sèl kote — bileng Kreyòl / Fransè, mobile-first.
@@ -118,7 +118,7 @@ public, et supprime les exports dont tu n'as plus besoin.
 Aujourd'hui chaque migration part directement en production. Un second projet
 Supabase, gratuit, supprime ce risque :
 
-1. crée un nouveau projet Supabase (par exemple `converza-preprod`) ;
+1. crée un nouveau projet Supabase (par exemple `pasrel-preprod`) ;
 2. exécute-y `db/schema.sql` puis les huit migrations, dans l'ordre ;
 3. écris ses clés dans `.env.preprod` (exclu du dépôt) ;
 4. remplis-la avec une sauvegarde :

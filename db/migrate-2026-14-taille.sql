@@ -1,5 +1,5 @@
 -- ============================================================
--- CONVERZA — migration 14 (taille des articles de mode)
+-- PASRÈL — migration 14 (taille des articles de mode)
 -- À exécuter dans l'éditeur SQL Supabase après
 -- migrate-2026-13-audience.sql. Le script est rejouable.
 --

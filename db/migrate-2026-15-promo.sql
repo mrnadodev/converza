@@ -1,5 +1,5 @@
 -- ============================================================
--- CONVERZA — migration 15 (prix promotionnel par produit)
+-- PASRÈL — migration 15 (prix promotionnel par produit)
 -- À exécuter dans l'éditeur SQL Supabase après
 -- migrate-2026-14-taille.sql. Le script est rejouable.
 --

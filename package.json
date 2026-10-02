@@ -1,8 +1,8 @@
 {
-  "name": "converza",
+  "name": "pasrel",
   "version": "0.1.0",
   "private": true,
-  "description": "CONVERZA — WhatsApp Sales & Customer Management pou biznis an Ayiti",
+  "description": "PASRÈL — WhatsApp Sales & Customer Management pou biznis an Ayiti",
   "scripts": {
     "dev": "next dev",
     "dev:staging": "node scripts/dev-staging.mjs",

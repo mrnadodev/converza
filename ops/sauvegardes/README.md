@@ -2,7 +2,7 @@
 
 ## Pourquoi ce dossier n'est qu'un modèle
 
-Le dépôt CONVERZA est **public**. Ses artefacts GitHub Actions et ses journaux
+Le dépôt PASRÈL est **public**. Ses artefacts GitHub Actions et ses journaux
 d'exécution le sont donc aussi. Un export de la base contient les noms, les
 téléphones, les clients et les commandes des marchands : il n'a rien à faire
 ici, ni le mot de passe de la base.
@@ -12,7 +12,7 @@ fois le workflow, le secret, et les dumps.
 
 ## Mise en place, une seule fois
 
-1. **Créez un dépôt privé** sur GitHub, par exemple `converza-sauvegardes`.
+1. **Créez un dépôt privé** sur GitHub, par exemple `pasrel-sauvegardes`.
    Cochez bien « Private ».
 
 2. **Récupérez le mot de passe de la base** : dashboard Supabase → projet de
@@ -43,7 +43,7 @@ fois le workflow, le secret, et les dumps.
    `.github/workflows/sauvegarde.yml`, puis poussez.
 
 5. **Lancez-la à la main une première fois** : onglet Actions → « Sauvegarde
-   CONVERZA » → Run workflow. N'attendez pas la nuit pour découvrir qu'un
+   PASRÈL » → Run workflow. N'attendez pas la nuit pour découvrir qu'un
    réglage manque.
 
 ## Ce que ça vous donne, et ce que ça ne remplace pas
@@ -67,7 +67,7 @@ Le jour où le chiffre d'affaires le justifie, activez le PITR.
 Sur un projet Supabase VIDE (jamais sur celui qui tourne) :
 
 ```bash
-gunzip -c converza_2026-09-24_07h00.sql.gz > restauration.sql
+gunzip -c pasrel_2026-09-24_07h00.sql.gz > restauration.sql
 psql "$SUPABASE_DB_URL_DU_PROJET_VIDE" -f restauration.sql
 ```
 

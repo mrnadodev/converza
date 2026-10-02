@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================
-# CONVERZA — séparer les variables Vercel : Production ≠ Preview
+# PASRÈL — séparer les variables Vercel : Production ≠ Preview
 #
 # Aujourd'hui quatre variables couvrent « Production and Preview » : toute
 # preview écrit donc dans la base des vrais marchands. Créées en « Sensitive »,

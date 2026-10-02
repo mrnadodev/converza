@@ -19,7 +19,7 @@ export function BulkExcelManager({ business }: { business: Business }) {
   const [importData, setImportData] = useState<ImportResult | null>(null);
   const [status, setStatus] = useState<{ tone: "ok" | "error"; text: string } | null>(null);
 
-  const fileName = `modele_katalog_converza_${business?.slug || "boutik"}.csv`;
+  const fileName = `modele_katalog_pasrel_${business?.slug || "boutik"}.csv`;
 
   function downloadTemplate() {
     try {

@@ -1,5 +1,5 @@
 -- ============================================================
--- CONVERZA — migration 8 (abonnement réellement dû)
+-- PASRÈL — migration 8 (abonnement réellement dû)
 -- À exécuter dans l'éditeur SQL Supabase après migrate-2026-7-support.sql.
 -- Le script peut être relancé sans risque.
 --

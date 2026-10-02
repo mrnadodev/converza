@@ -1,5 +1,5 @@
 -- ============================================================
--- CONVERZA — migration 9 (présence sur la page d'accueil)
+-- PASRÈL — migration 9 (présence sur la page d'accueil)
 -- À exécuter dans l'éditeur SQL Supabase après migrate-2026-8-abonnement.sql.
 -- Le script peut être relancé sans risque.
 --

@@ -340,10 +340,10 @@ export const getGlobalUserOverride = (): UserSession => {
 // pas de base), jamais en mode Supabase : sinon les réglages d'un marchand
 // s'afficheraient chez les autres. On les neutralise dès qu'une base existe.
 const getGlobalOverrides = (): Partial<Business> => {
-  if (!(globalThis as any)._converzaBusinessOverrides) {
-    (globalThis as any)._converzaBusinessOverrides = {};
+  if (!(globalThis as any)._pasrelBusinessOverrides) {
+    (globalThis as any)._pasrelBusinessOverrides = {};
   }
-  return (globalThis as any)._converzaBusinessOverrides;
+  return (globalThis as any)._pasrelBusinessOverrides;
 };
 
 export function setBusinessOverride(patch: Partial<Business>) {
@@ -618,7 +618,7 @@ export async function getStorefront(
 // ---------------------------------------------------------------------------
 // Annuaire public des boutiques
 //
-// CONVERZA donnait un lien a partager, mais n exposait nulle part. Un marchand
+// PASRÈL donnait un lien a partager, mais n exposait nulle part. Un marchand
 // qui n est pas sur Facebook n etait decouvert par personne. L annuaire repond
 // a la seule question qui compte pour un acheteur : « qui vend ce produit ? ».
 //

@@ -1,6 +1,6 @@
 import type { Config } from "tailwindcss";
 
-// Palette WhatsApp-native utilisée dans les maquettes CONVERZA.
+// Palette WhatsApp-native utilisée dans les maquettes PASRÈL.
 const config: Config = {
   content: [
     "./app/**/*.{ts,tsx}",

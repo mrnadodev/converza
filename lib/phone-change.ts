@@ -1,4 +1,4 @@
-// Changement de numéro WhatsApp d'une boutique, après validation CONVERZA.
+// Changement de numéro WhatsApp d'une boutique, après validation PASRÈL.
 //
 // Côté client, le message reste neutre : on annonce un nouveau numéro, jamais
 // un piratage. Le bandeau dure peu (le marchand choisit 3, 7 ou 14 jours) ;

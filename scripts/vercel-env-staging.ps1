@@ -1,5 +1,5 @@
 ﻿# ============================================================
-# CONVERZA — séparer les variables Vercel : Production ≠ Preview
+# PASRÈL — séparer les variables Vercel : Production ≠ Preview
 #
 # Version PowerShell du script du même nom en .sh, pour une machine
 # Windows sans WSL.

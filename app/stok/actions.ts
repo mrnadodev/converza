@@ -140,7 +140,7 @@ export async function saveSupplier(input: {
   phone: string;
   note: string;
   /**
-   * Rendre ce fournisseur visible aux autres boutiques de CONVERZA.
+   * Rendre ce fournisseur visible aux autres boutiques de PASRÈL.
    *
    * Faux par defaut, et jamais decide a la place du marchand : un carnet
    * d adresses fournisseurs est un actif concurrentiel, et le numero saisi ici

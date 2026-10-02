@@ -1,5 +1,5 @@
 -- ============================================================
--- CONVERZA — Migration corrective, FICHIER 2 sur 2
+-- PASRÈL — Migration corrective, FICHIER 2 sur 2
 --
 -- ⚠️  N'exécuter qu'APRÈS db/migrate-2026-1-enums.sql, dans une requête
 --     séparée. Sinon la première mise à jour de statut ci-dessous échoue
@@ -252,7 +252,7 @@ create policy member_owner_delete on members
 
 
 -- ------------------------------------------------------------
--- 8. CONFIGURATION PLATEFORME (tarifs, coordonnées de paiement CONVERZA,
+-- 8. CONFIGURATION PLATEFORME (tarifs, coordonnées de paiement PASRÈL,
 --    feature flags). Elle vivait dans des variables de module : chaque
 --    instance serverless avait sa copie et un redéploiement remettait les
 --    prix d'origine. Un changement de tarif ne tenait pas une heure.

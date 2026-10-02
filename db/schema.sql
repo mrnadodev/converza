@@ -1,5 +1,5 @@
 -- ============================================================
--- CONVERZA — Schéma de base de données (Supabase / PostgreSQL)
+-- PASRÈL — Schéma de base de données (Supabase / PostgreSQL)
 -- WhatsApp Sales & Customer Management pour les entreprises en Haïti
 -- Multi-tenant : chaque ligne appartient à un business_id.
 -- ============================================================
@@ -34,7 +34,7 @@ create type stock_state   as enum ('en_stok', 'ba_stok', 'fini');            -- 
 create table businesses (
   id            uuid primary key default gen_random_uuid(),
   name          text not null,
-  slug          text unique not null,                 -- pour l'URL publique de la vitrine : converza.ht/b/<slug>
+  slug          text unique not null,                 -- pour l'URL publique de la vitrine : pasrel.ht/b/<slug>
   category      text,                                 -- ex: "Boutik alimantè"
   address       text,                                 -- ex: "Delmas 31, Pòtoprens"
   phone_e164    text,                                 -- numéro WhatsApp principal, format +509...
@@ -260,7 +260,7 @@ create table security_audit_logs (
 create index on security_audit_logs (created_at desc);
 
 -- ------------------------------------------------------------
--- PLATFORM SETTINGS — tarifs, coordonnées de paiement CONVERZA,
+-- PLATFORM SETTINGS — tarifs, coordonnées de paiement PASRÈL,
 -- feature flags. Une ligne par clé, lue/écrite via la clé service role.
 -- ------------------------------------------------------------
 create table platform_settings (

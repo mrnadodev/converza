@@ -1,4 +1,4 @@
-// Inventaire des tables de CONVERZA, dans l'ordre où elles peuvent être
+// Inventaire des tables de PASRÈL, dans l'ordre où elles peuvent être
 // réécrites : une table n'apparaît qu'après celles dont elle dépend.
 //
 // `derived: true` marque les tables que la base reconstruit elle-même à partir

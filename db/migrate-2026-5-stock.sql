@@ -1,5 +1,5 @@
 -- ============================================================
--- CONVERZA — migration 5 (stock fiable)
+-- PASRÈL — migration 5 (stock fiable)
 -- À exécuter dans l'éditeur SQL Supabase après migrate-2026-4-numero.sql.
 -- Le script peut être relancé sans risque.
 --
