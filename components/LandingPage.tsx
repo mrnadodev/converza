@@ -13,6 +13,7 @@ import { planTexts } from "@/lib/plan-texts";
 import type { Plan } from "@/lib/plans";
 import { INDUSTRY_SECTORS, SECTOR_COUNT, TRADE_COUNT } from "@/lib/verticals";
 import { Wordmark } from "@/components/Wordmark";
+import { CvzMark } from "@/components/CvzMark";
 import { BackToTop } from "@/components/BackToTop";
 
 // Ordre d'affichage des secteurs : celui de lib/verticals.ts, qui va du plus
@@ -82,8 +83,10 @@ export function LandingPage({
           <div className="mx-auto flex h-[72px] w-full max-w-[1240px] items-center justify-between px-5 sm:px-8 lg:px-12">
             <div className="flex items-center gap-10">
               <Link href="/" className="flex items-center gap-2.5">
-                <Mark />
-                <Wordmark className="text-[18px] font-extrabold tracking-tight text-white" />
+                <span className="inline-flex items-center rounded-xl bg-white px-2 py-1.5">
+                  <CvzMark size={40} />
+                </span>
+                <Wordmark tone="onDark" className="text-[18px] font-extrabold tracking-tight text-white" />
               </Link>
               <nav className="hidden items-center gap-7 lg:flex">
                 <a href="#produit" className="text-[14.5px] font-semibold text-[#A9C4BC] transition-colors hover:text-white">{c.nav.product}</a>
@@ -567,8 +570,10 @@ export function LandingPage({
           <div className="grid gap-10 sm:grid-cols-3 lg:grid-cols-[5fr_2fr_2fr_2fr]">
             <div className="flex flex-col gap-3.5 sm:col-span-3 lg:col-span-1">
               <div className="flex items-center gap-2.5">
-                <Mark size={28} />
-                <Wordmark className="text-[16.5px] font-extrabold tracking-tight text-white" />
+                <span className="inline-flex items-center rounded-lg bg-white px-1.5 py-1">
+                  <CvzMark size={34} />
+                </span>
+                <Wordmark tone="onDark" className="text-[16.5px] font-extrabold tracking-tight text-white" />
               </div>
               <span className="max-w-[290px] text-[14px] leading-[1.62] text-[#7D9A92]">{c.footer.tagline}</span>
             </div>
@@ -586,7 +591,7 @@ export function LandingPage({
               disponible tout du long. */}
           <div className="mt-9 flex flex-col gap-4 border-t pt-9" style={{ borderColor: "rgba(255,255,255,0.1)" }}>
             <span className="text-center text-[13.5px] font-semibold text-[#7D9A92] sm:text-left">
-              <Wordmark className="font-extrabold text-white" /> · {c.footer.slogan}
+              <Wordmark tone="onDark" className="font-extrabold text-white" /> · {c.footer.slogan}
             </span>
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <span className="text-[13px] text-[#5E7E75]">{c.footer.rights}</span>
@@ -725,24 +730,6 @@ function CountUp({ to, duration = 1200 }: { to: number; duration?: number }) {
 }
 
 /* ─────────── Icônes ─────────── */
-
-function Mark({ size = 32 }: { size?: number }) {
-  const id = `cvzlg-${size}`;
-  return (
-    <svg width={size} height={size} viewBox="0 0 120 120" fill="none" aria-hidden="true">
-      <defs>
-        <linearGradient id={id} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#25D366" />
-          <stop offset="1" stopColor="#008069" />
-        </linearGradient>
-      </defs>
-      <rect x="2" y="2" width="116" height="116" rx="30" fill={`url(#${id})`} />
-      <circle cx="60" cy="56" r="40" fill="#fff" />
-      <path d="M38 80 L28 100 L56 85 Z" fill="#fff" />
-      <path d="M75.6 38.4 A 22 22 0 1 0 75.6 69.6" fill="none" stroke="#008069" strokeWidth="11" strokeLinecap="round" />
-    </svg>
-  );
-}
 
 function PlayIcon() {
   return (

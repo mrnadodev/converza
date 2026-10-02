@@ -26,8 +26,17 @@
 // Le mot reste un seul nœud de texte pour les lecteurs d'écran et le
 // copier-coller : la coupure n'est que visuelle.
 
-/** Vert de la marque, sur tout fond qui n'est pas lui-même vert. */
+/** Vert de la marque, sur fond clair. */
 const VERT = "#008069";
+/**
+ * Vert vif, sur fond sombre.
+ *
+ * Le vert de marque y a été mesuré à 3,39:1 sur la barre de la page
+ * d'accueil et 3,69:1 dans son pied — sous le minimum de 4,5:1 à ces
+ * tailles. L'ancien commentaire affirmait qu'il tenait sur le noir d'encre ;
+ * personne ne l'avait mesuré. Le vert vif y monte à 8,8:1.
+ */
+const VERT_VIF = "#25D366";
 
 export function Wordmark({
   tone = "onLight",
@@ -37,14 +46,14 @@ export function Wordmark({
    * « onBrand » uniquement quand le fond est le vert de la marque. Partout
    * ailleurs — blanc, gris, noir d'encre — le défaut convient.
    */
-  tone?: "onLight" | "onBrand";
+  tone?: "onLight" | "onDark" | "onBrand";
   className?: string;
 }) {
   if (tone === "onBrand") return <span className={className}>PASRÈL</span>;
   return (
     <span className={className}>
       PASR
-      <span style={{ color: VERT }}>È</span>
+      <span style={{ color: tone === "onDark" ? VERT_VIF : VERT }}>È</span>
       L
     </span>
   );
