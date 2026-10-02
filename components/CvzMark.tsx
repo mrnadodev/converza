@@ -8,36 +8,43 @@ import Image from "next/image";
  * résultat n'était pas le logo — ses deux rubans y étaient devenus deux
  * filets concentriques. Un logo se livre, il ne se réinterprète pas.
  *
- * Deux fichiers, deux emplois :
+ * DEUX VERSIONS, et le choix se mesure. Contrastes relevés sur les fonds
+ * réels de l'application, avec les teintes dominantes de chaque fichier :
  *
- *  - `pasrel-arche-cadree.png` : l'arche seule, sans le mot, recadrée au
- *    plus près, **sur fond transparent**. La source est
- *    `pasrel-transparent.png` ; détourée, l'arche se pose directement sur
- *    n'importe quel fond, sans le rectangle blanc qui trahissait le fichier. C'est le défaut, et
- *    c'est ce qu'il faut partout où le mot est déjà écrit à côté — sinon le
- *    nom apparaît deux fois. C'est aussi la seule version qui tienne en
- *    petit : à 84 px, le mot gravé dans le logo complet n'est plus lisible.
- *  - `pasrel-logo.png` : le logo complet, arche et mot. Pour les surfaces
- *    qui n'ont rien d'autre autour, comme une image de partage.
+ *                                    positive        inversée
+ *   fond blanc                       4,8 et 10,2     1,1 et 2,0
+ *   barre d'accueil (encre)          3,4 et 1,6      15,8 et 8,3
+ *   bannière connexion, côté foncé   1,6 et 1,3      7,3 et 3,8
+ *   bannière connexion, côté clair   2,4 et 5,2      1,9 et 1,0
  *
- * Les trois icônes d'application sont dérivées de l'arche, recentrée dans un
- * carré : l'arche est large et courte, et posée telle quelle elle flottait
- * en haut de la tuile.
+ * Autrement dit : la positive sur les fonds clairs, l'inversée sur les fonds
+ * sombres, et aucune des deux ne tient sur le vert vif de la marque — le
+ * ruban vert de l'inversée s'y confond à 1,01, c'est-à-dire exactement la
+ * même couleur. C'est pour ça que l'écran de connexion garde une plaque.
+ *
+ * Les fichiers : `pasrel-transparent.png` et `pasrel-white.png` sont les
+ * originaux fournis ; les deux `-cadree` en sont le recadrage au plus près,
+ * pour que l'arche ne flotte pas dans du vide.
  */
 export function CvzMark({
   size = 72,
+  tone = "onLight",
   variante = "arche",
 }: {
   size?: number;
+  /** « onDark » dès que le fond est sombre : l'arche positive y disparaît. */
+  tone?: "onLight" | "onDark";
   variante?: "arche" | "complet";
 }) {
-  const complet = variante === "complet";
+  if (variante === "complet") {
+    return <Image src="/pasrel-logo.png" alt="PASRÈL" width={size} height={size} priority />;
+  }
   return (
     <Image
-      src={complet ? "/pasrel-logo.png" : "/pasrel-arche-cadree.png"}
+      src={tone === "onDark" ? "/pasrel-white-cadree.png" : "/pasrel-arche-cadree.png"}
       alt="PASRÈL"
       width={size}
-      height={complet ? size : Math.round(size * 0.4265)}
+      height={Math.round(size * 0.4265)}
       priority
     />
   );
