@@ -11,8 +11,9 @@ import Image from "next/image";
  * Deux fichiers, deux emplois :
  *
  *  - `pasrel-arche-cadree.png` : l'arche seule, sans le mot, recadrée au
- *    plus près. Le fichier d'origine `pasrel-arche.png` est un carré où
- *    l'arche occupe la moitié haute ; posée telle quelle, elle flottait. C'est le défaut, et
+ *    plus près, **sur fond transparent**. La source est
+ *    `pasrel-transparent.png` ; détourée, l'arche se pose directement sur
+ *    n'importe quel fond, sans le rectangle blanc qui trahissait le fichier. C'est le défaut, et
  *    c'est ce qu'il faut partout où le mot est déjà écrit à côté — sinon le
  *    nom apparaît deux fois. C'est aussi la seule version qui tienne en
  *    petit : à 84 px, le mot gravé dans le logo complet n'est plus lisible.
@@ -36,7 +37,7 @@ export function CvzMark({
       src={complet ? "/pasrel-logo.png" : "/pasrel-arche-cadree.png"}
       alt="PASRÈL"
       width={size}
-      height={complet ? size : Math.round(size * 0.465)}
+      height={complet ? size : Math.round(size * 0.4265)}
       priority
     />
   );
