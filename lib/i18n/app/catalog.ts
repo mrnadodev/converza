@@ -65,6 +65,8 @@ export interface CatalogCopy {
     imported: (n: number) => string;
     confirm: string;
     importing: string;
+    /** Quand le fichier depose ne se lit ni en classeur ni en texte. */
+    readFailed: string;
   };
 }
 
@@ -132,6 +134,7 @@ const fr: CatalogCopy = {
     imported: (n) => (n <= 1 ? `${n} produit ajouté.` : `${n} produits ajoutés.`),
     confirm: "Confirmer l'import",
     importing: "Import en cours…",
+    readFailed: "Ce fichier n'a pas pu être lu. Utilisez le modèle, ou enregistrez votre tableau en .xlsx ou .csv.",
   },
 };
 
@@ -199,6 +202,7 @@ const ht: CatalogCopy = {
     imported: (n) => `${n} pwodwi ajoute.`,
     confirm: "Konfime enpòtasyon an",
     importing: "N ap enpòte…",
+    readFailed: "Nou pa rive li fichye sa a. Sèvi ak modèl la, oswa anrejistre tablo ou an .xlsx oswa .csv.",
   },
 };
 
@@ -266,6 +270,7 @@ const en: CatalogCopy = {
     imported: (n) => (n === 1 ? "1 product added." : `${n} products added.`),
     confirm: "Confirm import",
     importing: "Importing…",
+    readFailed: "This file could not be read. Use the template, or save your sheet as .xlsx or .csv.",
   },
 };
 

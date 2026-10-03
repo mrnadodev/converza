@@ -2,10 +2,11 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { useDict } from "@/components/LanguageContext";
+import { useDict, useLanguage } from "@/components/LanguageContext";
 import { CATALOG_COPY } from "@/lib/i18n/app/catalog";
 import { COMMON_COPY } from "@/lib/i18n/app/common";
-import { generateExcelTemplate, parseBulkProducts, type ImportResult } from "@/lib/excel";
+import { parseBulkProducts, type ImportResult } from "@/lib/excel";
+import { estClasseur, lireClasseur } from "@/lib/xlsx-read";
 import { saveBulkProducts } from "@/app/katalog/actions";
 import { formatMoney } from "@/lib/money";
 import type { Business } from "@/lib/types";
@@ -13,47 +14,48 @@ import type { Business } from "@/lib/types";
 export function BulkExcelManager({ business }: { business: Business }) {
   const k = useDict(CATALOG_COPY);
   const c = useDict(COMMON_COPY);
+  const { language } = useLanguage();
   const router = useRouter();
   const [pending, start] = useTransition();
   const [modalOpen, setModalOpen] = useState(false);
   const [importData, setImportData] = useState<ImportResult | null>(null);
   const [status, setStatus] = useState<{ tone: "ok" | "error"; text: string } | null>(null);
 
-  const fileName = `modele_katalog_pasrel_${business?.slug || "boutik"}.csv`;
-
+  /** Le modèle est fabriqué par le serveur : il est traduit, et c'est un vrai classeur. */
   function downloadTemplate() {
-    try {
-      const blob = new Blob([generateExcelTemplate()], { type: "text/csv;charset=utf-8;" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.style.display = "none";
-      a.href = url;
-      a.setAttribute("download", fileName);
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(() => {
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      }, 200);
-    } catch {
-      window.open("data:text/csv;charset=utf-8," + encodeURIComponent(generateExcelTemplate()));
-    }
+    window.location.href = `/api/download-template?lang=${language}`;
   }
 
-  function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+  /**
+   * Le dépôt accepte les deux formes.
+   *
+   * Le sélecteur annonçait « .csv, .xlsx, .xls » mais le fichier était lu en
+   * texte : un vrai classeur arrivait sous forme d'octets illisibles, et
+   * l'import répondait seulement qu'il n'avait rien trouvé. Le marchand
+   * n'avait aucun moyen de comprendre que son fichier était pourtant bon.
+   */
+  async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
+    e.target.value = "";
     if (!file) return;
     setStatus(null);
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const text = event.target?.result as string;
-      if (text) {
-        setImportData(parseBulkProducts(text, business.id));
-        setModalOpen(true);
+
+    try {
+      const donnees = await file.arrayBuffer();
+      let texte: string;
+      if (estClasseur(donnees)) {
+        // On repasse par le même analyseur que le CSV : une seule règle de
+        // lecture des colonnes, donc un seul endroit où elle peut se tromper.
+        const lignes = await lireClasseur(donnees);
+        texte = lignes.map((l) => l.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(";")).join("\n");
+      } else {
+        texte = new TextDecoder("utf-8").decode(donnees);
       }
-    };
-    reader.readAsText(file, "UTF-8");
-    e.target.value = "";
+      setImportData(parseBulkProducts(texte, business.id));
+      setModalOpen(true);
+    } catch (err) {
+      setStatus({ tone: "error", text: err instanceof Error ? err.message : k.bulk.readFailed });
+    }
   }
 
   function confirmImport() {
@@ -89,9 +91,8 @@ export function BulkExcelManager({ business }: { business: Business }) {
 
       <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
         <a
-          href="/api/download-template"
-          download={fileName}
-          onClick={downloadTemplate}
+          href={`/api/download-template?lang=${language}`}
+          download
           className="flex h-11 items-center justify-center gap-2 rounded-xl border border-line bg-[#F7F8F9] px-3 text-xs font-bold text-ink no-underline active:scale-95"
         >
           {k.bulk.download}
