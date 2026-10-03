@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { toPng, toBlob } from "html-to-image";
 import { CvzMark } from "@/components/CvzMark";
+import { Wordmark } from "@/components/Wordmark";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { useDict } from "@/components/LanguageContext";
 import { INVOICE_COPY } from "@/lib/i18n/app/invoice";
@@ -543,7 +544,11 @@ export function InvoiceModal({
                 <span className={`font-semibold text-ink-muted ${is58 ? "text-[7.5px]" : isThermal ? "text-[8.5px]" : "text-[10px]"}`}>
                   {v.doc.poweredBy}
                 </span>
-                <CvzMark size={is58 ? 34 : isThermal ? 40 : 52} />
+                <CvzMark size={is58 ? 30 : isThermal ? 36 : 46} />
+                {/* Le nom écrit, pas seulement l'arche : sur une facture
+                    imprimée en noir, un client qui veut retrouver l'outil n'a
+                    qu'un dessin à chercher s'il n'a pas le mot. */}
+                <Wordmark className={`font-extrabold tracking-tight text-ink ${is58 ? "text-[8px]" : isThermal ? "text-[9.5px]" : "text-[12px]"}`} />
               </div>
             </div>
           </div>
