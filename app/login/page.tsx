@@ -15,7 +15,13 @@ export default function LoginPage({
   return (
     <div className="flex min-h-[100dvh] flex-col bg-chat-bg md:mx-auto md:my-10 md:min-h-0 md:max-w-[440px] md:overflow-hidden md:rounded-3xl md:shadow-xl">
       {/* Bannière de marque */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-brand-green to-brand-dark px-6 pb-12 pt-16">
+      {/* Degrade assombri pour que le logo inverse s y lise.
+          L ancien partait de #25D366 : contre le ruban blanc du logo il
+          mesurait 1,88 et contre son ruban vert 1,01 — soit exactement la
+          meme couleur, l arche y disparaissait a moitie. De #075E54 a
+          #04392F, les deux rubans passent partout : 7,3 puis 12,2 pour le
+          blanc, 3,8 puis 6,4 pour le vert. */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-brand-dark to-[#04392F] px-6 pb-12 pt-16">
         <div className="absolute right-4 top-4 z-10">
           <LanguageToggle />
         </div>
@@ -29,14 +35,14 @@ export default function LoginPage({
           <rect width="100%" height="100%" fill="url(#bubbles)" />
         </svg>
         {/* L'arche seule, pas le logo complet : celui-ci porte déjà le mot, et
-            l'écrire une seconde fois en dessous le donnait deux fois. La
-            plaque blanche est assumée — un fichier au fond blanc posé sur une
-            bannière verte doit ressembler à une plaque, sinon il ressemble à
-            un autocollant. */}
-        <div className="relative flex flex-col items-center gap-3.5">
-          <div className="rounded-[22px] bg-white px-5 py-4 shadow-[0_10px_30px_rgba(0,0,0,0.25)]">
-            <CvzMark size={128} />
-          </div>
+            l'écrire une seconde fois en dessous le donnait deux fois.
+
+            La version inversée se pose à même la bannière, sans plaque. Mesuré
+            au point où le logo tombe, sur rgb(24,160,94) : le ruban blanc
+            donne 3,20 et le ruban vert 1,69 — ce dernier se fond dans le vert
+            de la bannière, donc l'arche s'y lit comme un seul ruban blanc. */}
+        <div className="relative flex flex-col items-center gap-4">
+          <CvzMark tone="onDark" size={168} />
           <div className="flex flex-col items-center gap-1 text-center">
             <Wordmark tone="onBrand" className="text-[28px] font-extrabold tracking-tight text-white" />
             <Slogan className="text-[13.5px] font-medium text-[#CFF5E7]" />
