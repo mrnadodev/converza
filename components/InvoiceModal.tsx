@@ -333,13 +333,13 @@ export function InvoiceModal({
             <div className={`relative z-10 flex flex-col ${is58 ? "gap-2" : isThermal ? "gap-3" : "gap-5"}`}>
               <div className="flex items-start justify-between gap-2">
                 <div className="flex min-w-0 items-center gap-2.5">
-                  {/* Le cadre carré n'est là que pour le logo du marchand, qui
-                      est généralement carré et recadré en « cover ». L'arche
-                      de PASRÈL, elle, est large et plate : enfermée dans ce
-                      carré elle n'en remplissait que 30 % de la hauteur, et la
-                      facture montrait surtout une boîte vide. Sans logo
-                      marchand, l'arche est donc posée sans cadre. */}
-                  {businessLogoUrl ? (
+                  {/* Le haut de la facture appartient au marchand : c'est son
+                      document, remis à son client. PASRÈL ne s'y met pas — la
+                      mention « propulsé par » est en pied de page.
+
+                      Sans logo, pas de cadre vide non plus : le nom du
+                      commerce est écrit juste à côté et se suffit. */}
+                  {businessLogoUrl && (
                     <div
                       className={`flex shrink-0 items-center justify-center overflow-hidden rounded-xl border border-line bg-[#F7F8F9] ${
                         printMode === "thermal_58mm" ? "h-9 w-9" : printMode === "thermal_80mm" ? "h-11 w-11" : "h-14 w-14"
@@ -348,10 +348,6 @@ export function InvoiceModal({
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={businessLogoUrl} alt="" className="h-full w-full object-cover" />
                     </div>
-                  ) : (
-                    <span className="flex shrink-0 items-center">
-                      <CvzMark size={isThermal ? 40 : 56} />
-                    </span>
                   )}
                   <div className="flex min-w-0 flex-col">
                     <span className={`truncate font-extrabold tracking-tight text-brand ${printMode === "thermal_58mm" ? "text-xs" : printMode === "thermal_80mm" ? "text-sm" : "text-xl"}`}>
@@ -534,6 +530,20 @@ export function InvoiceModal({
                     </span>
                   )}
                 </div>
+              </div>
+
+              {/* La signature de PASRÈL, en pied et en petit. Une facture est
+                  le document du marchand : notre place est celle d'un
+                  fournisseur, en bas, pas celle d'un co-émetteur en haut. */}
+              <div
+                className={`flex items-center justify-center gap-1.5 border-t border-line pt-2 ${
+                  is58 ? "mt-1" : "mt-2"
+                }`}
+              >
+                <span className={`font-semibold text-ink-muted ${is58 ? "text-[7.5px]" : isThermal ? "text-[8.5px]" : "text-[10px]"}`}>
+                  {v.doc.poweredBy}
+                </span>
+                <CvzMark size={is58 ? 34 : isThermal ? 40 : 52} />
               </div>
             </div>
           </div>

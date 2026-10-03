@@ -51,6 +51,11 @@ export interface InvoiceCopy {
     receiptFor: (method: string) => string;
     notConfigured: (method: string) => string;
     stamp: string;
+    /**
+     * Mention de pied de page. Le haut de la facture appartient au
+     * marchand — c'est son document, pas le notre.
+     */
+    poweredBy: string;
   };
   share: {
     invoice: (i: InvoiceShareInput) => string;
@@ -118,6 +123,7 @@ const fr: InvoiceCopy = {
     receiptFor: (method) => `Reçu officiel du paiement (${method}).`,
     notConfigured: (method) => `${method} n'est pas encore configuré dans vos paramètres.`,
     stamp: "PAYÉ",
+    poweredBy: "Propulsé par",
   },
   share: {
     invoice: (i) =>
@@ -174,6 +180,7 @@ const ht: InvoiceCopy = {
     receiptFor: (method) => `Resi ofisyèl pèman an (${method}).`,
     notConfigured: (method) => `${method} poko konfigire nan reglaj ou yo.`,
     stamp: "PEYE",
+    poweredBy: "Fèt ak",
   },
   share: {
     invoice: (i) =>
@@ -230,6 +237,7 @@ const en: InvoiceCopy = {
     receiptFor: (method) => `Official payment receipt (${method}).`,
     notConfigured: (method) => `${method} is not set up in your settings yet.`,
     stamp: "PAID",
+    poweredBy: "Powered by",
   },
   share: {
     invoice: (i) =>
