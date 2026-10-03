@@ -51,11 +51,18 @@ export default function LoginPage({
             du mot, l'arche garde 43 % de matière jusqu'à 67 % de sa hauteur,
             et ne se dégage qu'à partir de 76 %. Le mot remonte donc de 20 px
             sur une arche de 84 px de haut — pas davantage — et reste assez
-            étroit pour passer entre les deux pieds. */}
+            étroit pour passer entre les deux pieds.
+
+            Le mot est décalé à gauche, comme sur le logo d'origine où son
+            centre tombe vers 38 % de la largeur et non au milieu. L'arche est
+            asymétrique : à la hauteur du mot le pied gauche s'est déjà
+            terminé, et seul le pied droit descend — il reste 44 px de jeu à
+            gauche contre 9 à droite. Les 24 px de décalage tiennent donc
+            largement dans l'ouverture. */}
         <div className="relative flex flex-col items-center">
           <CvzMark tone="onDark" size={196} />
           <div className="-mt-5 flex flex-col items-center gap-1 text-center">
-            <Wordmark tone="onBrand" className="text-[30px] font-extrabold tracking-tight text-white" />
+            <Wordmark tone="onBrand" className="inline-block -translate-x-6 text-[30px] font-extrabold tracking-tight text-white" />
             <Slogan className="text-[13.5px] font-medium text-[#CFF5E7]" />
           </div>
         </div>
