@@ -15,13 +15,16 @@ export default function LoginPage({
   return (
     <div className="flex min-h-[100dvh] flex-col bg-chat-bg md:mx-auto md:my-10 md:min-h-0 md:max-w-[440px] md:overflow-hidden md:rounded-3xl md:shadow-xl">
       {/* Bannière de marque */}
-      {/* Degrade assombri pour que le logo inverse s y lise.
-          L ancien partait de #25D366 : contre le ruban blanc du logo il
-          mesurait 1,88 et contre son ruban vert 1,01 — soit exactement la
-          meme couleur, l arche y disparaissait a moitie. De #075E54 a
-          #04392F, les deux rubans passent partout : 7,3 puis 12,2 pour le
-          blanc, 3,8 puis 6,4 pour le vert. */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-brand-dark to-[#04392F] px-6 pb-12 pt-16">
+      {/* Du vert foncé au vert moins foncé, et pas l'inverse : le logo inversé
+          et l'accent vert du mot ont tous deux besoin d'un fond sombre.
+          L'ancien dégradé partait de #25D366 — contre le ruban vert du logo
+          il mesurait 1,01, soit exactement la même couleur, et l'arche y
+          perdait la moitié d'elle-même.
+
+          La borne claire ne peut pas monter plus haut : à #0A7D52 le ruban
+          vert tombe à 2,58 et l'accent à 2,60. #086647 est le vert le moins
+          foncé qui laisse encore passer les deux. */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-[#04392F] to-[#086647] px-6 pb-12 pt-16">
         <div className="absolute right-4 top-4 z-10">
           <LanguageToggle />
         </div>
@@ -34,17 +37,25 @@ export default function LoginPage({
           </defs>
           <rect width="100%" height="100%" fill="url(#bubbles)" />
         </svg>
-        {/* L'arche seule, pas le logo complet : celui-ci porte déjà le mot, et
-            l'écrire une seconde fois en dessous le donnait deux fois.
+        {/* Le mot chevauche l'arche, comme sur le logo d'origine : il remonte
+            dans l'ouverture, entre les deux pieds, et n'est pas simplement
+            posé dessous.
 
-            La version inversée se pose à même la bannière, sans plaque. Mesuré
-            au point où le logo tombe, sur rgb(24,160,94) : le ruban blanc
-            donne 3,20 et le ruban vert 1,69 — ce dernier se fond dans le vert
-            de la bannière, donc l'arche s'y lit comme un seul ruban blanc. */}
-        <div className="relative flex flex-col items-center gap-4">
-          <CvzMark tone="onDark" size={168} />
-          <div className="flex flex-col items-center gap-1 text-center">
-            <Wordmark tone="onBrand" className="text-[28px] font-extrabold tracking-tight text-white" />
+            Le chevauchement est borné par la lisibilité. Sur le logo
+            d'origine le mot est noir sur blanc ; ici il est blanc, et l'arche
+            a un ruban blanc — s'il montait plus haut, les lettres toucheraient
+            ce ruban et disparaîtraient dedans. Il s'arrête donc dans
+            l'ouverture, là où le fond est la bannière.
+
+            Les deux nombres viennent d'une mesure du fichier : dans la bande
+            du mot, l'arche garde 43 % de matière jusqu'à 67 % de sa hauteur,
+            et ne se dégage qu'à partir de 76 %. Le mot remonte donc de 20 px
+            sur une arche de 84 px de haut — pas davantage — et reste assez
+            étroit pour passer entre les deux pieds. */}
+        <div className="relative flex flex-col items-center">
+          <CvzMark tone="onDark" size={196} />
+          <div className="-mt-5 flex flex-col items-center gap-1 text-center">
+            <Wordmark tone="onBrand" className="text-[30px] font-extrabold tracking-tight text-white" />
             <Slogan className="text-[13.5px] font-medium text-[#CFF5E7]" />
           </div>
         </div>

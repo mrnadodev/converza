@@ -49,7 +49,18 @@ export function Wordmark({
   tone?: "onLight" | "onDark" | "onBrand";
   className?: string;
 }) {
-  if (tone === "onBrand") return <span className={className}>PASRÈL</span>;
+  // Sur la bannière de marque l'accent est vif, pas sombre : la bannière est
+  // désormais un vert foncé, et un accent foncé s'y effacerait. Mesuré sur le
+  // dégradé #04392F → #086647, le vert vif y donne 6,49 puis 3,53.
+  if (tone === "onBrand") {
+    return (
+      <span className={className}>
+        PASR
+        <span style={{ color: VERT_VIF }}>È</span>
+        L
+      </span>
+    );
+  }
   return (
     <span className={className}>
       PASR
