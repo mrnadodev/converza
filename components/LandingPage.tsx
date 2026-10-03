@@ -83,7 +83,10 @@ export function LandingPage({
           <div className="mx-auto flex h-[72px] w-full max-w-[1240px] items-center justify-between px-5 sm:px-8 lg:px-12">
             <div className="flex items-center gap-10">
               <Link href="/" className="flex items-center gap-2.5">
-                <CvzMark tone="onDark" size={46} />
+                {/* Cadrage entier : le fichier d'origine, avec son air autour
+                    de l'arche. La taille compense le vide — l'arche n'occupe
+                    que 41 % de la hauteur du carré. */}
+                <CvzMark tone="onDark" cadrage="entier" size={48} />
                 <Wordmark tone="onDark" className="text-[18px] font-extrabold tracking-tight text-white" />
               </Link>
               <nav className="hidden items-center gap-7 lg:flex">
@@ -568,7 +571,7 @@ export function LandingPage({
           <div className="grid gap-10 sm:grid-cols-3 lg:grid-cols-[5fr_2fr_2fr_2fr]">
             <div className="flex flex-col gap-3.5 sm:col-span-3 lg:col-span-1">
               <div className="flex items-center gap-2.5">
-                <CvzMark tone="onDark" size={40} />
+                <CvzMark tone="onDark" cadrage="entier" size={42} />
                 <Wordmark tone="onDark" className="text-[16.5px] font-extrabold tracking-tight text-white" />
               </div>
               <span className="max-w-[290px] text-[14px] leading-[1.62] text-[#7D9A92]">{c.footer.tagline}</span>

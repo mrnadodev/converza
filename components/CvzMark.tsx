@@ -29,22 +29,41 @@ import Image from "next/image";
 export function CvzMark({
   size = 72,
   tone = "onLight",
+  cadrage = "serre",
   variante = "arche",
 }: {
   size?: number;
   /** « onDark » dès que le fond est sombre : l'arche positive y disparaît. */
   tone?: "onLight" | "onDark";
+  /**
+   * « entier » sert le fichier d'origine, carré, où l'arche occupe 97 % de la
+   * largeur mais 41 % de la hauteur — 24 % de vide au-dessus, 35 % en dessous.
+   * « serre » sert le recadrage au plus près, sans vide.
+   *
+   * Le choix n'est pas cosmétique : l'écran de connexion fait chevaucher le
+   * mot sur l'arche, et ce chevauchement est calé au pixel sur le rapport du
+   * fichier serré. Lui servir le carré décalerait le mot de trente pixels.
+   */
+  cadrage?: "serre" | "entier";
   variante?: "arche" | "complet";
 }) {
   if (variante === "complet") {
     return <Image src="/pasrel-logo.png" alt="PASRÈL" width={size} height={size} priority />;
   }
+  const entier = cadrage === "entier";
+  const src = entier
+    ? tone === "onDark"
+      ? "/pasrel-white.png"
+      : "/pasrel-transparent.png"
+    : tone === "onDark"
+      ? "/pasrel-white-cadree.png"
+      : "/pasrel-arche-cadree.png";
   return (
     <Image
-      src={tone === "onDark" ? "/pasrel-white-cadree.png" : "/pasrel-arche-cadree.png"}
+      src={src}
       alt="PASRÈL"
       width={size}
-      height={Math.round(size * 0.4265)}
+      height={entier ? size : Math.round(size * 0.4265)}
       priority
     />
   );
